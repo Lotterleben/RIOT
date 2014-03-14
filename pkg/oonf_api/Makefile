@@ -1,7 +1,6 @@
 PKG_NAME=oonf_api
 PKG_URL=git://olsr.org/oonf_api.git
 PKG_VERSION=v0.3.0
-PKG_DIR=$(CURDIR)/$(PKG_NAME)
 
 ifneq ($(RIOTBOARD),)
 include $(RIOTBOARD)/$(BOARD)/Makefile.include
@@ -12,32 +11,36 @@ INCLUDES += -I$(RIOTBASE)/sys/include -I$(RIOTBASE)/sys/net/include \
 			-I$(RIOTBASE)/sys/posix/include -I$(RIOTBASE)/sys/posix/pnet/include
 endif
 
+MODULE:=$(shell basename $(CURDIR))
+
 .PHONY: all clean patch reset
 
 all: patch
-	make -C $(PKG_DIR)
+	make -C $(CURDIR)/$(PKG_NAME)
+	make $(BINDIR)$(MODULE).a
 
-patch: $(PKG_DIR)/Makefile
+patch: $(CURDIR)/$(PKG_NAME)/Makefile
+	# Dependancy might be changed accordingly though we think the Makefile
+	# will be the first thing you want to change
+	#
+	# Here might not happen anything besides dependancy checks
 
-$(PKG_DIR)/Makefile: $(PKG_DIR)/.git/config
-	cd "$(PKG_DIR)" && git am --ignore-whitespace "$(CURDIR)"/*.patch || true
+$(CURDIR)/$(PKG_NAME)/Makefile: $(CURDIR)/$(PKG_NAME)
+	# Here you apply your patch.
+	$(foreach patch,$(shell ls [0-9][0-9][0-9][0-9]*.patch),cd "$<" && git am "../$(patch)";)
 
-$(PKG_DIR)/.git/config:
-	mkdir "$(PKG_DIR)"; \
-        git clone "$(PKG_URL)" "$(PKG_DIR)"; \
-		cd "$(PKG_DIR)" && git checkout -f "$(PKG_VERSION)"
+$(CURDIR)/$(PKG_NAME)/:
+	git clone $(PKG_URL) $@ && \
+		cd $@ && git checkout $(PKG_VERSION)
 
 clean::
-	@echo "Cleaning up libcoap package..."
-	@cd "$(PKG_DIR)" 2> /dev/null > /dev/null && \
+	# Reset package to checkout state.
+	cd $(CURDIR)/$(PKG_NAME) || true && \
 		git clean -x -f && \
-		git am --abort && \
-		git reset --hard "$(PKG_VERSION)" && \
-		$(MAKE) patch || true
+		git reset --hard $(PKG_VERSION)
 
+distclean::
+	rm -rf $(CURDIR)/$(PKG_NAME)
 
-distclean:: 
-	rm -rf "$(PKG_DIR)"
-
-Makefile.include:
-	@true
+$(BINDIR)$(MODULE).a: $(BINDIR)oonf_*.a
+	mkdir -p $(BINDIR)$(MODULE); cd $(BINDIR)$(MODULE); for var in $?; do ar -x $$var; done; ar -r -c -s $(BINDIR)$(MODULE).a *.o
