@@ -65,7 +65,7 @@ ifneq (,$(filter at86rf231,$(USEMODULE)))
 	USEMODULE += vtimer
 endif
 
-ifneq (,$(filter aodv2,$(USEMODULE)))
+ifneq (,$(filter aodvv2,$(USEMODULE)))
 	ifeq (,$(filter vtimer,$(USEMODULE)))
 		USEMODULE += vtimer
 	endif
