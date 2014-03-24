@@ -137,6 +137,7 @@ static void _reset_entry_if_stale(uint8_t i)
            during every ACTIVE_INTERVAL. When a route is no longer Active, it becomes an Idle route. */
         if (state == ROUTE_STATE_ACTIVE &&
             timex_cmp(timex_sub(now, active_interval), lastUsed) == 1) {
+            DEBUG("[routing] route towards %s Idle\n", netaddr_to_string(&nbuf, &routing_table[i].addr), i);
             routing_table[i].state = ROUTE_STATE_IDLE;
             routing_table[i].lastUsed = now; // mark the time entry was set to Idle
         }
@@ -146,6 +147,7 @@ static void _reset_entry_if_stale(uint8_t i)
         if (state == ROUTE_STATE_IDLE &&
                 (timex_cmp(timex_sub(now, max_idletime), lastUsed) == 1  || 
                 timex_cmp(expirationTime, now) < 1)) {
+            DEBUG("[routing] route towards %s Expired\n", netaddr_to_string(&nbuf, &routing_table[i].addr), i);
             routing_table[i].state = ROUTE_STATE_EXPIRED;
             routing_table[i].lastUsed = now; // mark the time entry was set to Expired
         }

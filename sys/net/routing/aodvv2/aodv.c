@@ -1,7 +1,7 @@
 #include "aodv.h"
 #include "aodvv2/aodvv2.h"
 
-#define ENABLE_DEBUG (1)
+#define ENABLE_DEBUG (0)
 #include "debug.h"
 
 #define UDP_BUFFER_SIZE     (128) // TODO öhm.
@@ -77,6 +77,8 @@ void aodv_set_metric_type(int metric_type)
  */
 void aodv_send_rreq(struct aodvv2_packet_data* packet_data)
 {
+    DEBUG("[aodvv2] %s()\n", __func__);
+
     struct aodvv2_packet_data* pd = malloc(sizeof(struct aodvv2_packet_data));
     memcpy(pd, packet_data, sizeof(struct aodvv2_packet_data));
 
@@ -103,6 +105,8 @@ void aodv_send_rreq(struct aodvv2_packet_data* packet_data)
  */
 void aodv_send_rrep(struct aodvv2_packet_data* packet_data, struct netaddr* next_hop)
 {
+    DEBUG("[aodvv2] %s()\n", __func__);
+
     struct aodvv2_packet_data* pd = malloc(sizeof(struct aodvv2_packet_data));
     memcpy(pd, packet_data, sizeof(struct aodvv2_packet_data));
 
@@ -117,7 +121,7 @@ void aodv_send_rrep(struct aodvv2_packet_data* packet_data, struct netaddr* next
 
     struct msg_container* mc = malloc(sizeof(struct msg_container));
     *mc = (struct msg_container) {
-        .type = RFC5444_MSGTYPE_RREQ,
+        .type = RFC5444_MSGTYPE_RREP,
         .data = rd
     };
 
@@ -132,6 +136,8 @@ void aodv_send_rrep(struct aodvv2_packet_data* packet_data, struct netaddr* next
  */
 void aodv_send_rerr(struct unreachable_node unreachable_nodes[], int len, int hoplimit, struct netaddr* next_hop)
 {
+    DEBUG("[aodvv2] %s()\n", __func__);
+
     struct rerr_data* rerrd = malloc(sizeof(struct rerr_data));
     *rerrd = (struct rerr_data) {
         .unreachable_nodes = unreachable_nodes,
@@ -386,7 +392,6 @@ static void _deep_free_msg_container(struct msg_container* mc)
         if (netaddr_cmp(rreq_rrep_data->next_hop, &na_mcast) != 0)
             free(rreq_rrep_data->next_hop);
     } else if (type == RFC5444_MSGTYPE_RERR) {
-        // TODO: unreachable_nodes[] freen?
         struct rerr_data* rerr_data = (struct rerr_data*) mc->data;
         if (netaddr_cmp(rerr_data->next_hop, &na_mcast) != 0)
             free(rerr_data->next_hop);
