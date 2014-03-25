@@ -32,7 +32,7 @@ static enum rfc5444_result _cb_rerr_end_callback(
 static bool _offers_improvement(struct aodvv2_routing_entry_t* rt_entry, struct node_data* node_data);
 static uint8_t _get_link_cost(uint8_t metricType, struct aodvv2_packet_data* data);
 static uint8_t _get_max_metric(uint8_t metricType);
-static uint8_t _get_updated_metric(uint8_t metricType, uint8_t metric);
+static void _update_metric(uint8_t metricType, uint8_t* metric);
 static void _fill_routing_entry_t_rreq(struct aodvv2_packet_data* packet_data, struct aodvv2_routing_entry_t* routing_entry, uint8_t link_cost);
 static void _fill_routing_entry_t_rrep(struct aodvv2_packet_data* packet_data, struct aodvv2_routing_entry_t* rt_entry, uint8_t link_cost);
 
@@ -260,7 +260,7 @@ static enum rfc5444_result _cb_rreq_end_callback(
         return RFC5444_DROP_PACKET;
     }
 
-    packet_data.origNode.metric = _get_updated_metric(packet_data.metricType, packet_data.origNode.metric);
+    _update_metric(packet_data.metricType, &packet_data.origNode.metric);
     vtimer_now(&now);
     packet_data.timestamp = now;
 
@@ -425,7 +425,7 @@ static enum rfc5444_result _cb_rrep_end_callback(
         return RFC5444_DROP_PACKET;
     }
 
-    packet_data.origNode.metric = _get_updated_metric(packet_data.metricType, packet_data.origNode.metric);
+    _update_metric(packet_data.metricType, &packet_data.targNode.metric);
     vtimer_now(&now);
     packet_data.timestamp = now;
 
@@ -648,11 +648,10 @@ static uint8_t _get_max_metric(uint8_t metricType)
  * Calculate a metric's new value according to the specified MetricType
  * (currently only implemented for AODVV2_DEFAULT_METRIC_TYPE (HopCt))
  */
-static uint8_t _get_updated_metric(uint8_t metricType, uint8_t metric)
+static void _update_metric(uint8_t metricType, uint8_t* metric)
 {
     if (metricType == AODVV2_DEFAULT_METRIC_TYPE)
-        return metric++;
-    return 0;
+        *metric = *metric+1; // TODO less derpy
 }
 
 // TODO: use memcpy?!
