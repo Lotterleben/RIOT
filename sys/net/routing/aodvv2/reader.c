@@ -112,7 +112,7 @@ static struct rfc5444_reader_tlvblock_consumer _rerr_address_consumer = {
 static struct rfc5444_reader_tlvblock_consumer_entry _rreq_rrep_address_consumer_entries[] = {
     [RFC5444_MSGTLV_ORIGSEQNUM] = { .type = RFC5444_MSGTLV_ORIGSEQNUM},
     [RFC5444_MSGTLV_TARGSEQNUM] = { .type = RFC5444_MSGTLV_TARGSEQNUM},
-    [RFC5444_MSGTLV_METRIC] = { .type = AODVV2_DEFAULT_METRIC_TYPE }
+    [RFC5444_MSGTLV_METRIC] = { .type = RFC5444_MSGTLV_METRIC }
 };
 
 /*
@@ -179,8 +179,8 @@ static enum rfc5444_result _cb_rreq_blocktlv_addresstlvs_okay(struct rfc5444_rea
             DEBUG("\tERROR: Metric TLV belongs to wrong address.\n");
             return RFC5444_DROP_PACKET;
         }
-        DEBUG("\ttlv RFC5444_MSGTLV_METRIC hopCt: %d, type: %d\n", *tlv->single_value, tlv->type);
-        packet_data.metricType = tlv->type;
+        DEBUG("\ttlv RFC5444_MSGTLV_METRIC val: %d, exttype: %d\n", *tlv->single_value, tlv->type_ext);
+        packet_data.metricType = tlv->type_ext;
         packet_data.origNode.metric = *tlv->single_value;
     }
     return RFC5444_OKAY;
@@ -359,8 +359,8 @@ static enum rfc5444_result _cb_rrep_blocktlv_addresstlvs_okay(struct rfc5444_rea
             DEBUG("\tERROR: metric TLV belongs to wrong address.\n");
             return RFC5444_DROP_PACKET;
         }
-        DEBUG("\ttlv RFC5444_MSGTLV_METRIC hopCt: %d, type: %d\n", *tlv->single_value, tlv->type);
-        packet_data.metricType = tlv->type;
+        DEBUG("\ttlv RFC5444_MSGTLV_METRIC val: %d, exttype: %d\n", *tlv->single_value, tlv->type_ext);
+        packet_data.metricType = tlv->type_ext;
         packet_data.origNode.metric = *tlv->single_value;
     }
     return RFC5444_OKAY;
@@ -531,7 +531,7 @@ static enum rfc5444_result _cb_rerr_blocktlv_addresstlvs_okay(struct rfc5444_rea
         /* check if route to unreachable node has to be marked as broken and RERR has to be forwarded*/
         if (netaddr_cmp(&unreachable_entry->nextHopAddr, &packet_data.sender ) == 0 
             && (!tlv || seqnum_cmp(unreachable_entry->seqnum, packet_data.origNode.seqnum))) {
-            unreachable_entry->state = ROUTE_STATE_BROKEN; // TODO: debug because it will break routesfor a long time
+            unreachable_entry->state = ROUTE_STATE_BROKEN; // TODO: debug because it will break routes for a long time
             unreachable_nodes[num_unreachable_nodes].addr = packet_data.origNode.addr;
             unreachable_nodes[num_unreachable_nodes].seqnum = packet_data.origNode.seqnum;
             num_unreachable_nodes++;

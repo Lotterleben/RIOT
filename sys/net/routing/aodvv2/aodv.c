@@ -1,7 +1,7 @@
 #include "aodv.h"
 #include "aodvv2/aodvv2.h"
 
-#define ENABLE_DEBUG (0)
+#define ENABLE_DEBUG (1)
 #include "debug.h"
 
 #define UDP_BUFFER_SIZE     (128) // TODO öhm.
@@ -253,7 +253,7 @@ static void _aodv_receiver_thread(void)
         if(rcv_size < 0) {
             DEBUG("[aodvv2] ERROR receiving data!\n");
         }
-        DEBUG("[aodvv2] UDP packet received from %s\n", ipv6_addr_to_str(addr_str_rec, IPV6_MAX_ADDR_STR_LEN, &sa_rcv.sin6_addr));
+        DEBUG("[aodvv2] %s: UDP packet received from %s\n",ipv6_addr_to_str(addr_str, IPV6_MAX_ADDR_STR_LEN, &_v6_addr_local), ipv6_addr_to_str(addr_str_rec, IPV6_MAX_ADDR_STR_LEN, &sa_rcv.sin6_addr));
         
         struct netaddr _sender;
         ipv6_addr_t_to_netaddr(&sa_rcv.sin6_addr, &_sender);
@@ -271,7 +271,7 @@ static void _aodv_receiver_thread(void)
  */
 static ipv6_addr_t* aodv_get_next_hop(ipv6_addr_t* dest)
 {
-    DEBUG("[aodvv2] getting next hop for %s\n", ipv6_addr_to_str(addr_str, IPV6_MAX_ADDR_STR_LEN, dest));
+    DEBUG("[aodvv2] %s: getting next hop for %s\n", ipv6_addr_to_str(addr_str, IPV6_MAX_ADDR_STR_LEN, &_v6_addr_local), ipv6_addr_to_str(addr_str, IPV6_MAX_ADDR_STR_LEN, dest));
 
     struct netaddr _tmp_dest;
     ipv6_addr_t_to_netaddr(dest, &_tmp_dest);
@@ -298,7 +298,7 @@ static ipv6_addr_t* aodv_get_next_hop(ipv6_addr_t* dest)
             return NULL;
         }
 
-        // Case 2: Broken Link
+        // Case 2: Broken Link (detected by lower layer) 
         if ((!ndp_nc_entry ||
             ndp_nc_entry->state != NDP_NCE_STATUS_REACHABLE ||
             ndp_nc_entry->state != NDP_NCE_STATUS_STALE ||
