@@ -49,7 +49,7 @@ static struct rfc5444_writer_content_provider _rreq_message_content_provider = {
 /* declaration of all address TLVs added to the RREQ message */
 static struct rfc5444_writer_tlvtype _rreq_addrtlvs[] = {
     [RFC5444_MSGTLV_ORIGSEQNUM] = { .type = RFC5444_MSGTLV_ORIGSEQNUM },
-    [RFC5444_MSGTLV_METRIC] = { .type = AODVV2_DEFAULT_METRIC_TYPE },
+    [RFC5444_MSGTLV_METRIC] = { .type = RFC5444_MSGTLV_METRIC, .exttype = AODVV2_DEFAULT_METRIC_TYPE },
 };
 
 /*
@@ -65,7 +65,7 @@ static struct rfc5444_writer_content_provider _rrep_message_content_provider = {
 static struct rfc5444_writer_tlvtype _rrep_addrtlvs[] = {
     [RFC5444_MSGTLV_ORIGSEQNUM] = { .type = RFC5444_MSGTLV_ORIGSEQNUM},
     [RFC5444_MSGTLV_TARGSEQNUM] = { .type = RFC5444_MSGTLV_TARGSEQNUM},
-    [RFC5444_MSGTLV_METRIC] = { .type = AODVV2_DEFAULT_METRIC_TYPE },
+    [RFC5444_MSGTLV_METRIC] = { .type = RFC5444_MSGTLV_METRIC, .exttype = AODVV2_DEFAULT_METRIC_TYPE },
 };
 
 /*
@@ -142,7 +142,7 @@ _cb_rrep_addAddresses(struct rfc5444_writer *wr)
     uint16_t targNode_seqnum = seqnum_get();
     seqnum_inc();
 
-    uint8_t targNode_hopCt = _target.packet_data.targNode.metric; // TODO -- stimmt das so?! sollte ich da nicht von vore anfangen?!
+    uint8_t targNode_hopCt = _target.packet_data.targNode.metric;
 
     /* add origNode address (has no address tlv); is mandatory address */
     origNode_addr = rfc5444_writer_add_address(wr, _rrep_message_content_provider.creator, &_target.packet_data.origNode.addr, true);
