@@ -1,4 +1,4 @@
-# name of your project
+# name of your application
 export PROJECT = ccn-lite-client
 
 # If no BOARD is found in the environment, use this default:
@@ -34,9 +34,7 @@ USEMODULE += shell
 USEMODULE += shell_commands
 USEMODULE += posix
 USEMODULE += ps
-USEMODULE += auto_init
-USEMODULE += hwtimer
-
+USEMODULE += random
 USEMODULE += transceiver
 ifeq ($(BOARD),msba2)
 	USEMODULE += cc110x_ng
@@ -48,7 +46,5 @@ USEMODULE += rtc
 USEMODULE += crypto_sha256
 USEMODULE += ccn_lite
 USEMODULE += ccn_lite_client
-
-export INCLUDES = -I$(RIOTBASE)/sys/net/include
 
 include $(RIOTBASE)/Makefile.include

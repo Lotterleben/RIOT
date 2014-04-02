@@ -1,4 +1,4 @@
-# name of your project
+# name of your application
 export PROJECT = ccn-lite-relay
 
 # If no BOARD is found in the environment, use this default:
@@ -31,10 +31,6 @@ export QUIET ?= 1
 
 USEMODULE += config
 USEMODULE += posix
-USEMODULE += auto_init
-USEMODULE += hwtimer
-
-USEMODULE += auto_init
 
 USEMODULE += transceiver
 ifeq ($(BOARD),msba2)
@@ -46,7 +42,5 @@ endif
 USEMODULE += rtc
 USEMODULE += crypto_sha256
 USEMODULE += ccn_lite
-
-export INCLUDES = -I$(RIOTBASE)/sys/net/include/
 
 include $(RIOTBASE)/Makefile.include

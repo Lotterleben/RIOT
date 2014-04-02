@@ -48,12 +48,9 @@ radio_address_t at86rf231_get_address(void);
 uint64_t at86rf231_get_address_long(void);
 uint64_t at86rf231_set_address_long(uint64_t address);
 
+void at86rf231_switch_to_rx(void);
 
 void at86rf231_set_monitor(uint8_t mode);
-
-
-
-void at86rf231_swap_fcf_bytes(uint8_t *buf);
 
 enum {
     RF86RF231_MAX_TX_LENGTH = 125,

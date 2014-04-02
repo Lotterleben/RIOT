@@ -1,5 +1,8 @@
-ifneq (,$(findstring ltc4150,$(USEMODULE)))
-	ifeq (,$(findstring hwtimer,$(USEMODULE)))
-		USEMODULE += hwtimer
+ifneq (,$(filter defaulttransceiver,$(USEMODULE)))
+	ifeq (,$(filter nativenet,$(USEMODULE)))
+		USEMODULE += nativenet
+	endif
+	ifeq (,$(filter transceiver,$(USEMODULE)))
+		USEMODULE += transceiver
 	endif
 endif

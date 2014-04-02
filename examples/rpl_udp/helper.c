@@ -29,7 +29,7 @@
 
 #include "demo.h"
 
-#define ENABLE_DEBUG    (1)
+#define ENABLE_DEBUG    (0)
 #include "debug.h"
 
 #define LL_HDR_LEN  (0x4)
@@ -39,23 +39,16 @@ extern uint8_t ipv6_ext_hdr_len;
 
 msg_t msg_q[RCV_BUFFER_SIZE];
 
-/* prints current IPv6 adresses */
-void rpl_udp_ip(char *unused)
+void rpl_udp_set_id(int argc, char **argv)
 {
-    (void) unused;
-    ipv6_iface_print_addrs();
-}
-
-void rpl_udp_set_id(char *id_str)
-{
-    int res = sscanf(id_str, "set %hu", &id);
-
-    if (res < 1) {
-        printf("Usage: init address\n");
+    if (argc != 2) {
+        printf("Usage: %s address\n", argv[0]);
         printf("\taddress must be an 8 bit integer\n");
         printf("\n\t(Current address is %u)\n", id);
         return;
     }
+
+    id = atoi(argv[1]);
 
     printf("Set node ID to %u\n", id);
 }
@@ -76,7 +69,7 @@ void rpl_udp_monitor(void)
         if (m.type == PKT_PENDING) {
             p = (radio_packet_t *) m.content.ptr;
 
-            DEBUG("Received packet from ID %u\n", p->src);
+            DEBUGF("Received packet from ID %u\n", p->src);
             DEBUG("\tLength:\t%u\n", p->length);
             DEBUG("\tSrc:\t%u\n", p->src);
             DEBUG("\tDst:\t%u\n", p->dst);
@@ -93,7 +86,8 @@ void rpl_udp_monitor(void)
         else if (m.type == IPV6_PACKET_RECEIVED) {
             ipv6_buf = (ipv6_hdr_t *) m.content.ptr;
             printf("IPv6 datagram received (next header: %02X)", ipv6_buf->nextheader);
-            printf(" from %s ", ipv6_addr_to_str(addr_str, &ipv6_buf->srcaddr));
+            printf(" from %s ", ipv6_addr_to_str(addr_str, IPV6_MAX_ADDR_STR_LEN,
+                                                 &ipv6_buf->srcaddr));
 
             if (ipv6_buf->nextheader == IPV6_PROTO_NUM_ICMPV6) {
                 icmpv6_buf = (icmpv6_hdr_t *) &ipv6_buf[(LL_HDR_LEN + IPV6_HDR_LEN) + ipv6_ext_hdr_len];
@@ -119,7 +113,7 @@ void rpl_udp_monitor(void)
 
 transceiver_command_t tcmd;
 
-void rpl_udp_ignore(char *addr)
+void rpl_udp_ignore(int argc, char **argv)
 {
     uint16_t a;
 
@@ -134,13 +128,13 @@ void rpl_udp_ignore(char *addr)
 
     tcmd.transceivers = TRANSCEIVER_CC1100;
     tcmd.data = &a;
-    a = atoi(addr + strlen("ign "));
 
-    if (strlen(addr) > strlen("ign ")) {
+    if (argc == 2) {
+        a = atoi(argv[1]);
         printf("sending to transceiver (%u): %u\n", transceiver_pid, (*(uint8_t *)tcmd.data));
         msg_send(&mesg, transceiver_pid, 1);
     }
     else {
-        puts("Usage:\tign <addr>");
+        printf("Usage: %s <addr>\n", argv[0]);
     }
 }

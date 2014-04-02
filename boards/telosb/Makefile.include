@@ -7,7 +7,7 @@ export MCU = msp430f1611
 export PREFIX = msp430-
 export CC = $(PREFIX)gcc
 export AR = $(PREFIX)ar
-export CFLAGS += -std=gnu99 -Wstrict-prototypes -gdwarf-2 -Os -Wall -mmcu=$(MCU)
+export CFLAGS += -Wstrict-prototypes -gdwarf-2 -Os -Wall -mmcu=$(MCU)
 export ASFLAGS += -mmcu=$(MCU) --defsym $(MCU)=1 --gdwarf-2
 export AS = $(PREFIX)as
 export LINK = $(PREFIX)gcc
@@ -22,5 +22,14 @@ endif
 export HEXFILE = $(BINDIR)$(PROJECT).hex
 export FFLAGS = --telosb -c $(PORT) -r -e -I -p $(HEXFILE)
 
-export INCLUDES += -I $(RIOTCPU)/msp430-common/include -I$(RIOTBOARD)/$(BOARD)/include -I$(RIOTBASE)/drivers/cc2420/include -I$(RIOTBASE)/sys/net/include
+export INCLUDES += -I$(RIOTCPU)/msp430-common/include -I$(RIOTBOARD)/$(BOARD)/include -I$(RIOTBASE)/drivers/cc2420/include -I$(RIOTBASE)/sys/net/include
 export OFLAGS = -O ihex
+
+ifneq (,$(filter defaulttransceiver,$(USEMODULE)))
+	ifeq (,$(filter cc2240,$(USEMODULE)))
+		USEMODULE += cc2420
+	endif
+	ifeq (,$(filter transceiver,$(USEMODULE)))
+		USEMODULE += transceiver
+	endif
+endif

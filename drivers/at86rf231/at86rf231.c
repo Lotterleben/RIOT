@@ -7,6 +7,8 @@
   */
 
 #include "at86rf231.h"
+#include "at86rf231_arch.h"
+#include "at86rf231_spi.h"
 
 #define ENABLE_DEBUG (0)
 #include "debug.h"
@@ -149,7 +151,7 @@ uint8_t at86rf231_set_channel(uint8_t channel)
         radio_channel = RF86RF231_MAX_CHANNEL;
     }
 
-    cca_state = at86rf231_reg_read(AT86RF231_REG__PHY_CC_CCA);
+    cca_state = at86rf231_reg_read(AT86RF231_REG__PHY_CC_CCA) & ~AT86RF231_PHY_CC_CCA_MASK__CHANNEL;
     at86rf231_reg_write(AT86RF231_REG__PHY_CC_CCA, cca_state | (radio_channel & AT86RF231_PHY_CC_CCA_MASK__CHANNEL));
 
     return radio_channel;
@@ -164,12 +166,4 @@ void at86rf231_set_monitor(uint8_t mode)
 {
     (void) mode;
     // TODO
-}
-
-void at86rf231_swap_fcf_bytes(uint8_t *buf)
-{
-    uint8_t tmp;
-    tmp = buf[1];
-    buf[1] = buf[2];
-    buf[2] = tmp;
 }

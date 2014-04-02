@@ -19,10 +19,6 @@
 
 #include "auto_init.h"
 
-#ifdef MODULE_HWTIMER
-#include "hwtimer.h"
-#endif
-
 #ifdef MODULE_SHT11
 #include "sht11.h"
 #endif
@@ -55,21 +51,34 @@
 #include "rtc.h"
 #endif
 
+#ifdef MODULE_SIXLOWPAN
+#include "sixlowpan.h"
+#endif
+
 #ifdef MODULE_DESTINY
 #include "destiny.h"
+#endif
+
+#ifdef MODULE_NET_IF
+#include "net_if.h"
+#include "transceiver.h"
 #endif
 
 #define ENABLE_DEBUG (0)
 #include "debug.h"
 
+#ifndef CONF_RADIO_ADDR
+#define CONF_RADIO_ADDR (1)
+#endif
+
+#ifndef CONF_PAN_ID
+#define CONF_PAN_ID     (0xabcd)
+#endif
+
 extern int main(void);
 
 void auto_init(void)
 {
-#ifdef MODULE_HWTIMER
-    DEBUG("Auto init hwtimer module.\n");
-    hwtimer_init();
-#endif
 #ifdef MODULE_VTIMER
     DEBUG("Auto init vtimer module.\n");
     vtimer_init();
@@ -104,6 +113,70 @@ void auto_init(void)
 #ifdef MODULE_MCI
     DEBUG("Auto init mci module.\n");
     MCI_initialize();
+#endif
+#ifdef MODULE_NET_IF
+    int iface;
+    DEBUG("Auto init net_if module.\n");
+    transceiver_type_t transceivers = 0;
+#ifdef MODULE_AT86RF231
+    transceivers |= TRANSCEIVER_AT86RF231;
+#endif
+#ifdef MODULE_CC1020
+    transceivers |= TRANSCEIVER_CC1020;
+#endif
+#if MODULE_CC110X || MODULE_CC110X_NG
+    transceivers |= TRANSCEIVER_CC1100;
+#endif
+#ifdef MODULE_CC2420
+    transceivers |= TRANSCEIVER_CC2420;
+#endif
+#ifdef MODULE_MC1322X
+    transceivers |= TRANSCEIVER_MC1322X;
+#endif
+#ifdef MODULE_NATIVENET
+    transceivers |= TRANSCEIVER_NATIVE;
+#endif
+    net_if_init();
+
+    if (transceivers != 0) {
+        transceiver_init(transceivers);
+        transceiver_start();
+        iface = net_if_init_interface(0, transceivers);
+
+        if (net_if_set_src_address_mode(iface, NET_IF_TRANS_ADDR_M_SHORT)) {
+            DEBUG("Auto init source address mode to short on interface %d\n",
+                  iface);
+        }
+        else {
+            net_if_set_hardware_address(iface, NET_IF_TRANS_ADDR_M_LONG);
+            DEBUG("Auto init source address mode to long on interface %d\n",
+                  iface);
+        }
+
+        if (!net_if_get_hardware_address(iface)) {
+            DEBUG("Auto init radio address on interface %d to 0x%04x\n", iface, CONF_RADIO_ADDR);
+            DEBUG("Change this value at compile time with macro CONF_RADIO_ADDR\n");
+            net_if_set_hardware_address(iface, CONF_RADIO_ADDR);
+        }
+
+        if (net_if_get_pan_id(iface) <= 0) {
+            DEBUG("Auto init PAN ID on interface %d to 0x%04x\n", iface, CONF_PAN_ID);
+            DEBUG("Change this value at compile time with macro CONF_PAN_ID\n");
+            net_if_set_pan_id(iface, CONF_PAN_ID);
+        }
+
+        if (iface >= 0) {
+            DEBUG("Auto init interface %d\n", iface);
+        }
+    }
+    else {
+        iface = -1;
+    }
+
+#ifdef MODULE_SIXLOWPAN
+    DEBUG("Auto init 6LoWPAN module.\n");
+    sixlowpan_lowpan_init();
+#endif
 #endif
 #ifdef MODULE_PROFILING
     extern void profiling_init(void);

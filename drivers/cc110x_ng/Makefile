@@ -1,20 +1,20 @@
 MODULE =cc110x_ng
 
 DIRS =
-ifneq (,$(findstring msb-430h,$(BOARD)))
+ifneq (,$(filter msb-430h,$(BOARD)))
 	DIRS += spi
 endif
-ifneq (,$(findstring msba2,$(BOARD)))
+ifneq (,$(filter msba2,$(BOARD)))
 	DIRS += spi
 endif
-ifneq (,$(findstring wsn430-v1_3b,$(BOARD)))
+ifneq (,$(filter wsn430-v1_3b,$(BOARD)))
 	DIRS += spi
 endif
 
 all: $(BINDIR)$(MODULE).a
-	@for i in $(DIRS) ; do "$(MAKE)" -C $$i ; done ;
+	@for i in $(DIRS) ; do "$(MAKE)" -C $$i || exit 1; done ;
 
 include $(RIOTBASE)/Makefile.base
 
 clean::
-	@for i in $(DIRS) ; do "$(MAKE)" -C $$i clean ; done ;
+	@for i in $(DIRS) ; do "$(MAKE)" -C $$i clean || exit 1; done ;

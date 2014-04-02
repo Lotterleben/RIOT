@@ -35,11 +35,6 @@
 #endif
 
 /**
- * @brief   Initializes thread table, active thread information, and runqueues
- */
-void sched_init(void);
-
-/**
  * @brief   Triggers the scheduler to schedule the next task
  */
 void sched_run(void);
@@ -60,9 +55,8 @@ void sched_set_status(tcb_t *process, unsigned int status);
  *
  * @param[in]   current_prio    The priority of the current thread
  * @param[in]   other_prio      The priority of the target thread
- * @param[in]   in_isr          1 if currently in interrupt context, 0 otherwise
  */
-void sched_switch(uint16_t current_prio, uint16_t other_prio, int in_isr);
+void sched_switch(uint16_t current_prio, uint16_t other_prio);
 
 /**
  * @brief   Call context switching at task exit

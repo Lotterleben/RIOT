@@ -10,20 +10,21 @@
  */
 
 /**
- * @ingroup	shell
+ * @ingroup     shell
  * @{
  */
 
 /**
  * @file
- * @brief 		Implementation of a very simple command interpreter.
+ * @brief       Implementation of a very simple command interpreter.
  *              For each command (i.e. "echo"), a handler can be specified.
  *              If the first word of a user-entered command line matches the
  *              name of a handler, the handler will be called with the whole
  *              command line as parameter.
  *
  * @author      Freie Universität Berlin, Computer Systems & Telematics
- * @author		Kaspar Schleiser <kaspar@schleiser.de>
+ * @author      Kaspar Schleiser <kaspar@schleiser.de>
+ * @author      René Kijewski <rene.kijewski@fu-berlin.de>
  */
 
 #include <string.h>
@@ -33,7 +34,7 @@
 #include "shell.h"
 #include "shell_commands.h"
 
-static void(*find_handler(const shell_command_t *command_list, char *command))(char *)
+static shell_command_handler_t find_handler(const shell_command_t *command_list, char *command)
 {
     const shell_command_t *command_lists[] = {
         command_list,
@@ -90,26 +91,118 @@ static void print_help(const shell_command_t *command_list)
 
 static void handle_input_line(shell_t *shell, char *line)
 {
-    char line_copy[shell->shell_buffer_size];
-    char *saveptr;
-    strncpy(line_copy, line, sizeof(line_copy));
-    char *command = strtok_r(line_copy, " ", &saveptr);
+    static const char *INCORRECT_QUOTING = "shell: incorrect quoting";
 
-    void (*handler)(char *) = NULL;
-
-    if (command) {
-        handler = find_handler(shell->command_list, command);
-
-        if (handler != NULL) {
-            handler(line);
-        }
-        else {
-            if (strcmp("help", command) == 0) {
-                print_help(shell->command_list);
+    /* first we need to calculate the number of arguments */
+    unsigned argc = 0;
+    char *pos = line;
+    int contains_esc_seq = 0;
+    while (1) {
+        if ((unsigned char) *pos > ' ') {
+            /* found an argument */
+            if (*pos == '"' || *pos == '\'') {
+                /* it's a quoted argument */
+                const char quote_char = *pos;
+                do {
+                    ++pos;
+                    if (!*pos) {
+                        puts(INCORRECT_QUOTING);
+                        return;
+                    }
+                    else if (*pos == '\\') {
+                        /* skip over the next character */
+                        ++contains_esc_seq;
+                        ++pos;
+                        if (!*pos) {
+                            puts(INCORRECT_QUOTING);
+                            return;
+                        }
+                        continue;
+                    }
+                } while (*pos != quote_char);
+                if ((unsigned char) pos[1] > ' ') {
+                    puts(INCORRECT_QUOTING);
+                    return;
+                }
             }
             else {
-                puts("shell: command not found.");
+                /* it's an unquoted argument */
+                do {
+                    if (*pos == '\\') {
+                        /* skip over the next character */
+                        ++contains_esc_seq;
+                        ++pos;
+                        if (!*pos) {
+                            puts(INCORRECT_QUOTING);
+                            return;
+                        }
+                    }
+                    ++pos;
+                    if (*pos == '"') {
+                        puts(INCORRECT_QUOTING);
+                        return;
+                    }
+                } while ((unsigned char) *pos > ' ');
             }
+
+            /* count the number of arguments we got */
+            ++argc;
+        }
+
+        /* zero out the current position (space or quotation mark) and advance */
+        if (*pos > 0) {
+            *pos = 0;
+            ++pos;
+        }
+        else {
+            break;
+        }
+    }
+    if (!argc) {
+        return;
+    }
+
+    /* then we fill the argv array */
+    char *argv[argc + 1];
+    argv[argc] = NULL;
+    pos = line;
+    for (unsigned i = 0; i < argc; ++i) {
+        while (!*pos) {
+            ++pos;
+        }
+        if (*pos == '"' || *pos == '\'') {
+            ++pos;
+        }
+        argv[i] = pos;
+        while (*pos) {
+            ++pos;
+        }
+    }
+    for (char **arg = argv; contains_esc_seq && *arg; ++arg) {
+        for (char *c = *arg; *c; ++c) {
+            if (*c != '\\') {
+                continue;
+            }
+            for (char *d = c; *d; ++d) {
+                *d = d[1];
+            }
+            if (--contains_esc_seq == 0) {
+                break;
+            }
+        }
+    }
+
+    /* then we call the appropriate handler */
+    shell_command_handler_t handler = find_handler(shell->command_list, argv[0]);
+    if (handler != NULL) {
+        handler(argc, argv);
+    }
+    else {
+        if (strcmp("help", argv[0]) == 0) {
+            print_help(shell->command_list);
+        }
+        else {
+            puts("shell: command not found.");
         }
     }
 }
@@ -125,6 +218,9 @@ static int readline(shell_t *shell, char *buf, size_t size)
         }
 
         c = shell->readchar();
+        if (c < 0) {
+            return 1;
+        }
         shell->put_char(c);
 
         /* We allow Unix linebreaks (\n), DOS linebreaks (\r\n), and Mac linebreaks (\r). */

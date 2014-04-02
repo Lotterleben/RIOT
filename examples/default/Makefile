@@ -1,4 +1,4 @@
-# name of your project
+# name of your application
 export PROJECT = default
 
 # If no BOARD is found in the environment, use this default:
@@ -34,37 +34,24 @@ USEMODULE += shell
 USEMODULE += shell_commands
 USEMODULE += ps
 USEMODULE += vtimer
-USEMODULE += auto_init
-ifneq (,$(findstring msb-430,$(BOARD)))
+USEMODULE += defaulttransceiver
+
+ifneq (,$(filter msb-430,$(BOARD)))
 	USEMODULE += sht11
 endif
-ifneq (,$(findstring chronos,$(BOARD)))
-	USEMODULE += cc110x_ng
-endif
-ifneq (,$(findstring wsn430-v1_3b,$(BOARD)))
-	USEMODULE += cc110x_ng
-endif
-ifneq (,$(findstring msb-430h,$(BOARD)))
-	USEMODULE += cc110x_ng
-endif
-ifneq (,$(findstring msba2,$(BOARD)))
+ifneq (,$(filter msba2,$(BOARD)))
 	USEMODULE += sht11
 	USEMODULE += ltc4150
 	USEMODULE += rtc
 	USEMODULE += mci
-	USEMODULE += cc110x_ng
 	USEMODULE += config
 	USEMODULE += random
 endif
-ifneq (,$(findstring native,$(BOARD)))
+ifneq (,$(filter native,$(BOARD)))
 	USEMODULE += ltc4150
 	USEMODULE += rtc
-	USEMODULE += nativenet
-	USEMODULE += transceiver
 	USEMODULE += config
 	USEMODULE += random
 endif
-
-export INCLUDES += -I${RIOTBASE}/core/include/ -I${RIOTBASE}/sys/include/ -I${RIOTBASE}/drivers/include/
 
 include $(RIOTBASE)/Makefile.include

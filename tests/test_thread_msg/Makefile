@@ -1,9 +1,6 @@
-# name of your project
 export PROJECT = test_thread_msg
+include ../Makefile.tests_common
 
-export BOARD ?= native
-
-# the absolute path of the RIOT-base dir
-export RIOTBASE =$(CURDIR)/../..
+DISABLE_MODULE += auto_init
 
 include $(RIOTBASE)/Makefile.include

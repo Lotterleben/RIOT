@@ -1,31 +1,33 @@
 # set undefined variables
-ifeq ($(strip $(RIOTCPU)),)
-	export RIOTCPU =$(RIOTBASE)/cpu
-endif
+RIOTBASE ?= $(shell dirname "$(lastword $(MAKEFILE_LIST))")
+export RIOTBASE := $(abspath $(RIOTBASE))
 
-ifeq ($(strip $(RIOTBOARD)),)
-	export RIOTBOARD =$(RIOTBASE)/boards
-endif
+RIOTCPU ?= $(RIOTBASE)/cpu
+export RIOTCPU := $(abspath $(RIOTCPU))
+
+RIOTBOARD ?= $(RIOTBASE)/boards
+export RIOTBOARD := $(abspath $(RIOTBOARD))
 
 ifeq ($(strip $(MCU)),)
 	MCU = $(CPU)
+endif
+
+ifeq (,$(filter buildtest,$(MAKECMDGOALS)))
+	ifneq (,$(BOARD_WHITELIST))
+		ifeq (,$(filter $(BOARD),$(BOARD_WHITELIST)))
+$(error This application only runs on following boards: $(BOARD_WHITELIST))
+		endif
+	endif
+
+	ifneq (,$(filter $(BOARD),$(BOARD_BLACKLIST)))
+$(error This application does not run on following boards: $(BOARD_BLACKLIST))
+	endif
 endif
 
 # if you want to publish the board into the sources as an uppercase #define
 BB = $(shell echo $(BOARD)|tr 'a-z' 'A-Z')
 CPUDEF = $(shell echo $(CPU)|tr 'a-z' 'A-Z')
 CFLAGS += -DBOARD=$(BB) -DCPU_$(CPUDEF)
-
-# Add `-fno-delete-null-pointer-checks` flag iff the compiler supports it.
-# GCC removes moves tests whether `x == NULL`, if previously `x` or even `x->y` was accessed.
-# 0x0 might be a sane memory location for embedded systems, so the test must not be removed.
-# Right now clang does not use the *delete-null-pointer* optimization, and does not understand the parameter.
-# Related issues: #628, #664.
-ifeq ($(shell $(CC) -fno-delete-null-pointer-checks -E - 2>/dev/null >/dev/null </dev/null ; echo $$?),0)
-ifeq ($(shell LANG=C $(CC) -fno-delete-null-pointer-checks -E - 2>&1 1>/dev/null </dev/null | grep warning: | grep -- -fno-delete-null-pointer-checks),)
-CFLAGS += -fno-delete-null-pointer-checks
-endif
-endif
 
 export CFLAGS
 
@@ -46,18 +48,47 @@ include $(RIOTBOARD)/$(BOARD)/Makefile.include
 include $(RIOTCPU)/$(CPU)/Makefile.include
 include $(RIOTBASE)/Makefile.dep
 
+# Test if there where dependencies against a module in DISABLE_MODULE.
+ifneq (, $(filter $(DISABLE_MODULE), $(USEMODULE)))
+$(error "Required modules were disabled using DISABLE_MODULE: $(sort $(filter $(DISABLE_MODULE), $(USEMODULE)))")
+endif
+
+# Test if the input language was specified externally.
+# Otherwise test if the compiler unterstands the "-std=gnu99" flag, and use it if so.
+# Otherwise test if the compiler unterstands the "-std=c99" flag, and use it if so.
+ifeq ($(filter -std=%,$(CFLAGS)),)
+ifeq ($(shell $(CC) -std=gnu99 -E - 2>/dev/null >/dev/null </dev/null ; echo $$?),0)
+CFLAGS += -std=gnu99
+else
+ifeq ($(shell $(CC) -std=c99 -E - 2>/dev/null >/dev/null </dev/null ; echo $$?),0)
+CFLAGS += -std=c99
+endif
+endif
+endif
+
+# Add `-fno-delete-null-pointer-checks` flag iff the compiler supports it.
+# GCC removes moves tests whether `x == NULL`, if previously `x` or even `x->y` was accessed.
+# 0x0 might be a sane memory location for embedded systems, so the test must not be removed.
+# Right now clang does not use the *delete-null-pointer* optimization, and does not understand the parameter.
+# Related issues: #628, #664.
+ifeq ($(shell $(CC) -fno-delete-null-pointer-checks -E - 2>/dev/null >/dev/null </dev/null ; echo $$?),0)
+ifeq ($(shell LANG=C $(CC) -fno-delete-null-pointer-checks -E - 2>&1 1>/dev/null </dev/null | grep warning: | grep -- -fno-delete-null-pointer-checks),)
+CFLAGS += -fno-delete-null-pointer-checks
+endif
+endif
+
 # your binaries to link
 BASELIBS += $(BINDIR)$(BOARD)_base.a
 BASELIBS += $(BINDIR)${PROJECT}.a
+BASELIBS += $(USEPKG:%=${BINDIR}%.a)
 
 .PHONY: all clean flash doc term
 
-## make script for your project. Build RIOT-base here!
+## make script for your application. Build RIOT-base here!
 all: $(BINDIR)$(PROJECT).a
-	@echo "Building project $(PROJECT) for $(BOARD) w/ MCU $(MCU)."
+	@echo "Building application $(PROJECT) for $(BOARD) w/ MCU $(MCU)."
 	"$(MAKE)" -C $(RIOTBOARD)/$(BOARD)
 	"$(MAKE)" -C $(RIOTBASE)
-	@for i in $(EXTERNAL_MODULES) ; do "$(MAKE)" -C $$i ; done ;
 ifeq ($(BUILDOSXNATIVE),1)
 	$(AD)$(LINK) $(UNDEF) -o $(BINDIR)$(PROJECT).elf $(BASELIBS) $(LINKFLAGS) -Wl,-no_pie
 else
@@ -67,7 +98,7 @@ endif
 	$(AD)$(OBJCOPY) $(OFLAGS) $(BINDIR)$(PROJECT).elf $(BINDIR)$(PROJECT).hex
 
 ## your make rules
-## Only basic example - modify it for larger projects!!
+## Only basic example - modify it for larger applications!!
 #$(BINDIR)/$(PROJECT).a: $(BINDIR)/$(PROJECT).o
 #	$(AR) -rc $(BINDIR)/project.a $(BINDIR)/$(PROJECT).o
 
@@ -77,21 +108,44 @@ SRC = $(wildcard *.c)
 # string array of all names replaced .c with .o
 OBJ = $(SRC:%.c=${BINDIR}${PROJECT}/%.o)
 
-$(BINDIR)$(PROJECT).a:  $(OBJ)
+$(BINDIR)$(PROJECT).a: $(OBJ)
 	$(AD)$(AR) -rc $(BINDIR)$(PROJECT).a $(OBJ)
+
+# add extra include paths for packages in $(USEMODULE)
+export USEMODULE_INCLUDES =
+
+include $(RIOTBASE)/sys/Makefile.include
+include $(RIOTBASE)/drivers/Makefile.include
+
+USEMODULE_INCLUDES_ = $(shell echo $(USEMODULE_INCLUDES) | tr ' ' '\n' | awk '!a[$$0]++' | tr '\n' ' ')
+
+INCLUDES += $(USEMODULE_INCLUDES_:%=-I%)
+
+# include Makefile.includes for packages in $(USEPKG)
+$(RIOTBASE)/pkg/%/Makefile.include::
+	$(AD)"$(MAKE)" -C $(RIOTBASE)/pkg/$* Makefile.include
+
+.PHONY: $(USEPKG:%=$(RIOTBASE)/pkg/%/Makefile.include)
+
+-include $(USEPKG:%=$(RIOTBASE)/pkg/%/Makefile.include)
 
 # pull in dependency info for *existing* .o files
 -include $(OBJ:.o=.d)
 
-$(BINDIR)$(PROJECT)/%.o: %.c $(PROJDEPS)
+$(BINDIR)$(PROJECT)/%.o: %.c $(PROJDEPS) $(USEPKG:%=${BINDIR}%.a)
+	@mkdir -p ${BINDIR}
 	@echo; echo "Compiling.... $*.c"; echo
 	@test -d $(BINDIR)$(PROJECT) || mkdir -p $(BINDIR)$(PROJECT)
 	$(AD)$(CC) $(CFLAGS) $(INCLUDES) -c $*.c -o $(BINDIR)$(PROJECT)/$*.o
 
+$(USEPKG:%=${BINDIR}%.a)::
+	@mkdir -p ${BINDIR}
+	"$(MAKE)" -C $(RIOTBASE)/pkg/$(patsubst ${BINDIR}%.a,%,$@)
+
 clean:
+	@for i in $(USEPKG) ; do "$(MAKE)" -C $(RIOTBASE)/pkg/$$i clean || exit 1; done ;
 	"$(MAKE)" -C $(RIOTBOARD)/$(BOARD) clean
 	"$(MAKE)" -C $(RIOTBASE) clean
-	@for i in $(EXTERNAL_MODULES) ; do "$(MAKE)" -C $$i clean ; done ;
 	rm -rf $(BINDIR)
 
 flash: all
@@ -115,20 +169,32 @@ buildtest:
 		ECHO='echo'; \
 	fi; \
 	\
-	for BOARD in $$(find $(RIOTBOARD) -mindepth 1 -maxdepth 1 -type d \! -name \*-common -printf '%f\n' ); do \
+	if [ -z "$(BOARD_WHITELIST)" ]; then \
+		BOARDS=$$(find $(RIOTBOARD) -mindepth 1 -maxdepth 1 -type d \! -name \*-common -printf '%f\n' ); \
+	else \
+		BOARDS="$(BOARD_WHITELIST)"; \
+	fi; \
+	\
+	for BOARD in $(BOARD_BLACKLIST); do \
+		echo "Ignoring $${BOARD} (blacklisted)"; \
+		BOARDS=$$(echo \ $${BOARDS}\  | sed -e 's/ '$${BOARD}' / /'); \
+	done; \
+	\
+	for BOARD in $${BOARDS}; do \
 		$${ECHO} -n "Building for $${BOARD} .. "; \
-		env -i \
+		LOG=$$(env -i \
 			HOME=$${HOME} \
 			PATH=$${PATH} \
 			BOARD=$${BOARD} \
 			RIOTBASE=$${RIOTBASE} \
 			RIOTBOARD=$${RIOTBOARD} \
 			RIOTCPU=$${RIOTCPU} \
-			$(MAKE) -B clean all >/dev/null 2>&1 ; \
+			$(MAKE) -B clean all 2>&1 >/dev/null) ; \
 		if [ "$${?}" = "0" ]; then \
 			$${ECHO} "$${GREEN}success$${RESET}"; \
 		else \
 			$${ECHO} "$${RED}failed$${RESET}"; \
+			echo "$${LOG}" | grep -v -E '^make(\[[[:digit:]]])?:'; \
 			BUILDTESTFAILED=1; \
 		fi; \
 	done; \

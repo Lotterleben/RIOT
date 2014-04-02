@@ -1,7 +1,7 @@
 /**
  * Provides prototypes for available shell commands
  *
- * Copyright (C) 2013  INRIA.
+ * Copyright (C) 2014  INRIA.
  *
  * This source code is licensed under the LGPLv2 license,
  * See the file LICENSE for more details.
@@ -23,27 +23,34 @@
 #include <stdlib.h>
 #include "shell_commands.h"
 
-extern void _id_handler(char *id);
-extern void _heap_handler(char *unused);
+extern void _reboot_handler(int argc, char **argv);
+
+#ifdef MODULE_CONFIG
+extern void _id_handler(int argc, char **argv);
+#endif
+
+#ifdef MODULE_LPC_COMMON
+extern void _heap_handler(int argc, char **argv);
+#endif
 
 #ifdef MODULE_PS
-extern void _ps_handler(char *unused);
+extern void _ps_handler(int argc, char **argv);
 #endif
 
 #ifdef MODULE_RTC
-extern void _date_handler(char *now);
+extern void _date_handler(int argc, char **argv);
 #endif
 
 #ifdef MODULE_SHT11
-extern void _get_temperature_handler(char *unused);
-extern void _get_humidity_handler(char *unused);
-extern void _get_weather_handler(char *unused);
-extern void _set_offset_handler(char *offset);
+extern void _get_temperature_handler(int argc, char **argv);
+extern void _get_humidity_handler(int argc, char **argv);
+extern void _get_weather_handler(int argc, char **argv);
+extern void _set_offset_handler(int argc, char **argv);
 #endif
 
 #ifdef MODULE_LTC4150
-extern void _get_current_handler(char *unused);
-extern void _reset_current_handler(char *unused);
+extern void _get_current_handler(int argc, char **argv);
+extern void _reset_current_handler(int argc, char **argv);
 #endif
 
 
@@ -58,52 +65,63 @@ extern void _reset_current_handler(char *unused);
 #define _TC_MON
 #define _TC_SEND
 #endif
-#if (defined(MODULE_CC2420) || defined(MODULE_NATIVENET))
+#if (defined(MODULE_CC2420) || defined(MODULE_AT86RF231) || defined(MODULE_NATIVENET))
+#define _TC_LONG_ADDR
 #define _TC_PAN
 #endif
 #else /* WITHOUT MODULE_TRANSCEIVER */
 #ifdef MODULE_CC110X
-extern void _cc110x_get_set_address_handler(char *addr);
-extern void _cc110x_get_set_channel_handler(char *addr);
+extern void _cc110x_get_set_address_handler(int argc, char **argv);
+extern void _cc110x_get_set_channel_handler(int argc, char **argv);
 #endif
 #endif
 
 #ifdef MODULE_TRANSCEIVER
 #ifdef _TC_ADDR
-extern void _transceiver_get_set_address_handler(char *addr);
+extern void _transceiver_get_set_address_handler(int argc, char **argv);
+#endif
+#ifdef _TC_LONG_ADDR
+extern void _transceiver_get_set_long_addr_handler(int argc, char **argv);
 #endif
 #ifdef _TC_CHAN
-extern void _transceiver_get_set_channel_handler(char *chan);
+extern void _transceiver_get_set_channel_handler(int argc, char **argv);
 #endif
 #ifdef _TC_SEND
-extern void _transceiver_send_handler(char *pkt);
+extern void _transceiver_send_handler(int argc, char **argv);
 #endif
 #ifdef _TC_MON
-extern void _transceiver_monitor_handler(char *mode);
+extern void _transceiver_monitor_handler(int argc, char **argv);
 #endif
 #ifdef _TC_PAN
-extern void _transceiver_get_set_pan_handler(char *chan);
+extern void _transceiver_get_set_pan_handler(int argc, char **argv);
 #endif
 #ifdef _TC_IGN
-extern void _transceiver_set_ignore_handler(char *addr);
+extern void _transceiver_set_ignore_handler(int argc, char **argv);
 #endif
+#endif
+
+#ifdef MODULE_NET_IF
+extern void _net_if_ifconfig(int argc, char **argv);
 #endif
 
 #ifdef MODULE_MCI
-extern void _get_sectorsize(char *unused);
-extern void _get_blocksize(char *unused);
-extern void _get_sectorcount(char *unused);
-extern void _read_sector(char *sector);
-extern void _read_bytes(char *bytes);
+extern void _get_sectorsize(int argc, char **argv);
+extern void _get_blocksize(int argc, char **argv);
+extern void _get_sectorcount(int argc, char **argv);
+extern void _read_sector(int argc, char **argv);
+extern void _read_bytes(int argc, char **argv);
 #endif
 
 #ifdef MODULE_RANDOM
-extern void _mersenne_init(char *str);
-extern void _mersenne_get(char *str);
+extern void _mersenne_init(int argc, char **argv);
+extern void _mersenne_get(int argc, char **argv);
 #endif
 
 const shell_command_t _shell_command_list[] = {
+    {"reboot", "Reboot the node", _reboot_handler},
+#ifdef MODULE_CONFIG
     {"id", "Gets or sets the node's id.", _id_handler},
+#endif
 #ifdef MODULE_LPC_COMMON
     {"heap", "Shows the heap state for the LPC2387 on the command shell.", _heap_handler},
 #endif
@@ -123,11 +141,12 @@ const shell_command_t _shell_command_list[] = {
     {"cur", "Prints current and average power consumption.", _get_current_handler},
     {"rstcur", "Resets coulomb counter.", _reset_current_handler},
 #endif
-
-
 #ifdef MODULE_TRANSCEIVER
 #ifdef _TC_ADDR
     {"addr", "Gets or sets the address for the transceiver", _transceiver_get_set_address_handler},
+#endif
+#ifdef _TC_LONG_ADDR
+    {"eui64", "Gets or sets the EUI-64 for the transceiver", _transceiver_get_set_long_addr_handler},
 #endif
 #ifdef _TC_CHAN
     {"chan", "Gets or sets the channel for the transceiver", _transceiver_get_set_channel_handler},
@@ -150,8 +169,9 @@ const shell_command_t _shell_command_list[] = {
     {"chan", "Gets or sets the channel for the CC1100 transceiver", _cc110x_get_set_channel_handler},
 #endif
 #endif
-
-
+#ifdef MODULE_NET_IF
+    {"ifconfig", "Configures a network interface", _net_if_ifconfig},
+#endif
 #ifdef MODULE_MCI
     {DISK_READ_SECTOR_CMD, "Reads the specified sector of inserted memory card", _read_sector},
     {DISK_READ_BYTES_CMD, "Reads the specified bytes from inserted memory card", _read_bytes},

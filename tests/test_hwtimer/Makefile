@@ -1,9 +1,6 @@
-# name of your project
 export PROJECT = test_hwtimer
+include ../Makefile.tests_common
 
-export BOARD ?= native
-
-# this has to be the absolute path of the RIOT-base dir
-export RIOTBASE = $(CURDIR)/../..
+DISABLE_MODULE += auto_init
 
 include $(RIOTBASE)/Makefile.include

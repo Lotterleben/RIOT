@@ -266,6 +266,14 @@ void vtimer_now(timex_t *out)
     out->microseconds = us % (1000 * 1000);
 }
 
+void vtimer_gettimeofday(struct timeval *tp) {
+    timex_t now;
+    vtimer_now(&now);
+
+    tp->tv_sec = now.seconds;
+    tp->tv_usec = now.microseconds;
+}
+
 void vtimer_get_localtime(struct tm *localt)
 {
     timex_t now;
@@ -370,7 +378,8 @@ int vtimer_msg_receive_timeout(msg_t *m, timex_t timeout) {
     if (m->type == MSG_TIMER && m->content.ptr == (char *) &timeout_message) {
         /* we hit the timeout */
         return -1;
-    } else {
+    }
+    else {
         vtimer_remove(&t);
         return 1;
     }
@@ -388,7 +397,7 @@ void vtimer_print_long_queue(){
 
 void vtimer_print(vtimer_t *t)
 {
-    printf("Seconds: %"PRIu32" - Microseconds: %"PRIu32"\n \
+    printf("Seconds: %" PRIu32 " - Microseconds: %" PRIu32 "\n \
             action: %p\n \
             arg: %p\n \
             pid: %u\n",

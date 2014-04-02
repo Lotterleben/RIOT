@@ -1,18 +1,11 @@
-# name of your project
 export PROJECT = test_irq
-#
-# for easy switching of boards
-export BOARD ?= native
+include ../Makefile.tests_common
 
-# this has to be the absolute path of the RIOT-base dir
-export RIOTBASE = $(CURDIR)/../..
-
-ifeq (,$(findstring native,$(BOARD)))
+ifeq (,$(filter native,$(BOARD)))
 	include $(RIOTBASE)/Makefile.unsupported
 else
 
-## Modules to include.
-
-USEMODULE += auto_init
-USEMODULE += hwtimer
 USEMODULE += posix
+
+include $(RIOTBASE)/Makefile.include
+endif

@@ -23,7 +23,6 @@
 #define _MUTEX_H
 
 #include "queue.h"
-#include "tcb.h"
 
 /**
  * @brief Mutex structure. Should never be modified by the user.
@@ -68,6 +67,13 @@ int mutex_lock(struct mutex_t *mutex);
  * @param mutex Mutex-Object to unlock.
  */
 void mutex_unlock(struct mutex_t *mutex);
+
+/**
+ * @brief Unlocks the mutex and sends the current thread to sleep
+ *
+ * @param mutex Mutex-Object to unlock.
+ */
+void mutex_unlock_and_sleep(struct mutex_t *mutex);
 
 #define MUTEX_YIELD 1
 #define MUTEX_INISR 2

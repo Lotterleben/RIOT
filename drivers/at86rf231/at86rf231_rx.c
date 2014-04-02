@@ -1,11 +1,15 @@
 
 #include "at86rf231.h"
 #include "at86rf231_arch.h"
+#include "at86rf231_spi.h"
 
 #include "transceiver.h"
 #include "msg.h"
 
 #define ENABLE_DEBUG (0)
+#if ENABLE_DEBUG
+#define DEBUG_ENABLED
+#endif
 #include "debug.h"
 
 at86rf231_packet_t at86rf231_rx_buffer[AT86RF231_RX_BUF_SIZE];
@@ -21,8 +25,6 @@ void at86rf231_rx_handler(void)
     // read psdu, read packet with length as first byte and lqi as last byte.
     uint8_t *buf = buffer[rx_buffer_next];
     at86rf231_read_fifo(buf, at86rf231_rx_buffer[rx_buffer_next].length);
-
-    at86rf231_swap_fcf_bytes(buf);
 
     // read lqi which is appended after the psdu
     lqi = buf[at86rf231_rx_buffer[rx_buffer_next].length - 1];
@@ -43,10 +45,10 @@ void at86rf231_rx_handler(void)
     }
 
     ieee802154_frame_read(&buf[1], &at86rf231_rx_buffer[rx_buffer_next].frame,
-                          at86rf231_rx_buffer[rx_buffer_next].length - 2);
+                          at86rf231_rx_buffer[rx_buffer_next].length);
 
     if (at86rf231_rx_buffer[rx_buffer_next].frame.fcf.frame_type != 2) {
-#ifdef ENABLE_DEBUG
+#if DEBUG_ENABLED
         ieee802154_frame_print_fcf_frame(&at86rf231_rx_buffer[rx_buffer_next].frame);
 #endif
 
@@ -59,7 +61,7 @@ void at86rf231_rx_handler(void)
         }
     }
     else {
-#ifdef ENABLE_DEBUG
+#if DEBUG_ENABLED
         DEBUG("GOT ACK for SEQ %u\n", at86rf231_rx_buffer[rx_buffer_next].frame.seq_nr);
         ieee802154_frame_print_fcf_frame(&at86rf231_rx_buffer[rx_buffer_next].frame);
 #endif

@@ -1,4 +1,9 @@
-export INCLUDES += -I$(RIOTBOARD)/$(BOARD)/include
+include $(RIOTBOARD)/$(BOARD)/Makefile.dep
+
+export NATIVEINCLUDES = -I$(RIOTBOARD)/$(BOARD)/include/
+export NATIVEINCLUDES += -I$(RIOTBASE)/core/include/
+export NATIVEINCLUDES += -I$(RIOTBASE)/drivers/include/
+
 export CPU = native
 export ELF = $(BINDIR)$(PROJECT).elf
 
@@ -17,13 +22,15 @@ export FLASHER = true
 export VALGRIND ?= valgrind
 
 # flags:
-export CFLAGS += -std=gnu99 -Wall -Wextra -pedantic -m32
+export CFLAGS += -Wall -Wextra -pedantic -m32
 export LINKFLAGS += -m32 -gc -ldl
 export ASFLAGS =
 export DEBUGGER_FLAGS = $(ELF)
 export VALGRIND_FLAGS ?= --track-origins=yes
 all-valgrind: export CFLAGS += -DHAVE_VALGRIND_H -g
-all-valgrind: export INCLUDES += $(shell pkg-config valgrind --cflags)
+all-valgrind: export NATIVEINCLUDES += $(shell pkg-config valgrind --cflags)
+
+export INCLUDES += $(NATIVEINCLUDES)
 
 # backward compatability with glibc <= 2.17 for native
 ifeq ($(CPU),native)
@@ -43,7 +50,7 @@ endif
 endif
 
 # set the tap interface for term/valgrind
-ifneq (,$(findstring nativenet,$(USEMODULE)))
+ifneq (,$(filter nativenet,$(USEMODULE)))
 	export PORT ?= tap0
 else
 	export PORT =
@@ -58,5 +65,3 @@ valgrind:
 #	echo 0 > /proc/sys/kernel/yama/ptrace_scope
 #	VALGRIND_FLAGS += --db-attach=yes
 	$(VALGRIND) $(VALGRIND_FLAGS) $(ELF) $(PORT)
-
-include $(RIOTBOARD)/$(BOARD)/Makefile.dep

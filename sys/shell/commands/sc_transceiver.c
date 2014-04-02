@@ -21,6 +21,9 @@
 #include <string.h>
 #include <inttypes.h>
 
+#ifdef MODULE_NET_IF
+#include "net_if.h"
+#endif
 #include "transceiver.h"
 #include "msg.h"
 
@@ -52,7 +55,7 @@
 
 
 /* checked for type safety */
-void _transceiver_get_set_address_handler(char *addr)
+void _transceiver_get_set_address_handler(int argc, char **argv)
 {
     msg_t mesg;
     transceiver_command_t tcmd;
@@ -67,9 +70,9 @@ void _transceiver_get_set_address_handler(char *addr)
     tcmd.data = &a;
     mesg.content.ptr = (char *) &tcmd;
 
-    if (strlen(addr) > 5) {
-        a = atoi(addr + 5);
-        printf("[transceiver] trying to set address %"PRIu16"\n", a);
+    if (argc > 1) {
+        a = atoi(argv[1]);
+        printf("[transceiver] trying to set address %" PRIu16 "\n", a);
         mesg.type = SET_ADDRESS;
     }
     else {
@@ -77,11 +80,97 @@ void _transceiver_get_set_address_handler(char *addr)
     }
 
     msg_send_receive(&mesg, &mesg, transceiver_pid);
-    printf("[transceiver] got address: %"PRIu16"\n", a);
+    printf("[transceiver] got address: %" PRIu16 "\n", a);
 }
 
+#ifndef MODULE_NET_IF
+uint8_t hex_to_dec(char c)
+{
+    if (c >= '0' && c <= '9') {
+        return (uint8_t)(c - '0');
+    }
+    else if (c >= 'A' && c <= 'F') {
+        return (uint8_t)(c - 55);
+    }
+    else if (c >= 'a' && c <= 'f') {
+        return (uint8_t)(c - 87);
+    }
+    else {
+        return 0xff;
+    }
+}
+
+uint64_t _str_to_eui64(const char *eui64_str)
+{
+    int i;
+    const char *eui64_rev = &eui64_str[strlen(eui64_str) - 1];
+    uint64_t eui64 = 0;
+
+    for (i = 7; i >= 0 || eui64_rev >= eui64_str; i--) {
+        uint8_t digit;
+        eui64 <<= 8;
+
+        while ((digit = hex_to_dec(*eui64_rev)) == 0xFF) {
+            if (--eui64_rev < eui64_str) {
+                return eui64;
+            }
+        }
+
+        eui64 = digit;
+        eui64_rev--;
+
+        while ((digit = hex_to_dec(*eui64_rev)) == 0xFF) {
+            if (--eui64_rev < eui64_str) {
+                return eui64;
+            }
+        }
+
+        eui64 |= digit << 4;
+        eui64_rev--;
+    }
+
+    return eui64;
+}
+#endif
+
 /* checked for type safety */
-void _transceiver_get_set_channel_handler(char *chan)
+void _transceiver_get_set_long_addr_handler(int argc, char **argv)
+{
+    msg_t mesg;
+    transceiver_command_t tcmd;
+    transceiver_eui64_t a;
+
+    if (transceiver_pid < 0) {
+        puts("Transceiver not initialized");
+        return;
+    }
+
+    tcmd.transceivers = _TC_TYPE;
+    tcmd.data = &a;
+    mesg.content.ptr = (char *) &tcmd;
+
+    if (argc > 1) {
+#ifdef MODULE_NET_IF
+        net_if_eui64_t eui64;
+        net_if_hex_to_eui64(&eui64, argv[1]);
+        a = eui64.uint64;
+#else
+        a = _str_to_eui64(argv[1]);
+#endif
+        printf("[transceiver] trying to set EUI-64 %016"PRIx64"\n", a);
+        mesg.type = SET_LONG_ADDR;
+    }
+    else {
+        mesg.type = GET_LONG_ADDR;
+    }
+
+    msg_send_receive(&mesg, &mesg, transceiver_pid);
+    printf("[transceiver] got EUI-64: %016"PRIx64"\n", a);
+}
+
+
+/* checked for type safety */
+void _transceiver_get_set_channel_handler(int argc, char **argv)
 {
     msg_t mesg;
     transceiver_command_t tcmd;
@@ -96,9 +185,9 @@ void _transceiver_get_set_channel_handler(char *chan)
     tcmd.data = &c;
     mesg.content.ptr = (char *) &tcmd;
 
-    if (strlen(chan) > 5) {
-        c = atoi(chan + 5);
-        printf("[transceiver] Trying to set channel %"PRIi32"\n", c);
+    if (argc > 1) {
+        c = atoi(argv[1]);
+        printf("[transceiver] Trying to set channel %" PRIi32 "\n", c);
         mesg.type = SET_CHANNEL;
     }
     else {
@@ -110,98 +199,90 @@ void _transceiver_get_set_channel_handler(char *chan)
         puts("[transceiver] Error setting/getting channel");
     }
     else {
-        printf("[transceiver] Got channel: %"PRIi32"\n", c);
+        printf("[transceiver] Got channel: %" PRIi32 "\n", c);
     }
 }
 
-void _transceiver_send_handler(char *pkt)
+void _transceiver_send_handler(int argc, char **argv)
 {
-    msg_t mesg;
-    transceiver_command_t tcmd;
-    char text_msg[TEXT_SIZE];
+    if (transceiver_pid < 0) {
+        puts("Transceiver not initialized");
+        return;
+    }
+    if (argc != 3) {
+        printf("Usage:\t%s <ADDR> <MSG>\n", argv[0]);
+        return;
+    }
 
     radio_packet_t p;
-    int8_t response;
-    radio_address_t addr;
-    char *tok;
 
-    if (transceiver_pid < 0) {
-        puts("Transceiver not initialized");
-        return;
-    }
-
+    transceiver_command_t tcmd;
     tcmd.transceivers = _TC_TYPE;
     tcmd.data = &p;
 
-    tok = strtok(pkt + 7, " ");
+    char text_msg[TEXT_SIZE];
+    memset(text_msg, 0, TEXT_SIZE);
+    strcpy(text_msg, argv[2]);
 
-    if (tok) {
-        addr = atoi(tok);
-        tok = strtok(NULL, " ");
+    p.data = (uint8_t *) text_msg;
+    p.length = strlen(text_msg) + 1;
+    p.dst = atoi(argv[1]);
 
-        if (tok) {
-            memset(text_msg, 0, TEXT_SIZE);
-            memcpy(text_msg, tok, strlen(tok));
-            p.data = (uint8_t *) text_msg;
-            p.length = strlen(text_msg) + 1;
-            p.dst = addr;
-            mesg.type = SND_PKT;
-            mesg.content.ptr = (char *)&tcmd;
-            printf("[transceiver] Sending packet of length %"PRIu16" to %"PRIu16": %s\n", p.length, p.dst, (char*) p.data);
-            msg_send_receive(&mesg, &mesg, transceiver_pid);
-            response = mesg.content.value;
-            printf("[transceiver] Packet sent: %"PRIi8"\n", response);
-            return;
-        }
-    }
-
-    puts("Usage:\ttxtsnd <ADDR> <MSG>");
-}
-
-/* checked for type safety */
-void _transceiver_monitor_handler(char *mode)
-{
     msg_t mesg;
-    transceiver_command_t tcmd;
-    uint8_t m;
-
-    if (transceiver_pid < 0) {
-        puts("Transceiver not initialized");
-        return;
-    }
-
-    tcmd.transceivers = _TC_TYPE;
-    tcmd.data = &m;
+    mesg.type = SND_PKT;
     mesg.content.ptr = (char *) &tcmd;
 
-    if (strlen(mode) > 8) {
-        m = atoi(mode + 8);
-        printf("Setting monitor mode: %"PRIu8"\n", m);
-        mesg.type = SET_MONITOR;
-        msg_send(&mesg, transceiver_pid, 1);
-    }
-    else {
-        puts("Usage:\nmonitor <MODE>");
-    }
+    printf("[transceiver] Sending packet of length %" PRIu16 " to %" PRIu16 ": %s\n", p.length, p.dst, (char*) p.data);
+    msg_send_receive(&mesg, &mesg, transceiver_pid);
+    int8_t response = mesg.content.value;
+    printf("[transceiver] Packet sent: %" PRIi8 "\n", response);
 }
 
 /* checked for type safety */
-void _transceiver_get_set_pan_handler(char *pan) {
-    transceiver_command_t tcmd;
-    msg_t mesg;
-    int32_t p;
+void _transceiver_monitor_handler(int argc, char **argv)
+{
+    if (transceiver_pid < 0) {
+        puts("Transceiver not initialized");
+        return;
+    }
+    else if (argc != 2) {
+        printf("Usage:\n%s <MODE>\n", argv[0]);
+        return;
+    }
 
+    uint8_t m = atoi(argv[1]);
+    printf("Setting monitor mode: %" PRIu8 "\n", m);
+
+    transceiver_command_t tcmd;
+    tcmd.transceivers = _TC_TYPE;
+    tcmd.data = &m;
+
+    msg_t mesg;
+    mesg.content.ptr = (char *) &tcmd;
+    mesg.type = SET_MONITOR;
+
+    msg_send(&mesg, transceiver_pid, 1);
+}
+
+/* checked for type safety */
+void _transceiver_get_set_pan_handler(int argc, char **argv)
+{
     if (transceiver_pid < 0) {
         puts("Transceiver not initialized");
         return;
     }
 
+    int32_t p;
+
+    transceiver_command_t tcmd;
     tcmd.transceivers = _TC_TYPE;
     tcmd.data = &p;
+
+    msg_t mesg;
     mesg.content.ptr = (char*) &tcmd;
-    if (strlen(pan) > 4) {
-        p = atoi(pan+4);
-        printf("[transceiver] Trying to set pan %"PRIi32"\n", p);
+    if (argc > 1) {
+        p = atoi(argv[1]);
+        printf("[transceiver] Trying to set pan %" PRIi32 "\n", p);
         mesg.type = SET_PAN;
     }
     else {
@@ -212,43 +293,44 @@ void _transceiver_get_set_pan_handler(char *pan) {
         puts("[transceiver] Error setting/getting pan");
     }
     else {
-        printf("[transceiver] Got pan: %"PRIi32"\n", p);
+        printf("[transceiver] Got pan: %" PRIi32 "\n", p);
     }
 }
 
 /* checked for type safety */
 #ifdef DBG_IGNORE
-void _transceiver_set_ignore_handler(char *addr)
+void _transceiver_set_ignore_handler(int argc, char **argv)
 {
-    transceiver_command_t tcmd;
-    msg_t mesg;
-    radio_address_t a;
-    int16_t response;
 
     if (transceiver_pid < 0) {
         puts("Transceiver not initialized");
         return;
     }
+    else if (argc != 2) {
+        printf("Usage:\n%s <address>\n", argv[0]);
+        return;
+    }
 
+    radio_address_t a;
+
+    transceiver_command_t tcmd;
     tcmd.transceivers = _TC_TYPE;
     tcmd.data = &a;
+
+    msg_t mesg;
     mesg.content.ptr = (char*) &tcmd;
 
-    if (strlen(addr) > 4) {
-        a = atoi(addr + 4);
-        printf("[transceiver] trying to add address %"PRIu16" to the ignore list \n", a);
-        mesg.type = DBG_IGN;
-        msg_send_receive(&mesg, &mesg, transceiver_pid);
-        response = a;
-        if (response == -1) {
-            printf("Error: ignore list full\n");
-        }
-        else {
-            printf("Success (added at index %"PRIi16").\n", response);
-        }
+    a = atoi(argv[1]);
+    printf("[transceiver] trying to add address %" PRIu16 " to the ignore list \n", a);
+    mesg.type = DBG_IGN;
+    msg_send_receive(&mesg, &mesg, transceiver_pid);
+
+    int16_t response = a;
+    if (response == -1) {
+        printf("Error: ignore list full\n");
     }
     else {
-        puts("Usage:\nign <address>");
+        printf("Success (added at index %" PRIi16 ").\n", response);
     }
 }
 #endif

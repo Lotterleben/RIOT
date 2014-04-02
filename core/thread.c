@@ -23,6 +23,7 @@
 
 #include "thread.h"
 #include "kernel.h"
+#include "irq.h"
 
 #define ENABLE_DEBUG    (0)
 #include "debug.h"
@@ -42,7 +43,7 @@ int thread_getlastpid()
     return last_pid;
 }
 
-unsigned int thread_getstatus(int pid)
+int thread_getstatus(int pid)
 {
     if (sched_threads[pid] == NULL) {
         return STATUS_NOT_FOUND;
@@ -75,36 +76,24 @@ void thread_sleep()
 int thread_wakeup(int pid)
 {
     DEBUG("thread_wakeup: Trying to wakeup PID %i...\n", pid);
-    int isr = inISR();
 
-    if (!isr) {
-        DEBUG("thread_wakeup: Not in interrupt.\n");
-        dINT();
-    }
+    int old_state = disableIRQ();
 
-    int result = sched_threads[pid]->status;
-
-    if (result == STATUS_SLEEPING) {
+    tcb_t *other_thread = (tcb_t *) sched_threads[pid];
+    if (other_thread && other_thread->status == STATUS_SLEEPING) {
         DEBUG("thread_wakeup: Thread is sleeping.\n");
-        sched_set_status((tcb_t *)sched_threads[pid], STATUS_RUNNING);
 
-        if (!isr) {
-            eINT();
-            thread_yield();
-        }
-        else {
-            sched_context_switch_request = 1;
-        }
+        sched_set_status(other_thread, STATUS_RUNNING);
+
+        restoreIRQ(old_state);
+        sched_switch(active_thread->priority, other_thread->priority);
 
         return 1;
     }
     else {
         DEBUG("thread_wakeup: Thread is not sleeping!\n");
 
-        if (!isr) {
-            eINT();
-        }
-
+        restoreIRQ(old_state);
         return STATUS_NOT_FOUND;
     }
 }

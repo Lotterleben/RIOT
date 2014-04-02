@@ -30,9 +30,13 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <stdarg.h>
+#ifdef MODULE_VTIMER
+#include <sys/time.h>
+#endif
 
 #include "cpu.h"
 #include "irq.h"
+#include "vtimer.h"
 
 #include "native_internal.h"
 
@@ -105,6 +109,12 @@ void free(void *ptr)
 
 void *calloc(size_t nmemb, size_t size)
 {
+    /* XXX: This is a dirty hack to enable old dlsym versions to run.
+     * Throw it out when Ubuntu 12.04 support runs out (in 2017-04)! */
+    if (!real_calloc) {
+        return NULL;
+    }
+
     void *r;
     _native_syscall_enter();
     r = real_calloc(nmemb, size);
@@ -176,7 +186,8 @@ char *make_message(const char *format, va_list argp)
         if ((temp = realloc(message, size)) == NULL) {
             free(message);
             return NULL;
-        } else {
+        }
+        else {
             message = temp;
         }
     }
@@ -290,3 +301,11 @@ void errx(int eval, const char *fmt, ...)
     va_start(argp, fmt);
     verrx(eval, fmt, argp);
 }
+
+#ifdef MODULE_VTIMER
+int _gettimeofday(struct timeval *tp, void *restrict tzp) {
+    (void) tzp;
+    vtimer_gettimeofday(tp);
+    return 0;
+}
+#endif

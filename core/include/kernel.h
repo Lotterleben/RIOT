@@ -13,6 +13,8 @@
  * @file        kernel.h
  * @brief       Kernel compile time configuration
  *
+ * A int reboot(int mode) function is also provided (and used by core_panic() when needed).
+ *
  * @author      Freie Universität Berlin, Computer Systems & Telematics
  * @author      Kaspar Schleiser <kaspar@schleiser.de>
  */
@@ -21,6 +23,8 @@
 #define KERNEL_H_
 
 #include <stdbool.h>
+
+#include "attributes.h"
 #include "config.h"
 #include "tcb.h"
 #include "cpu.h"
@@ -71,20 +75,27 @@
 #define PRIORITY_IDLE           PRIORITY_MIN
 #define PRIORITY_MAIN           (PRIORITY_MIN - (SCHED_PRIO_LEVELS/2))
 
-/**
- * @brief   Check whether called from interrupt service routine
- *
- * @return  true if called from within interrupt
- * @return  false if not.
- */
-int inISR(void);
-
 #define LPM_PREVENT_SLEEP_UART    BIT2
 #define LPM_PREVENT_SLEEP_HWTIMER    BIT1
 
 extern volatile int lpm_prevent_sleep;
 
 extern config_t sysconfig;
+
+/* ------------------------------------------------------------------------- */
+
+/**
+ * @brief Immediately reboots the system.
+ *
+ * This function is used by core_panic() when the DEVELHELP macro is not defined.
+ *
+ * @param mode  The reboot mode (unused for now)
+ *
+ * @return This call never returns when successful. -1 is returned otherwise.
+ */
+int reboot(int mode);
+
+#define RB_AUTOBOOT 0   /* << Reboot the system in the usual fashion */
 
 /** @} */
 #endif /* KERNEL_H_ */

@@ -1,4 +1,4 @@
-# name of your project
+# name of your application
 export PROJECT = rpl_udp
 
 # If no BOARD is found in the environment, use this default:
@@ -28,11 +28,14 @@ export RIOTBASE ?= $(CURDIR)/../..
 export QUIET ?= 1
 
 # get rid of the mandatory RPL warning
-CFLAGS += "-Wno-cpp"
+ifeq ($(shell $(CC) -Wno-cpp -E - 2>/dev/null >/dev/null dev/null ; echo $$?),0)
+	ifeq ($(shell LANG=C $(CC) -Wno-cpp -E - 2>&1 1>/dev/null dev/null | grep warning: | grep -- -Wno-cpp),)
+		CFLAGS += -Wno-cpp
+	endif
+endif
 
 # Modules to include:
 
-USEMODULE += auto_init
 USEMODULE += shell
 USEMODULE += shell_commands
 USEMODULE += posix
@@ -48,7 +51,5 @@ endif
 USEMODULE += sixlowpan
 USEMODULE += rpl
 USEMODULE += destiny
-
-export INCLUDES += -I$(RIOTBASE)/sys/net/include -I$(RIOTBASE)/sys/net/routing/rpl -I$(RIOTBASE)/drivers/cc110x
 
 include $(RIOTBASE)/Makefile.include

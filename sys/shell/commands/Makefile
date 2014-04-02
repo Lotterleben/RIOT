@@ -1,38 +1,41 @@
-SRC = shell_commands.c sc_id.c
+MODULE = shell_commands
 
-ifneq (,$(findstring transceiver,$(USEMODULE)))
+SRC = shell_commands.c sc_sys.c
+
+ifneq (,$(filter config,$(USEMODULE)))
+	SRC += sc_id.c
+endif
+ifneq (,$(filter transceiver,$(USEMODULE)))
 	SRC += sc_transceiver.c
 endif
-ifneq (,$(findstring cc110x,$(USEMODULE)))
-	ifeq (,$(findstring transceiver,$(USEMODULE)))
+ifneq (,$(filter cc110x,$(USEMODULE)))
+	ifeq (,$(filter transceiver,$(USEMODULE)))
 		SRC += sc_cc1100.c
 	endif
 endif
-ifneq (,$(findstring mci,$(USEMODULE)))
+ifneq (,$(filter net_if,$(USEMODULE)))
+	SRC += sc_net_if.c
+endif
+ifneq (,$(filter mci,$(USEMODULE)))
 	SRC += sc_disk.c
 endif
-ifneq (,$(findstring ltc4150,$(USEMODULE)))
+ifneq (,$(filter ltc4150,$(USEMODULE)))
 	SRC += sc_ltc4150.c
 endif
-ifneq (,$(findstring ps,$(USEMODULE)))
+ifneq (,$(filter ps,$(USEMODULE)))
 	SRC += sc_ps.c
 endif
-ifneq (,$(findstring rtc,$(USEMODULE)))
+ifneq (,$(filter rtc,$(USEMODULE)))
 	SRC += sc_rtc.c
 endif
-ifneq (,$(findstring sht11,$(USEMODULE)))
+ifneq (,$(filter sht11,$(USEMODULE)))
 	SRC += sc_sht11.c
 endif
-ifneq (,$(findstring lpc_common,$(USEMODULE)))
+ifneq (,$(filter lpc_common,$(USEMODULE)))
 	SRC += sc_heap.c
 endif
-ifneq (,$(findstring random,$(USEMODULE)))
+ifneq (,$(filter random,$(USEMODULE)))
 	SRC += sc_mersenne.c
 endif
-
-OBJ = $(SRC:%.c=$(BINDIR)%.o)
-DEP = $(SRC:%.c=$(BINDIR)%.d)
-
-MODULE =shell_commands
 
 include $(RIOTBASE)/Makefile.base

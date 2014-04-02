@@ -27,6 +27,7 @@
 #include "thread.h"
 #include "lifo.h"
 #include "mutex.h"
+#include "irq.h"
 
 #define ENABLE_DEBUG (0)
 #include "debug.h"
@@ -42,8 +43,8 @@ typedef struct hwtimer_t {
     void *data;
 } hwtimer_t;
 
-static hwtimer_t timer[ARCH_MAXTIMERS];
-static int lifo[ARCH_MAXTIMERS + 1];
+static hwtimer_t timer[HWTIMER_MAXTIMERS];
+static int lifo[HWTIMER_MAXTIMERS + 1];
 
 /*---------------------------------------------------------------------------*/
 
@@ -99,9 +100,9 @@ void hwtimer_init_comp(uint32_t fcpu)
 {
     hwtimer_arch_init(multiplexer, fcpu);
 
-    lifo_init(lifo, ARCH_MAXTIMERS);
+    lifo_init(lifo, HWTIMER_MAXTIMERS);
 
-    for (int i = 0; i < ARCH_MAXTIMERS; i++) {
+    for (int i = 0; i < HWTIMER_MAXTIMERS; i++) {
         lifo_insert(lifo, i);
     }
 }

@@ -28,6 +28,7 @@
 #include "clist.h"
 #include "bitarithm.h"
 #include "thread.h"
+#include "irq.h"
 
 #if SCHEDSTATISTICS
 #include "hwtimer.h"
@@ -43,7 +44,7 @@ volatile unsigned int sched_context_switch_request;
 volatile tcb_t *sched_threads[MAXTHREADS];
 volatile tcb_t *active_thread;
 
-volatile int thread_pid;
+volatile int thread_pid = -1;
 volatile int last_pid = -1;
 
 clist_node_t *runqueues[SCHED_PRIO_LEVELS];
@@ -53,30 +54,6 @@ static uint32_t runqueue_bitcache = 0;
 static void (*sched_cb) (uint32_t timestamp, uint32_t value) = NULL;
 schedstat pidlist[MAXTHREADS];
 #endif
-
-void sched_init()
-{
-    printf("Scheduler...");
-    int i;
-
-    for (i = 0; i < MAXTHREADS; i++) {
-        sched_threads[i] = NULL;
-#if SCHEDSTATISTICS
-        pidlist[i].laststart = 0;
-        pidlist[i].runtime_ticks = 0;
-        pidlist[i].schedules = 0;
-#endif
-    }
-
-    active_thread = NULL;
-    thread_pid = -1;
-
-    for (i = 0; i < SCHED_PRIO_LEVELS; i++) {
-        runqueues[i] = NULL;
-    }
-
-    printf("[OK]\n");
-}
 
 void sched_run()
 {
@@ -173,15 +150,15 @@ void sched_register_cb(void (*callback)(uint32_t, uint32_t))
 
 void sched_set_status(tcb_t *process, unsigned int status)
 {
-    if (status &  STATUS_ON_RUNQUEUE) {
-        if (!(process->status &  STATUS_ON_RUNQUEUE)) {
+    if (status >= STATUS_ON_RUNQUEUE) {
+        if (!(process->status >= STATUS_ON_RUNQUEUE)) {
             DEBUG("adding process %s to runqueue %u.\n", process->name, process->priority);
             clist_add(&runqueues[process->priority], &(process->rq_entry));
             runqueue_bitcache |= 1 << process->priority;
         }
     }
     else {
-        if (process->status & STATUS_ON_RUNQUEUE) {
+        if (process->status >= STATUS_ON_RUNQUEUE) {
             DEBUG("removing process %s from runqueue %u.\n", process->name, process->priority);
             clist_remove(&runqueues[process->priority], &(process->rq_entry));
 
@@ -194,8 +171,10 @@ void sched_set_status(tcb_t *process, unsigned int status)
     process->status = status;
 }
 
-void sched_switch(uint16_t current_prio, uint16_t other_prio, int in_isr)
+void sched_switch(uint16_t current_prio, uint16_t other_prio)
 {
+    int in_isr = inISR();
+
     DEBUG("%s: %i %i %i\n", active_thread->name, (int)current_prio, (int)other_prio, in_isr);
 
     if (current_prio >= other_prio) {

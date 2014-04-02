@@ -127,13 +127,19 @@ void ccnl_ll_TX(struct ccnl_relay_s *ccnl, struct ccnl_if_s *ifc,
 void ccnl_ageing(void *relay, void *aux)
 {
     ccnl_do_ageing(relay, aux);
-    ccnl_set_timer(CCNL_CHECK_TIMEOUT_SEC * (1000*1000) + CCNL_CHECK_TIMEOUT_USEC, ccnl_ageing, relay, 0);
+    ccnl_set_timer(TIMEOUT_TO_US(CCNL_CHECK_TIMEOUT_SEC, CCNL_CHECK_TIMEOUT_USEC), ccnl_ageing, relay, 0);
 }
 
 void ccnl_retransmit(void *relay, void *aux)
 {
     ccnl_do_retransmit(relay, aux);
-    ccnl_set_timer(CCNL_CHECK_RETRANSMIT_SEC * (1000*1000) + CCNL_CHECK_RETRANSMIT_USEC, ccnl_retransmit, relay, 0);
+    ccnl_set_timer(TIMEOUT_TO_US(CCNL_CHECK_RETRANSMIT_SEC, CCNL_CHECK_RETRANSMIT_USEC), ccnl_retransmit, relay, 0);
+}
+
+void ccnl_nonce_timeout(void *relay, void *aux)
+{
+    ccnl_do_nonce_timeout(relay, aux);
+    ccnl_set_timer(TIMEOUT_TO_US(CCNL_NONCE_TIMEOUT_SEC, CCNL_NONCE_TIMEOUT_USEC), ccnl_nonce_timeout, relay, 0);
 }
 
 // ----------------------------------------------------------------------
@@ -203,8 +209,9 @@ void ccnl_relay_config(struct ccnl_relay_s *relay, int max_cache_entries, int fi
     f->flags |= CCNL_FACE_FLAGS_STATIC;
     i->broadcast_face = f;
 
-    ccnl_set_timer(CCNL_CHECK_TIMEOUT_USEC, ccnl_ageing, relay, 0);
-    ccnl_set_timer(CCNL_CHECK_RETRANSMIT_USEC, ccnl_retransmit, relay, 0);
+    ccnl_set_timer(TIMEOUT_TO_US(CCNL_CHECK_TIMEOUT_SEC, CCNL_CHECK_TIMEOUT_USEC), ccnl_ageing, relay, 0);
+    ccnl_set_timer(TIMEOUT_TO_US(CCNL_CHECK_RETRANSMIT_SEC, CCNL_CHECK_RETRANSMIT_USEC), ccnl_retransmit, relay, 0);
+    ccnl_set_timer(TIMEOUT_TO_US(CCNL_NONCE_TIMEOUT_SEC, CCNL_NONCE_TIMEOUT_USEC), ccnl_nonce_timeout, relay, 0);
 }
 
 #if RIOT_CCNL_POPULATE
@@ -242,8 +249,12 @@ void ccnl_populate_cache(struct ccnl_relay_s *ccnl, unsigned char *buf, int data
             goto Done;
         }
 
-        ccnl_content_add2cache(ccnl, c);
         c->flags |= CCNL_CONTENT_FLAGS_STATIC;
+        if (!ccnl_content_add2cache(ccnl, c)) {
+            // content store error
+            free_content(c);
+        }
+
     Done:
         free_prefix(prefix);
         ccnl_free(pkt);
@@ -301,19 +312,10 @@ void ccnl_timeout_callback(void *ptr)
 
 int ccnl_io_loop(struct ccnl_relay_s *ccnl)
 {
-    int i, maxfd = -1;
-
     if (ccnl->ifcount == 0) {
         DEBUGMSG(1, "no socket to work with, not good, quitting\n");
         return -1;
     }
-
-    for (i = 0; i < ccnl->ifcount; i++)
-        if (ccnl->ifs[i].sock > maxfd) {
-            maxfd = ccnl->ifs[i].sock;
-        }
-
-    maxfd++;
 
     DEBUGMSG(1, "starting main event and IO loop\n");
 
@@ -333,7 +335,8 @@ int ccnl_io_loop(struct ccnl_relay_s *ccnl)
         hwtimer_id = hwtimer_set(HWTIMER_TICKS(us), ccnl_timeout_callback, ccnl);
         if (hwtimer_id == -1) {
             puts("NO MORE TIMERS!");
-        } else {
+        }
+        else {
             //DEBUGMSG(1, "hwtimer_id is %d\n", hwtimer_id);
         }
         msg_receive(&in);
@@ -341,6 +344,7 @@ int ccnl_io_loop(struct ccnl_relay_s *ccnl)
 
         switch (in.type) {
             case PKT_PENDING:
+                /* msg from transceiver */
                 hwtimer_remove(hwtimer_id);
                 p = (radio_packet_t *) in.content.ptr;
                 DEBUGMSG(1, "\tLength:\t%u\n", p->length);
@@ -357,6 +361,7 @@ int ccnl_io_loop(struct ccnl_relay_s *ccnl)
                 break;
 
             case (CCNL_RIOT_MSG):
+                /* msg from device local client */
                 hwtimer_remove(hwtimer_id);
                 m = (riot_ccnl_msg_t *) in.content.ptr;
                 DEBUGMSG(1, "\tLength:\t%u\n", m->size);
@@ -367,6 +372,7 @@ int ccnl_io_loop(struct ccnl_relay_s *ccnl)
                 break;
 
             case (CCNL_RIOT_HALT):
+                /* cmd to stop the relay */
                 hwtimer_remove(hwtimer_id);
                 DEBUGMSG(1, "\tSrc:\t%u\n", in.sender_pid);
                 DEBUGMSG(1, "\tNumb:\t%" PRIu32 "\n", in.content.value);
@@ -376,6 +382,7 @@ int ccnl_io_loop(struct ccnl_relay_s *ccnl)
 
 #if RIOT_CCNL_POPULATE
             case (CCNL_RIOT_POPULATE):
+                /* cmd to polulate the cache */
                 hwtimer_remove(hwtimer_id);
                 DEBUGMSG(1, "\tSrc:\t%u\n", in.sender_pid);
                 DEBUGMSG(1, "\tNumb:\t%" PRIu32 "\n", in.content.value);
@@ -384,14 +391,21 @@ int ccnl_io_loop(struct ccnl_relay_s *ccnl)
                 break;
 #endif
             case (CCNL_RIOT_PRINT_STAT):
+                /* cmd to print face statistics */
                 hwtimer_remove(hwtimer_id);
                 for (struct ccnl_face_s *f = ccnl->faces; f; f = f->next) {
                     ccnl_face_print_stat(f);
                 }
                 break;
             case (CCNL_RIOT_TIMEOUT):
+                /* ccn timeout from hwtimer, run pending events */
                 timeout = ccnl_run_events();
                 us = timeout->tv_sec * 1000 * 1000 + timeout->tv_usec;
+                break;
+            case (ENOBUFFER):
+                /* transceiver has not enough buffer to store incoming packets, one packet is dropped  */
+                hwtimer_remove(hwtimer_id);
+                DEBUGMSG(1, "transceiver: one packet is dropped because buffers are full\n");
                 break;
             default:
                 hwtimer_remove(hwtimer_id);

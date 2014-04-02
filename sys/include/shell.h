@@ -22,10 +22,12 @@
 #define __SHELL_H
 #include <stdint.h>
 
+typedef void (*shell_command_handler_t)(int argc, char **argv);
+
 typedef struct shell_command_t {
     char *name;
     char *desc;
-    void (*handler)(char *);
+    shell_command_handler_t handler;
 } shell_command_t;
 
 typedef struct shell_t {
@@ -38,7 +40,7 @@ typedef struct shell_t {
 /**
  * @brief Initialize a shell object
  * @param shell Pointer to preallocated shell object
- * @param shell_commands Pointer to shell command structure. See test_shell project for example.
+ * @param shell_commands Pointer to shell command structure. See test_shell application for example.
  * @param shell_buffer_size The size of the shell buffer.
  * @param read_char Pointer to input device read function. Should return exactly one byte or block.
  * @param put_char Pointer to output funtion. currently unused, shell code will use printf.
