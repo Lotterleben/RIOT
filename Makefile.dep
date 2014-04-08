@@ -34,6 +34,24 @@ ifneq (,$(filter sixlowpan,$(USEMODULE)))
 	USEMODULE += vtimer
 endif
 
+ifneq (,$(filter aodvv2,$(USEMODULE)))
+    ifeq (,$(filter vtimer,$(USEMODULE)))
+        USEMODULE += vtimer
+    endif
+    ifeq (,$(filter destiny,$(USEMODULE)))
+        USEMODULE += destiny
+    endif
+    ifeq (,$(filter sixlowpan,$(USEMODULE)))
+        USEMODULE += sixlowpan
+    endif
+    ifeq (,$(filter oonf_common,$(USEMODULE)))
+        USEMODULE += oonf_common
+    endif
+    ifeq (,$(filter oonf_rfc5444,$(USEMODULE)))
+        USEMODULE += oonf_rfc5444
+    endif
+endif
+
 ifneq (,$(filter posix,$(USEMODULE)))
 	USEMODULE += uart0
 	USEMODULE += timex
@@ -63,60 +81,6 @@ ifneq (,$(filter at86rf231,$(USEMODULE)))
 	USEMODULE += transceiver
 	USEMODULE += ieee802154
 	USEMODULE += vtimer
-endif
-
-ifneq (,$(filter aodvv2,$(USEMODULE)))
-	ifeq (,$(filter vtimer,$(USEMODULE)))
-		USEMODULE += vtimer
-	endif
-	ifeq (,$(filter destiny,$(USEMODULE)))
-		USEMODULE += destiny
-	endif
-	ifeq (,$(filter sixlowpan,$(USEMODULE)))
-		USEMODULE += sixlowpan
-	endif
-	ifeq (,$(filter oonf_common,$(USEMODULE)))
-		USEMODULE += oonf_common
-	endif
-	ifeq (,$(filter oonf_rfc5444,$(USEMODULE)))
-		USEMODULE += oonf_rfc5444
-	endif
-endif
-
-ifneq (,$(filter destiny,$(USEMODULE)))
-	ifeq (,$(filter sixlowpan,$(USEMODULE)))
-		USEMODULE += sixlowpan
-	endif
-	ifeq (,$(filter net_help,$(USEMODULE)))
-		USEMODULE += net_help
-	endif
-	ifeq (,$(filter vtimer,$(USEMODULE)))
-		USEMODULE += vtimer
-	endif
-endif
-
-ifneq (,$(filter sixlowborder,$(USEMODULE)))
-	ifeq (,$(filter sixlowpan,$(USEMODULE)))
-		USEMODULE += sixlowpan
-	endif
-endif
-
-ifneq (,$(filter sixlowpan,$(USEMODULE)))
-	ifeq (,$(filter ieee802154,$(USEMODULE)))
-		USEMODULE += ieee802154
-	endif
-	ifeq (,$(filter net_help,$(USEMODULE)))
-		USEMODULE += net_help
-	endif
-	ifeq (,$(filter net_if,$(USEMODULE)))
-		USEMODULE += net_if
-	endif
-	ifeq (,$(filter semaphore, $(USEMODULE)))
-		USEMODULE += semaphore
-	endif
-	ifeq (,$(filter vtimer, $(USEMODULE)))
-		USEMODULE += vtimer
-	endif
 endif
 
 ifneq (,$(filter vtimer,$(USEMODULE)))
