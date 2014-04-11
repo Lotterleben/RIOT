@@ -292,6 +292,8 @@ static enum rfc5444_result _cb_rreq_end_callback(
         _fill_routing_entry_t_rreq(&packet_data, rt_entry, link_cost);
     }
 
+    print_routingtable();
+
     /*
      * If TargNode is a client of the router receiving the RREQ, then the
      * router generates a RREP message as specified in Section 7.4, and
@@ -457,6 +459,8 @@ static enum rfc5444_result _cb_rrep_end_callback(
         DEBUG("\tUpdating Routing Table entry...\n");
         _fill_routing_entry_t_rreq(&packet_data, rt_entry, link_cost);
     }
+
+    print_routingtable();
     
     /*
     If HandlingRtr is RREQ_Gen then the RREP satisfies RREQ_Gen's
