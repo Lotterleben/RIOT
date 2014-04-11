@@ -279,18 +279,26 @@ static ipv6_addr_t* aodv_get_next_hop(ipv6_addr_t* dest)
     struct unreachable_node unreachable_nodes[AODVV2_MAX_UNREACHABLE_NODES];
     int len;
 
+    /* 
+       TODO use ndp_neighbor_get_ll_address() as soon as it's in the master.
+       note: delete check for active/stale/delayed entries, get_ll_address
+       does that for us then
+    */
+    ndp_neighbor_cache_t* ndp_nc_entry = ndp_neighbor_cache_search(dest); 
+
+    if (ndp_nc_entry != NULL){
+        // trying to send to 1 hop neighbor; just send it already
+        // TODO: falls in RT-> timestamp etc des RT eintrages updaten
+        // TODO2: if (ndp_nc_entry != NULL && ndp_nc_entry->state == NDP_NCE_STATUS_REACHABLE ) weil uns ja nur erreichbare routen interssieren
+        
+        printf("\t[ndp] found NC entry: type %i\n", ndp_nc_entry->type, ndp_nc_entry->state);
+        return dest;
+
+    }
+    printf("\t[ndp] no entry for addr %s found\n", ipv6_addr_to_str(addr_str, IPV6_MAX_ADDR_STR_LEN, dest));
+
     struct aodvv2_routing_entry_t* rt_entry = routingtable_get_entry(&_tmp_dest, _metric_type);
     if (rt_entry) {
-        /* 
-           TODO use ndp_neighbor_get_ll_address() as soon as it's in the master.
-           note: delete check for active/stale/delayed entries, get_ll_address
-           does that for us then
-        */
-        ndp_neighbor_cache_t* ndp_nc_entry = ndp_neighbor_cache_search(dest);
-        if (ndp_nc_entry != NULL)
-            printf("\t found NC entry: type %i\n", ndp_nc_entry->type, ndp_nc_entry->state);
-        else
-            printf("\tno entry for addr %s found\n", ipv6_addr_to_str(addr_str, IPV6_MAX_ADDR_STR_LEN, dest));
 
         // Case 1: Undeliverable Packet        
         if (rt_entry->state == ROUTE_STATE_BROKEN ||
@@ -339,7 +347,7 @@ static ipv6_addr_t* aodv_get_next_hop(ipv6_addr_t* dest)
         }
     };
 
-    /* no route found => start route discovery */
+    printf("\tNo route found towards %s, starting route discovery... \n", ipv6_addr_to_str(addr_str, IPV6_MAX_ADDR_STR_LEN, dest));
     aodv_send_rreq(&rreq_data);
 
     return NULL;
