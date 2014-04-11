@@ -32,8 +32,7 @@ index 0000000..cf66baa
 +# to use oonf_api in your RIOT project,
 +# add the following to your Makefile:
 +#
-+#	export OONFBASE   = /path/to/this/directory
-+#	EXTERNAL_MODULES += $(OONFBASE)
++#	USEPKG += oonf_api
 +#
 +# this provides the following modules:
 +#	oonf_common	-	avl tree, list, netaddr, regex, string functions
