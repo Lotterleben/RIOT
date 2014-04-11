@@ -287,6 +287,10 @@ static ipv6_addr_t* aodv_get_next_hop(ipv6_addr_t* dest)
            does that for us then
         */
         ndp_neighbor_cache_t* ndp_nc_entry = ndp_neighbor_cache_search(dest);
+        if (ndp_nc_entry != NULL)
+            printf("\t found NC entry: type %i\n", ndp_nc_entry->type, ndp_nc_entry->state);
+        else
+            printf("\tno entry for addr %s found\n", ipv6_addr_to_str(addr_str, IPV6_MAX_ADDR_STR_LEN, dest));
 
         // Case 1: Undeliverable Packet        
         if (rt_entry->state == ROUTE_STATE_BROKEN ||
