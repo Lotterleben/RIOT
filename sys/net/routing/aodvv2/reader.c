@@ -301,7 +301,9 @@ static enum rfc5444_result _cb_rreq_end_callback(
      * processing continues as follows.
      */
     if (clienttable_is_client(&packet_data.targNode.addr)){
-        DEBUG("[aodvv2] TargNode is in client list, sending RREP\n");    
+        DEBUG("[aodvv2] TargNode is in client list, sending RREP\n");
+        // make sure to start with a clean metric value 
+        packet_data.targNode.metric = 0;
         aodv_send_rrep(&packet_data, &packet_data.sender);
     }
 
