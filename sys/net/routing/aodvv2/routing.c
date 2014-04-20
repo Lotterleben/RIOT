@@ -6,7 +6,7 @@
 
 #include "routing.h" 
 
-#define ENABLE_DEBUG (1)
+#define ENABLE_DEBUG (0)
 #include "debug.h"
 
 /* helper functions */
@@ -102,18 +102,19 @@ void routingtable_break_and_get_all_hopping_over(struct netaddr* hop, struct unr
     for (uint8_t i = 0; i < AODVV2_MAX_ROUTING_ENTRIES; i++) {
         _reset_entry_if_stale(i);
 
-        if (!netaddr_cmp(&routing_table[i].nextHopAddr, hop)) {
+        if (netaddr_cmp(&routing_table[i].nextHopAddr, hop) == 0) {
             if (routing_table[i].state == ROUTE_STATE_ACTIVE &&
                 *len < AODVV2_MAX_UNREACHABLE_NODES) {
                 // when the max number of unreachable nodes is reached we're screwed.
-                // the above check is just damage control. TODO use autobuf
+                // the above check is just damage control. TODO use autobuf?
                 unreachable_nodes[*len].addr = routing_table[i].addr;
                 unreachable_nodes[*len].seqnum = routing_table[i].seqnum;
                 
                 (*len)++;
+                DEBUG("\t[routing] unreachable node found: %s\n", netaddr_to_string(&routing_table[i].nextHopAddr, &nbuf));
             }
             routing_table[i].state = ROUTE_STATE_BROKEN;
-            //DEBUG("len: %i\n", *len);
+            DEBUG("\t[routing] number of unreachable nodes: %i\n", *len);
         }
     }
 }

@@ -17,6 +17,8 @@ static void _write_packet(struct rfc5444_writer *wr __attribute__ ((unused)),
         void *buffer, size_t length);
 
 char addr_str[IPV6_MAX_ADDR_STR_LEN];
+char addr_str2[IPV6_MAX_ADDR_STR_LEN];
+
 char aodv_rcv_stack_buf[KERNEL_CONF_STACKSIZE_MAIN];
 char aodv_snd_stack_buf[KERNEL_CONF_STACKSIZE_MAIN];
 
@@ -271,8 +273,9 @@ static void _aodv_receiver_thread(void)
  * @return ipv6_addr_t* of the next hop towards dest if there is any, NULL if there is no next hop (yet)
  */
 static ipv6_addr_t* aodv_get_next_hop(ipv6_addr_t* dest)
-{
-    DEBUG("[aodvv2] %s: getting next hop for %s\n", ipv6_addr_to_str(addr_str, IPV6_MAX_ADDR_STR_LEN, &_v6_addr_local), ipv6_addr_to_str(addr_str, IPV6_MAX_ADDR_STR_LEN, dest));
+{   // TODO: warum ist *nur hier* v6_addr_local immer == dest? im receiver thred wird addr_local richtig angezeigt...
+    // evtl liegts an der doppelverwendung von addr_str?
+    DEBUG("[aodvv2] %s: getting next hop for %s\n", ipv6_addr_to_str(addr_str, IPV6_MAX_ADDR_STR_LEN, &_v6_addr_local), ipv6_addr_to_str(addr_str2, IPV6_MAX_ADDR_STR_LEN, dest));
 
     struct netaddr _tmp_dest;
     ipv6_addr_t_to_netaddr(dest, &_tmp_dest);
@@ -373,14 +376,15 @@ static void _write_packet(struct rfc5444_writer *wr __attribute__ ((unused)),
         void *buffer, size_t length)
 {
     DEBUG("[aodvv2] %s()\n", __func__);
-
     /* generate hexdump and human readable representation of packet
        and print to console */
+    /*
     abuf_hexdump(&_hexbuf, "\t", buffer, length);
     rfc5444_print_direct(&_hexbuf, buffer, length);
     DEBUG("%s", abuf_getptr(&_hexbuf));
     abuf_clear(&_hexbuf);
-    
+    */
+
     /* fetch the address the packet is supposed to be sent to (i.e. to a 
        specific node or the multicast address) from the writer_target struct
        iface* is stored in. This is a bit hacky, but it does the trick. */
@@ -390,7 +394,7 @@ static void _write_packet(struct rfc5444_writer *wr __attribute__ ((unused)),
     /* When originating a RREQ, add it to our RREQ table/update its predecessor */
     if (wt->type == RFC5444_MSGTYPE_RREQ &&
         netaddr_cmp(&wt->packet_data.origNode.addr, &na_local) == 0) {
-        DEBUG("[aodvv2] originating RREQ; updating RREQ table...\n");
+        DEBUG("[aodvv2] originating RREQ towards %s; updating RREQ table...\n", netaddr_to_string(&nbuf, &sa_wp.sin6_addr));
         rreqtable_is_redundant(&wt->packet_data);
     }
 
