@@ -406,6 +406,7 @@ static enum rfc5444_result _cb_rrep_end_callback(
     struct rfc5444_reader_tlvblock_context *cont, bool dropped)
 {
     struct aodvv2_routing_entry_t* rt_entry;
+    struct netaddr_str nbuf;
     timex_t now;
     uint8_t link_cost = _get_link_cost(packet_data.metricType, &packet_data);
 
@@ -469,7 +470,7 @@ static enum rfc5444_result _cb_rrep_end_callback(
     earlier RREQ, and RREP processing is completed.  Any packets
     buffered for OrigNode should be transmitted. */
     if (clienttable_is_client(&packet_data.origNode.addr)){
-        DEBUG("\tThis is my RREP. We are done here, thanks!\n");
+        DEBUG("\t %s: This is my RREP. We are done here, thanks!\n", netaddr_to_string(&nbuf, &cont->addr));
     }
 
     /* 
