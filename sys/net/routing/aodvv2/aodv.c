@@ -25,7 +25,7 @@ static int sender_thread;
 static int _sock_snd;
 static struct autobuf _hexbuf;
 static sockaddr6_t sa_wp;
-static ipv6_addr_t _v6_addr_local, _v6_addr_mcast;
+static ipv6_addr_t _v6_addr_local, _v6_addr_mcast, _v6_addr_loopback;
 static struct netaddr na_local; // the same as _v6_addr_local, but to save us constant calls to ipv6_addr_t_to_netaddr()...
 static struct writer_target* wt;
 static struct netaddr_str nbuf;
@@ -177,6 +177,7 @@ static void _init_addresses(void)
     with oonf based stuff */
     ipv6_addr_t_to_netaddr(&_v6_addr_local, &na_local);
     ipv6_addr_t_to_netaddr(&_v6_addr_mcast, &na_mcast);
+    ipv6_addr_init(&_v6_addr_loopback, 0, 0, 0, 0, 0, 0, 0, 1);
 
     /* init sockaddr that write_packet will use to send data */
     sa_wp.sin6_family = AF_INET6;
@@ -241,7 +242,7 @@ static void _aodv_receiver_thread(void)
     int sock_rcv = destiny_socket(PF_INET6, SOCK_DGRAM, IPPROTO_UDP);
     
     if (-1 == destiny_socket_bind(sock_rcv, &sa_rcv, sizeof(sa_rcv))) {
-        DEBUG("Error: bind to recieve socket failed!\n");
+        DEBUG("Error: bind to receive socket failed!\n");
         destiny_socket_close(sock_rcv);
     }
 
@@ -279,6 +280,12 @@ static ipv6_addr_t* aodv_get_next_hop(ipv6_addr_t* dest)
     struct unreachable_node unreachable_nodes[AODVV2_MAX_UNREACHABLE_NODES];
     int len;
 
+    /* currently, the network stack sometimes asks us for the next hop towards our own IP... */
+    if (memcmp(dest, &_v6_addr_local, sizeof(ipv6_addr_t)) == 0){
+        DEBUG("[aodvv2] That's me, returning loopback\n");
+        return &_v6_addr_loopback;
+    }
+
     /* 
        TODO use ndp_neighbor_get_ll_address() as soon as it's in the master.
        note: delete check for active/stale/delayed entries, get_ll_address
@@ -290,10 +297,9 @@ static ipv6_addr_t* aodv_get_next_hop(ipv6_addr_t* dest)
         // trying to send to 1 hop neighbor; just send it already
         // TODO: falls in RT-> timestamp etc des RT eintrages updaten
         // TODO2: if (ndp_nc_entry != NULL && ndp_nc_entry->state == NDP_NCE_STATUS_REACHABLE ) weil uns ja nur erreichbare routen interssieren
-        
-        printf("\t[ndp] found NC entry: type %i\n", ndp_nc_entry->type, ndp_nc_entry->state);
-        return dest;
 
+        printf("[aodvv2][ndp] found NC entry: type %i\n", ndp_nc_entry->type, ndp_nc_entry->state);
+        return dest;
     }
     printf("\t[ndp] no entry for addr %s found\n", ipv6_addr_to_str(addr_str, IPV6_MAX_ADDR_STR_LEN, dest));
 
