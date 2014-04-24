@@ -97,7 +97,6 @@ void routingtable_delete_entry(struct netaddr* addr, uint8_t metricType)
 void routingtable_break_and_get_all_hopping_over(struct netaddr* hop, struct unreachable_node unreachable_nodes[], int* len) 
 {
     *len = 0; // to be sure
-    //DEBUG("len: %i\n", *len);
 
     for (uint8_t i = 0; i < AODVV2_MAX_ROUTING_ENTRIES; i++) {
         _reset_entry_if_stale(i);
@@ -138,7 +137,7 @@ static void _reset_entry_if_stale(uint8_t i)
            during every ACTIVE_INTERVAL. When a route is no longer Active, it becomes an Idle route. */
         if (state == ROUTE_STATE_ACTIVE &&
             timex_cmp(timex_sub(now, active_interval), lastUsed) == 1) {
-            DEBUG("[routing] route towards %s Idle\n", netaddr_to_string(&nbuf, &routing_table[i].addr), i);
+            DEBUG("\t[routing] route towards %s Idle\n", netaddr_to_string(&nbuf, &routing_table[i].addr), i);
             routing_table[i].state = ROUTE_STATE_IDLE;
             routing_table[i].lastUsed = now; // mark the time entry was set to Idle
         }
@@ -148,14 +147,14 @@ static void _reset_entry_if_stale(uint8_t i)
         if (state == ROUTE_STATE_IDLE &&
                 (timex_cmp(timex_sub(now, max_idletime), lastUsed) == 1  || 
                 timex_cmp(expirationTime, now) < 1)) {
-            DEBUG("[routing] route towards %s Expired\n", netaddr_to_string(&nbuf, &routing_table[i].addr), i);
+            DEBUG("\t[routing] route towards %s Expired\n", netaddr_to_string(&nbuf, &routing_table[i].addr), i);
             routing_table[i].state = ROUTE_STATE_EXPIRED;
             routing_table[i].lastUsed = now; // mark the time entry was set to Expired
         }
         /* After that time, old sequence number information is considered no longer 
            valuable and the Expired route MUST BE expunged */
         if(timex_cmp(timex_sub(now, lastUsed), max_seqnum_lifetime) >= 0) {
-            DEBUG("\treset routing table entry for %s at %i\n", netaddr_to_string(&nbuf, &routing_table[i].addr), i);
+            DEBUG("\t[routing] reset routing table entry for %s at %i\n", netaddr_to_string(&nbuf, &routing_table[i].addr), i);
             memset(&routing_table[i], 0, sizeof(routing_table[i]));
         }
     }

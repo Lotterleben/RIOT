@@ -226,7 +226,7 @@ void writer_init(write_packet_func_ptr ptr)
 
 /**
  * Send a RREQ. DO NOT use this function to dispatch packets from anything else
- * than the sender_thread. To send RREQs, use aodv_send_rerr().
+ * than the sender_thread. To send RREQs, use aodv_send_rreq().
  * @param na_origNode
  * @param na_targNode
  * @param next_hop Address the RREP is sent to 
@@ -256,7 +256,7 @@ void writer_send_rreq(struct aodvv2_packet_data* packet_data, struct netaddr* ne
 
 /**
  * Send a RREP. DO NOT use this function to dispatch packets from anything else
- * than the sender_thread. To send RREPs, use aodv_send_rerr().
+ * than the sender_thread. To send RREPs, use aodv_send_rrep().
  */
 void writer_send_rrep(struct aodvv2_packet_data* packet_data, struct netaddr* next_hop)
 {
