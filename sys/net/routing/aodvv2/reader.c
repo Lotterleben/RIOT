@@ -292,7 +292,7 @@ static enum rfc5444_result _cb_rreq_end_callback(
         _fill_routing_entry_t_rreq(&packet_data, rt_entry, link_cost);
     }
 
-    print_routingtable();
+    //print_routingtable();
 
     /*
      * If TargNode is a client of the router receiving the RREQ, then the
@@ -463,14 +463,14 @@ static enum rfc5444_result _cb_rrep_end_callback(
         _fill_routing_entry_t_rreq(&packet_data, rt_entry, link_cost);
     }
 
-    print_routingtable();
+    //print_routingtable();
     
     /*
     If HandlingRtr is RREQ_Gen then the RREP satisfies RREQ_Gen's
     earlier RREQ, and RREP processing is completed.  Any packets
     buffered for OrigNode should be transmitted. */
     if (clienttable_is_client(&packet_data.origNode.addr)){
-        DEBUG("\t %s: This is my RREP. We are done here, thanks!\n", netaddr_to_string(&nbuf, &cont->addr));
+        DEBUG("\t %s: This is my RREP. We are done here, thanks!\n", netaddr_to_string(&nbuf, &packet_data.origNode.addr));
     }
 
     /* 

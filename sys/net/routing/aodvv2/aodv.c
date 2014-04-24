@@ -256,7 +256,7 @@ static void _aodv_receiver_thread(void)
         if(rcv_size < 0) {
             DEBUG("[aodvv2] ERROR receiving data!\n");
         }
-        DEBUG("[aodvv2] %s: UDP packet received from %s\n",ipv6_addr_to_str(addr_str, IPV6_MAX_ADDR_STR_LEN, &_v6_addr_local), ipv6_addr_to_str(addr_str_rec, IPV6_MAX_ADDR_STR_LEN, &sa_rcv.sin6_addr));
+        //DEBUG("[aodvv2] %s: UDP packet received from %s\n",ipv6_addr_to_str(addr_str, IPV6_MAX_ADDR_STR_LEN, &_v6_addr_local), ipv6_addr_to_str(addr_str_rec, IPV6_MAX_ADDR_STR_LEN, &sa_rcv.sin6_addr));
         
         struct netaddr _sender;
         ipv6_addr_t_to_netaddr(&sa_rcv.sin6_addr, &_sender);
@@ -394,7 +394,7 @@ static void _write_packet(struct rfc5444_writer *wr __attribute__ ((unused)),
     /* When originating a RREQ, add it to our RREQ table/update its predecessor */
     if (wt->type == RFC5444_MSGTYPE_RREQ &&
         netaddr_cmp(&wt->packet_data.origNode.addr, &na_local) == 0) {
-        DEBUG("[aodvv2] originating RREQ towards %s; updating RREQ table...\n", netaddr_to_string(&nbuf, &sa_wp.sin6_addr));
+        DEBUG("[aodvv2] originating RREQ towards %s; updating RREQ table...\n", netaddr_to_string(&nbuf, &wt->packet_data.targNode.addr));
         rreqtable_is_redundant(&wt->packet_data);
     }
 
