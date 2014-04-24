@@ -528,9 +528,14 @@ static enum rfc5444_result _cb_rerr_blocktlv_addresstlvs_okay(struct rfc5444_rea
         packet_data.origNode.seqnum = *tlv->single_value;
     }
 
+    print_routingtable();
+
     /* Check if there is an entry for unreachable node in our routing table */
     unreachable_entry = routingtable_get_entry(&packet_data.origNode.addr, packet_data.metricType);
     if (unreachable_entry) {
+        DEBUG("\t found possibly unreachable entry:\n");
+        print_routingtable_entry(unreachable_entry);
+        
         /* check if route to unreachable node has to be marked as broken and RERR has to be forwarded*/
         if (netaddr_cmp(&unreachable_entry->nextHopAddr, &packet_data.sender ) == 0 
             && (!tlv || seqnum_cmp(unreachable_entry->seqnum, packet_data.origNode.seqnum))) {
@@ -550,7 +555,7 @@ static enum rfc5444_result _cb_rerr_end_callback(struct rfc5444_reader_tlvblock_
         return RFC5444_DROP_PACKET;
     } 
 
-    if ( num_unreachable_nodes == 0){
+    if (num_unreachable_nodes == 0){
         DEBUG("\tNo unreachable nodes from my routing table. Dropping Packet.\n");
         return RFC5444_DROP_PACKET;
     }
