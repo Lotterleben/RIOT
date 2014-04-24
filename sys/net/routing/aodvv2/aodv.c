@@ -295,32 +295,15 @@ static ipv6_addr_t* aodv_get_next_hop(ipv6_addr_t* dest)
        does that for us then
     */
     ndp_neighbor_cache_t* ndp_nc_entry = ndp_neighbor_cache_search(dest); 
+    struct aodvv2_routing_entry_t* rt_entry = routingtable_get_entry(&_tmp_dest, _metric_type);
 
     if (ndp_nc_entry != NULL){
         // trying to send to 1 hop neighbor; just send it already
         // TODO: falls in RT-> timestamp etc des RT eintrages updaten
         // TODO2: if (ndp_nc_entry != NULL && ndp_nc_entry->state == NDP_NCE_STATUS_REACHABLE ) weil uns ja nur erreichbare routen interssieren
-
-        printf("[aodvv2][ndp] found NC entry: type %i\n", ndp_nc_entry->type, ndp_nc_entry->state);
-        return dest;
-    }
-    printf("\t[ndp] no entry for addr %s found\n", ipv6_addr_to_str(addr_str, IPV6_MAX_ADDR_STR_LEN, dest));
-
-    struct aodvv2_routing_entry_t* rt_entry = routingtable_get_entry(&_tmp_dest, _metric_type);
-    if (rt_entry) {
-
-        // Case 1: Undeliverable Packet        
-        if (rt_entry->state == ROUTE_STATE_BROKEN ||
-            rt_entry->state == ROUTE_STATE_EXPIRED ) {
-            DEBUG("\tRouting table entry found, but invalid. Sending RERR.\n");
-            unreachable_nodes[0].addr = _tmp_dest;
-            unreachable_nodes[0].seqnum = rt_entry->seqnum;
-            aodv_send_rerr(unreachable_nodes, 1, AODVV2_MAX_HOPCOUNT, &na_mcast);
-            return NULL;
-        }
-
+        
         // Case 2: Broken Link (detected by lower layer) 
-        else if ((!ndp_nc_entry ||
+        if ((/*!ndp_nc_entry || */ // not sure if this is a dirty or correct fix
             ndp_nc_entry->state != NDP_NCE_STATUS_REACHABLE ||
             ndp_nc_entry->state != NDP_NCE_STATUS_STALE ||
             ndp_nc_entry->state != NDP_NCE_STATUS_DELAY) &&
@@ -334,6 +317,22 @@ static ipv6_addr_t* aodv_get_next_hop(ipv6_addr_t* dest)
             aodv_send_rerr(unreachable_nodes, len, AODVV2_MAX_HOPCOUNT, &na_mcast);
             return NULL;
         } 
+
+        printf("[aodvv2][ndp] found NC entry: type %i\n", ndp_nc_entry->type, ndp_nc_entry->state);
+        return dest;
+    }
+    printf("\t[ndp] no entry for addr %s found\n", ipv6_addr_to_str(addr_str, IPV6_MAX_ADDR_STR_LEN, dest));
+
+    if (rt_entry) {
+        // Case 1: Undeliverable Packet        
+        if (rt_entry->state == ROUTE_STATE_BROKEN ||
+            rt_entry->state == ROUTE_STATE_EXPIRED ) {
+            DEBUG("\tRouting table entry found, but invalid. Sending RERR.\n");
+            unreachable_nodes[0].addr = _tmp_dest;
+            unreachable_nodes[0].seqnum = rt_entry->seqnum;
+            aodv_send_rerr(unreachable_nodes, 1, AODVV2_MAX_HOPCOUNT, &na_mcast);
+            return NULL;
+        }
 
         DEBUG("\t found dest in routing table: %s\n", netaddr_to_string(&nbuf, &rt_entry->nextHopAddr));
 
