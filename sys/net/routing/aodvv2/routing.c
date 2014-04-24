@@ -6,7 +6,7 @@
 
 #include "routing.h" 
 
-#define ENABLE_DEBUG (0)
+#define ENABLE_DEBUG (1)
 #include "debug.h"
 
 /* helper functions */
