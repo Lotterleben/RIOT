@@ -320,13 +320,15 @@ static ipv6_addr_t* aodv_get_next_hop(ipv6_addr_t* dest)
         }
 
         // Case 2: Broken Link (detected by lower layer) 
-        if ((!ndp_nc_entry ||
+        else if ((!ndp_nc_entry ||
             ndp_nc_entry->state != NDP_NCE_STATUS_REACHABLE ||
             ndp_nc_entry->state != NDP_NCE_STATUS_STALE ||
             ndp_nc_entry->state != NDP_NCE_STATUS_DELAY) &&
             (rt_entry->state != ROUTE_STATE_BROKEN)) {
             // mark all routes (active, idle, expired) that use next_hop as broken
-            // and add all *Active* routes to the list of unreachable nodes        
+            // and add all *Active* routes to the list of unreachable nodes    
+            DEBUG("\tNeighbor Cache entry found, but invalid. Sending RERR.\n");
+    
             routingtable_break_and_get_all_hopping_over(&_tmp_dest, unreachable_nodes, &len);
 
             aodv_send_rerr(unreachable_nodes, len, AODVV2_MAX_HOPCOUNT, &na_mcast);

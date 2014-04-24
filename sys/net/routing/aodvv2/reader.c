@@ -206,7 +206,7 @@ static enum rfc5444_result _cb_rreq_blocktlv_messagetlvs_okay(struct rfc5444_rea
         DEBUG("\tERROR: Hoplimit is 0.\n");
         return RFC5444_DROP_PACKET;
     }
-    DEBUG("[aodvv2] %s()\n\t i can has hop limit: %d\n",__func__ , cont->hoplimit);
+    //DEBUG("[aodvv2] %s()\n\t i can has hop limit: %d\n",__func__ , cont->hoplimit);
     packet_data.hoplimit--;
     return RFC5444_OKAY;
 }
@@ -224,8 +224,6 @@ static enum rfc5444_result _cb_rreq_end_callback(
     struct aodvv2_routing_entry_t* rt_entry;
     timex_t now;
     uint8_t link_cost = _get_link_cost(packet_data.metricType, &packet_data);
-
-    DEBUG("[aodvv2] %s() dropped: %d\n", __func__, dropped);
 
     /* Check if packet contains the required information */
     if (dropped) {
@@ -390,7 +388,7 @@ static enum rfc5444_result _cb_rrep_blocktlv_messagetlvs_okay(struct rfc5444_rea
         DEBUG("\tERROR: Hoplimit is 0.\n");
         return RFC5444_DROP_PACKET;
     }
-    DEBUG("[aodvv2] %s()\n\t i can has hop limit: %d\n",__func__ , cont->hoplimit);
+    //DEBUG("[aodvv2] %s()\n\t i can has hop limit: %d\n",__func__ , cont->hoplimit);
     packet_data.hoplimit--;
     return RFC5444_OKAY;
 }
@@ -409,8 +407,6 @@ static enum rfc5444_result _cb_rrep_end_callback(
     struct netaddr_str nbuf;
     timex_t now;
     uint8_t link_cost = _get_link_cost(packet_data.metricType, &packet_data);
-
-    DEBUG("[aodvv2] %s() dropped: %d\n", __func__, dropped);
 
     /* Check if packet contains the required information */
     if (dropped) {
@@ -497,7 +493,7 @@ static enum rfc5444_result _cb_rerr_blocktlv_messagetlvs_okay(struct rfc5444_rea
         DEBUG("\tERROR: Hoplimit is 0.\n");
         return RFC5444_DROP_PACKET;
     }
-    DEBUG("[aodvv2] %s()\n\t i can has hop limit: %d\n",__func__ , cont->hoplimit);
+    //DEBUG("[aodvv2] %s()\n\t i can has hop limit: %d\n",__func__ , cont->hoplimit);
     packet_data.hoplimit--;
 
     /* prepare buffer for unreachable nodes */
@@ -548,9 +544,7 @@ static enum rfc5444_result _cb_rerr_blocktlv_addresstlvs_okay(struct rfc5444_rea
 }
 
 static enum rfc5444_result _cb_rerr_end_callback(struct rfc5444_reader_tlvblock_context *cont, bool dropped)
-{
-    DEBUG("[aodvv2] %s() dropped: %d\n", __func__, dropped);
-    
+{    
     if (dropped) {
         DEBUG("\tDropping packet.\n");
         return RFC5444_DROP_PACKET;
