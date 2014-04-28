@@ -75,7 +75,7 @@ void aodv_set_metric_type(int metric_type)
 }
 
 /**
- * Dispatch a rreq.
+ * Dispatch a RREQ.
  */
 void aodv_send_rreq(struct aodvv2_packet_data* packet_data)
 {
@@ -103,7 +103,7 @@ void aodv_send_rreq(struct aodvv2_packet_data* packet_data)
 }
 
 /**
- * Dispatch a rrep.
+ * Dispatch a RREP.
  */
 void aodv_send_rrep(struct aodvv2_packet_data* packet_data, struct netaddr* next_hop)
 {
@@ -134,7 +134,7 @@ void aodv_send_rrep(struct aodvv2_packet_data* packet_data, struct netaddr* next
 }
 
 /**
- * Dispatch a rerr.
+ * Dispatch a RERR.
  */
 void aodv_send_rerr(struct unreachable_node unreachable_nodes[], int len, int hoplimit, struct netaddr* next_hop)
 {
@@ -299,18 +299,15 @@ static ipv6_addr_t* aodv_get_next_hop(ipv6_addr_t* dest)
 
     if (ndp_nc_entry != NULL){
         // trying to send to 1 hop neighbor; just send it already
-        // TODO: falls in RT-> timestamp etc des RT eintrages updaten
-        // TODO2: if (ndp_nc_entry != NULL && ndp_nc_entry->state == NDP_NCE_STATUS_REACHABLE ) weil uns ja nur erreichbare routen interssieren
         
         // Case 2: Broken Link (detected by lower layer) 
         if ((/*!ndp_nc_entry || */ // not sure if this is a dirty or correct fix
-            ndp_nc_entry->state != NDP_NCE_STATUS_REACHABLE ||
-            ndp_nc_entry->state != NDP_NCE_STATUS_STALE ||
-            ndp_nc_entry->state != NDP_NCE_STATUS_DELAY) &&
-            (rt_entry->state != ROUTE_STATE_BROKEN)) {
+            ndp_nc_entry->state == NDP_NCE_STATUS_INCOMPLETE ||
+            ndp_nc_entry->state == NDP_NCE_STATUS_PROBE) &&
+            (rt_entry != NULL && rt_entry->state != ROUTE_STATE_BROKEN)) {
             // mark all routes (active, idle, expired) that use next_hop as broken
             // and add all *Active* routes to the list of unreachable nodes    
-            DEBUG("\tNeighbor Cache entry found, but invalid. Sending RERR.\n");
+            DEBUG("\tNeighbor Cache entry found, but invalid (state: %i). Sending RERR.\n", ndp_nc_entry->state);
     
             routingtable_break_and_get_all_hopping_over(&_tmp_dest, unreachable_nodes, &len);
 
@@ -318,7 +315,7 @@ static ipv6_addr_t* aodv_get_next_hop(ipv6_addr_t* dest)
             return NULL;
         } 
 
-        printf("[aodvv2][ndp] found NC entry: type %i\n", ndp_nc_entry->type, ndp_nc_entry->state);
+        printf("[aodvv2][ndp] found NC entry. Returning dest addr.\n");
         return dest;
     }
     printf("\t[ndp] no entry for addr %s found\n", ipv6_addr_to_str(addr_str, IPV6_MAX_ADDR_STR_LEN, dest));
