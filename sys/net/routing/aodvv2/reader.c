@@ -43,6 +43,7 @@ static int num_unreachable_nodes;
 
 static struct rfc5444_reader reader;
 static timex_t validity_t;
+static struct netaddr_str nbuf;
 
 /*
  * Message consumer, will be called once for every message of
@@ -137,7 +138,6 @@ static enum rfc5444_result _cb_rreq_blocktlv_addresstlvs_okay(struct rfc5444_rea
     bool is_targNode_addr = false;
 
     DEBUG("[aodvv2] %s()\n", __func__);
-    DEBUG("\tmessage type: %d\n", cont->type);
     DEBUG("\taddr: %s\n", netaddr_to_string(&nbuf, &cont->addr));
 
     /* handle OrigNode SeqNum TLV */
@@ -278,6 +278,7 @@ static enum rfc5444_result _cb_rreq_end_callback(
 
         _fill_routing_entry_t_rreq(&packet_data, tmp_rt_entry, link_cost);
         routingtable_add_entry(tmp_rt_entry);
+        //print_routingtable_entry(tmp_rt_entry);
         free(tmp_rt_entry);
     } else {
         if (!_offers_improvement(rt_entry, &packet_data.origNode)){
@@ -325,13 +326,12 @@ static enum rfc5444_result _cb_rrep_blocktlv_addresstlvs_okay(struct rfc5444_rea
     bool is_targNode_addr = false;
 
     DEBUG("[aodvv2] %s()\n", __func__);
-    DEBUG("\tmessage type: %d\n", cont->type);
     DEBUG("\taddr: %s\n", netaddr_to_string(&nbuf, &cont->addr));
 
     /* handle TargNode SeqNum TLV */
     tlv = _rreq_rrep_address_consumer_entries[RFC5444_MSGTLV_TARGSEQNUM].tlv;
     if (tlv) {
-        DEBUG("\ttlv RFC5444_MSGTLV_SEQNUM: %d\n", *tlv->single_value);
+        DEBUG("\ttlv RFC5444_MSGTLV_TARGSEQNUM: %d\n", *tlv->single_value);
         is_targNode_addr = true;
         packet_data.targNode.addr = cont->addr;
         packet_data.targNode.seqnum = *tlv->single_value;
@@ -403,6 +403,8 @@ static enum rfc5444_result _cb_rrep_blocktlv_messagetlvs_okay(struct rfc5444_rea
 static enum rfc5444_result _cb_rrep_end_callback(
     struct rfc5444_reader_tlvblock_context *cont, bool dropped)
 {
+    DEBUG("[aodvv2] %s()\n", __func__);
+
     struct aodvv2_routing_entry_t* rt_entry;
     struct netaddr_str nbuf;
     timex_t now;
@@ -425,6 +427,10 @@ static enum rfc5444_result _cb_rrep_end_callback(
         DEBUG("\tMetric Limit reached. Dropping packet.\n");
         return RFC5444_DROP_PACKET;
     }
+    if (clienttable_is_client(&packet_data.targNode.addr)){
+        DEBUG("\tI already sent this RREP. Dropping packet.\n");
+        return RFC5444_DROP_PACKET;    
+    }
 
     _update_metric(packet_data.metricType, &packet_data.targNode.metric);
     vtimer_now(&now);
@@ -446,6 +452,7 @@ static enum rfc5444_result _cb_rrep_end_callback(
 
         _fill_routing_entry_t_rrep(&packet_data, tmp_rt_entry, link_cost);
         routingtable_add_entry(tmp_rt_entry);
+        //print_routingtable_entry(tmp_rt_entry);
 
         free(tmp_rt_entry);
     } else {
@@ -459,7 +466,7 @@ static enum rfc5444_result _cb_rrep_end_callback(
         _fill_routing_entry_t_rreq(&packet_data, rt_entry, link_cost);
     }
 
-    //print_routingtable();
+    //();
     
     /*
     If HandlingRtr is RREQ_Gen then the RREP satisfies RREQ_Gen's
@@ -528,22 +535,28 @@ static enum rfc5444_result _cb_rerr_blocktlv_addresstlvs_okay(struct rfc5444_rea
         packet_data.origNode.seqnum = *tlv->single_value;
     }
 
-    print_routingtable();
+    //print_routingtable();
 
     /* Check if there is an entry for unreachable node in our routing table */
     unreachable_entry = routingtable_get_entry(&packet_data.origNode.addr, packet_data.metricType);
     if (unreachable_entry) {
         DEBUG("\t found possibly unreachable entry:\n");
         print_routingtable_entry(unreachable_entry);
-        
-        /* check if route to unreachable node has to be marked as broken and RERR has to be forwarded*/
-        if (netaddr_cmp(&unreachable_entry->nextHopAddr, &packet_data.sender ) == 0 
-            && (!tlv || seqnum_cmp(unreachable_entry->seqnum, packet_data.origNode.seqnum))) {
-            unreachable_entry->state = ROUTE_STATE_BROKEN; // TODO: debug because it will break routes for a long time
+        DEBUG("\n\n\t sender: %s\n", netaddr_to_string(&nbuf, &packet_data.sender));
+        DEBUG("\t tlv: %i\n", *tlv->single_value);
+        DEBUG("\t seqnum entry: %i, sender: %i\n", unreachable_entry->seqnum, packet_data.origNode.seqnum);        
+        DEBUG("na_cmp: %i, seqnum_cmp: %i\n", netaddr_cmp(&unreachable_entry->nextHopAddr, &packet_data.sender),
+            seqnum_cmp(unreachable_entry->seqnum, packet_data.origNode.seqnum));
+
+        /* check if route to unreachable node has to be marked as broken and RERR has to be forwarded */
+        if (netaddr_cmp(&unreachable_entry->nextHopAddr, &packet_data.sender) == 0 
+            && (!tlv || seqnum_cmp(unreachable_entry->seqnum, packet_data.origNode.seqnum) == 0)) {
+            unreachable_entry->state = ROUTE_STATE_BROKEN;
             unreachable_nodes[num_unreachable_nodes].addr = packet_data.origNode.addr;
             unreachable_nodes[num_unreachable_nodes].seqnum = packet_data.origNode.seqnum;
             num_unreachable_nodes++;
         }
+        // DEBUG here: warum sind possibly unreachables nie wirklich unreachable?
     }
     return RFC5444_OKAY;
 }
@@ -605,6 +618,8 @@ int reader_handle_packet(void* buffer, size_t length, struct netaddr* sender)
 {
     DEBUG("[aodvv2] %s()\n", __func__);
     memcpy(&packet_data.sender, sender, sizeof(*sender));
+    DEBUG("\t sender: %s\n", netaddr_to_string(&nbuf, &packet_data.sender));
+
     return rfc5444_reader_handle_packet(&reader, buffer, length);
 }
 
