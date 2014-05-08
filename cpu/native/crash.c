@@ -58,9 +58,7 @@ NORETURN void core_panic(int crash_code, const char *message)
     (void) reboot(RB_AUTOBOOT);
 #endif
 
-    /* proove the compiler that we won't return from this function
+    /* tell the compiler that we won't return from this function
        (even if we actually won't even get here...) */
-    while (1) {
-        /* nothing in particular */;
-    }
+    UNREACHABLE();
 }

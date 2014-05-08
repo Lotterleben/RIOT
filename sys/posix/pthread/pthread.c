@@ -1,16 +1,19 @@
-/**
- * POSIX implementation of threading.
- *
+/*
  * Copyright (C) 2013 Freie Universität Berlin
  *
  * This file subject to the terms and conditions of the GNU Lesser General
  * Public License. See the file LICENSE in the top level directory for more
  * details.
- *
+ */
+
+/**
+ * @defgroup pthread POSIX threads
+ * POSIX conforming multi-threading features.
  * @ingroup posix
  * @{
- * @file    pthread.c
- * @brief   Implementation of pthread.
+ * @file
+ * @brief   Thread creation features.
+ * @see     [The Open Group Base Specifications Issue 7: pthread.h - threads](http://pubs.opengroup.org/onlinepubs/9699919799/basedefs/pthread.h.html)
  * @author  Christian Mehlis <mehlis@inf.fu-berlin.de>
  * @author  René Kijewski <kijewski@inf.fu-berlin.de>
  * @}
@@ -62,6 +65,8 @@ typedef struct pthread_thread {
     void *arg;
 
     char *stack;
+
+    __pthread_cleanup_datum_t *cleanup_top;
 } pthread_thread_t;
 
 static pthread_thread_t *volatile pthread_sched_threads[MAXTHREADS];
@@ -74,7 +79,8 @@ static char pthread_reaper_stack[PTHREAD_REAPER_STACKSIZE];
 static void pthread_start_routine(void)
 {
     pthread_t self = pthread_self();
-    pthread_thread_t *pt = pthread_sched_threads[self];
+
+    pthread_thread_t *pt = pthread_sched_threads[self-1];
     void *retval = pt->start_routine(pt->arg);
     pthread_exit(retval);
 }
@@ -86,7 +92,7 @@ static int insert(pthread_thread_t *pt)
     for (int i = 0; i < MAXTHREADS; i++){
         if (!pthread_sched_threads[i]) {
             pthread_sched_threads[i] = pt;
-            result = i;
+            result = i+1;
             break;
         }
     }
@@ -148,7 +154,7 @@ int pthread_create(pthread_t *newthread, const pthread_attr_t *attr, void *(*sta
     if (pt->thread_pid < 0) {
         free(pt->stack);
         free(pt);
-        pthread_sched_threads[pthread_pid] = NULL;
+        pthread_sched_threads[pthread_pid-1] = NULL;
         return -1;
     }
 
@@ -159,31 +165,52 @@ int pthread_create(pthread_t *newthread, const pthread_attr_t *attr, void *(*sta
 
 void pthread_exit(void *retval)
 {
-    pthread_thread_t *self = pthread_sched_threads[pthread_self()];
-    self->thread_pid = -1;
-    DEBUG("pthread_exit(%p), self == %p\n", retval, (void *) self);
-    if (self->status != PTS_DETACHED) {
-        self->returnval = retval;
-        self->status = PTS_ZOMBIE;
+    pthread_t self_id = pthread_self();
 
-        if (self->joining_thread) {
-            /* our thread got an other thread waiting for us */
-            thread_wakeup(self->joining_thread);
+    if (self_id == 0) {
+        DEBUG("ERROR called pthread_self() returned 0 in \"%s\"!\n", __func__);
+    }
+    else {
+        pthread_thread_t *self = pthread_sched_threads[self_id-1];
+
+        while (self->cleanup_top) {
+            __pthread_cleanup_datum_t *ct = self->cleanup_top;
+            self->cleanup_top = ct->__next;
+
+            ct->__routine(ct->__arg);
+        }
+
+        self->thread_pid = -1;
+        DEBUG("pthread_exit(%p), self == %p\n", retval, (void *) self);
+        if (self->status != PTS_DETACHED) {
+            self->returnval = retval;
+            self->status = PTS_ZOMBIE;
+
+            if (self->joining_thread) {
+                /* our thread got an other thread waiting for us */
+                thread_wakeup(self->joining_thread);
+            }
+        }
+
+        dINT();
+        if (self->stack) {
+            msg_t m;
+            m.content.ptr = self->stack;
+            msg_send_int(&m, pthread_reaper_pid);
         }
     }
 
-    dINT();
-    if (self->stack) {
-        msg_t m;
-        m.content.ptr = self->stack;
-        msg_send_int(&m, pthread_reaper_pid);
-    }
     sched_task_exit();
 }
 
 int pthread_join(pthread_t th, void **thread_return)
 {
-    pthread_thread_t *other = pthread_sched_threads[th];
+    if (th < 1 || th > MAXTHREADS) {
+        DEBUG("passed pthread_t th (%d) exceeds bounds of pthread_sched_threads[] in \"%s\"!\n", th, __func__);
+        return -3;
+    }
+
+    pthread_thread_t *other = pthread_sched_threads[th-1];
     if (!other) {
         return -1;
     }
@@ -201,7 +228,7 @@ int pthread_join(pthread_t th, void **thread_return)
             free(other);
             /* we only need to free the pthread layer struct,
             native thread stack is freed by other */
-            pthread_sched_threads[th] = NULL;
+            pthread_sched_threads[th-1] = NULL;
             return 0;
         case (PTS_DETACHED):
             return -1;
@@ -212,7 +239,12 @@ int pthread_join(pthread_t th, void **thread_return)
 
 int pthread_detach(pthread_t th)
 {
-    pthread_thread_t *other = pthread_sched_threads[th];
+    if (th < 1 || th > MAXTHREADS) {
+        DEBUG("passed pthread_t th (%d) exceeds bounds of pthread_sched_threads[] in \"%s\"!\n", th, __func__);
+        return -2;
+    }
+
+    pthread_thread_t *other = pthread_sched_threads[th-1];
     if (!other) {
         return -1;
     }
@@ -221,7 +253,7 @@ int pthread_detach(pthread_t th)
         free(other);
         /* we only need to free the pthread layer struct,
         native thread stack is freed by other */
-        pthread_sched_threads[th] = NULL;
+        pthread_sched_threads[th-1] = NULL;
     } else {
         other->status = PTS_DETACHED;
     }
@@ -231,12 +263,12 @@ int pthread_detach(pthread_t th)
 
 pthread_t pthread_self(void)
 {
-    pthread_t result = -1;
+    pthread_t result = 0;
     mutex_lock(&pthread_mutex);
     int pid = thread_pid; /* thread_pid is volatile */
     for (int i = 0; i < MAXTHREADS; i++) {
         if (pthread_sched_threads[i] && pthread_sched_threads[i]->thread_pid == pid) {
-            result = i;
+            result = i+1;
             break;
         }
     }
@@ -244,14 +276,9 @@ pthread_t pthread_self(void)
     return result;
 }
 
-int pthread_equal(pthread_t thread1, pthread_t thread2)
-{
-    return (thread1 == thread2);
-}
-
 int pthread_cancel(pthread_t th)
 {
-    pthread_thread_t *other = pthread_sched_threads[th];
+    pthread_thread_t *other = pthread_sched_threads[th-1];
     if (!other) {
         return -1;
     }
@@ -265,20 +292,60 @@ int pthread_setcancelstate(int state, int *oldstate)
 {
     (void) state;
     (void) oldstate;
-    return 0;
+    return -1;
 }
 
 int pthread_setcanceltype(int type, int *oldtype)
 {
     (void) type;
     (void) oldtype;
-    return 0;
+    return -1;
 }
 
 void pthread_testcancel(void)
 {
     pthread_t self = pthread_self();
-    if (pthread_sched_threads[self]->should_cancel) {
-        pthread_exit(NULL);
+
+    if (self == 0) {
+        DEBUG("ERROR called pthread_self() returned 0 in \"%s\"!\n", __func__);
+        return;
+    }
+
+    if (pthread_sched_threads[self-1]->should_cancel) {
+        pthread_exit(PTHREAD_CANCELED);
+    }
+}
+
+void __pthread_cleanup_push(__pthread_cleanup_datum_t *datum)
+{
+    pthread_t self_id = pthread_self();
+
+    if (self_id == 0) {
+        DEBUG("ERROR called pthread_self() returned 0 in \"%s\"!\n", __func__);
+        return;
+    }
+
+    pthread_thread_t *self = pthread_sched_threads[self_id-1];
+    datum->__next = self->cleanup_top;
+    self->cleanup_top = datum;
+}
+
+void __pthread_cleanup_pop(__pthread_cleanup_datum_t *datum, int execute)
+{
+    pthread_t self_id = pthread_self();
+
+    if (self_id == 0) {
+        DEBUG("ERROR called pthread_self() returned 0 in \"%s\"!\n", __func__);
+        return;
+    }
+
+    pthread_thread_t *self = pthread_sched_threads[self_id-1];
+    self->cleanup_top = datum->__next;
+
+    if (execute != 0) {
+        /* "The pthread_cleanup_pop() function shall remove the routine at the
+         *  top of the calling thread's cancellation cleanup stack and optionally
+         *  invoke it (if execute is non-zero)." */
+        datum->__routine(datum->__arg);
     }
 }

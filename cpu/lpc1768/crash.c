@@ -61,4 +61,8 @@ NORETURN void core_panic(int crash_code, const char *message)
     /* DEVELHELP not set => reboot system */
     (void) reboot(RB_AUTOBOOT);
 #endif
+
+    /* tell the compiler that we won't return from this function
+       (even if we actually won't even get here...) */
+    UNREACHABLE();
 }

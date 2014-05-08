@@ -38,25 +38,16 @@
 
 #include "transceiver.h"
 
-#ifdef MODULE_CC110X_NG
-#  include "cc110x_ng.h"
-#  define transceiver_ids (TRANSCEIVER_CC1100 | TRANSCEIVER_NONE)
-#else
-#  include "nativenet.h"
-#  define transceiver_ids (TRANSCEIVER_NATIVE | TRANSCEIVER_NONE)
-#endif
+#define TRANSCEIVER TRANSCEIVER_DEFAULT
 
 #define CCNL_RIOT_EVENT_NUMBER_OFFSET (1 << 8)
-typedef enum ccnl_riot_event {
-    CCNL_RIOT_MSG = CCNL_RIOT_EVENT_NUMBER_OFFSET + 1,
-    CCNL_RIOT_HALT,
-    CCNL_RIOT_POPULATE,
-    CCNL_RIOT_PRINT_STAT,
-    CCNL_RIOT_TIMEOUT,
-    CCNL_RIOT_NACK,
-
-    CCNL_RIOT_RESERVED
-} ccnl_riot_event_t;
+#define CCNL_RIOT_MSG                 (CCNL_RIOT_EVENT_NUMBER_OFFSET + 0)
+#define CCNL_RIOT_HALT                (CCNL_RIOT_EVENT_NUMBER_OFFSET + 1)
+#define CCNL_RIOT_POPULATE            (CCNL_RIOT_EVENT_NUMBER_OFFSET + 2)
+#define CCNL_RIOT_PRINT_STAT          (CCNL_RIOT_EVENT_NUMBER_OFFSET + 3)
+#define CCNL_RIOT_TIMEOUT             (CCNL_RIOT_EVENT_NUMBER_OFFSET + 4)
+#define CCNL_RIOT_NACK                (CCNL_RIOT_EVENT_NUMBER_OFFSET + 5)
+#define CCNL_RIOT_RESERVED            (CCNL_RIOT_EVENT_NUMBER_OFFSET + 6)
 
 #define CCNL_HEADER_SIZE (40)
 
@@ -70,8 +61,6 @@ typedef enum ccnl_riot_event {
 #else
 #  define CCNL_RIOT_CHUNK_SIZE (PAYLOAD_SIZE - CCNL_HEADER_SIZE)
 #endif
-
-
 
 /**
  * @brief starts the ccnl relay

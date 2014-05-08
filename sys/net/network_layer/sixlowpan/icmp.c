@@ -618,7 +618,7 @@ void icmpv6_send_router_adv(ipv6_addr_t *addr, uint8_t sllao, uint8_t mtu, uint8
                 }
             }
 
-            contexts = (lowpan_context_t *)calloc(contexts_len, sizeof(lowpan_context_t));
+            contexts = (lowpan_context_t *)malloc(contexts_len * sizeof(lowpan_context_t));
             memcpy(contexts, c_tmp, contexts_len);
         }
 
@@ -1519,10 +1519,6 @@ int ndp_addr_is_on_link(ipv6_addr_t *dest_addr)
     ndp_prefix_info_t *pi;
     ndp_neighbor_cache_t *nce;
     int if_id = -1;
-
-    if (ipv6_addr_is_link_local(dest_addr)) {
-        return 1;
-    }
 
     if ((nce = ndp_neighbor_cache_search(dest_addr))) {
         return 1;

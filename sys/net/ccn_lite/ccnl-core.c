@@ -963,20 +963,20 @@ ccnl_content_add2cache(struct ccnl_relay_s *ccnl, struct ccnl_content_s *c)
     }
 
     while (ccnl->max_cache_entries <= ccnl->contentcnt) {
-        DEBUGMSG(1, "  remove oldest content...\n");
-        struct ccnl_content_s *c2, *oldest = NULL;
+        DEBUGMSG(1, "  remove Least Recently Used content...\n");
+        struct ccnl_content_s *c2, *lru = NULL;
 
         for (c2 = ccnl->contents; c2; c2 = c2->next) {
             DEBUGMSG(1, "    '%s' -> %ld:%ld\n", ccnl_prefix_to_path(c2->name), c2->last_used.tv_sec, c2->last_used.tv_usec);
             if (!(c2->flags & CCNL_CONTENT_FLAGS_STATIC)
-                && ((!oldest) || timevaldelta(&c2->last_used, &oldest->last_used) < 0)) {
-                oldest = c2;
+                && ((!lru) || timevaldelta(&c2->last_used, &lru->last_used) < 0)) {
+                lru = c2;
             }
         }
 
-        if (oldest) {
-            DEBUGMSG(1, "   replaced: '%s'\n", ccnl_prefix_to_path(oldest->name));
-            ccnl_content_remove(ccnl, oldest);
+        if (lru) {
+            DEBUGMSG(1, "   replaced: '%s'\n", ccnl_prefix_to_path(lru->name));
+            ccnl_content_remove(ccnl, lru);
         }
         else {
             DEBUGMSG(1, "   no dynamic content to remove...\n");
@@ -994,7 +994,8 @@ ccnl_content_add2cache(struct ccnl_relay_s *ccnl, struct ccnl_content_s *c)
 // but only one copy per face
 // returns: number of forwards
 int ccnl_content_serve_pending(struct ccnl_relay_s *ccnl,
-                               struct ccnl_content_s *c)
+                               struct ccnl_content_s *c,
+                               struct ccnl_face_s *from)
 {
     struct ccnl_interest_s *i;
     struct ccnl_face_s *f;
@@ -1021,14 +1022,19 @@ int ccnl_content_serve_pending(struct ccnl_relay_s *ccnl,
                 continue;
             }
 
+            if (pi->face == from) {
+                // the existing pending interest is from the same face
+                // as the newly arrived content is...no need to send content back
+                DEBUGMSG(1, "  detected looping content, before loop could happen\n");
+                continue;
+            }
+
             pi->face->flags |= CCNL_FACE_FLAGS_SERVED;
 
-            if (pi->face->ifndx >= 0) {
-                DEBUGMSG(6, "  forwarding content <%s>\n",
-                         ccnl_prefix_to_path(c->name));
-                pi->face->stat.send_content[c->served_cnt % CCNL_MAX_CONTENT_SERVED_STAT]++;
-                ccnl_face_enqueue(ccnl, pi->face, buf_dup(c->pkt));
-            }
+            DEBUGMSG(6, "  forwarding content <%s>\n",
+                     ccnl_prefix_to_path(c->name));
+            pi->face->stat.send_content[c->served_cnt % CCNL_MAX_CONTENT_SERVED_STAT]++;
+            ccnl_face_enqueue(ccnl, pi->face, buf_dup(c->pkt));
 
             c->served_cnt++;
             ccnl_get_timeval(&c->last_used);
@@ -1387,7 +1393,7 @@ int ccnl_core_RX_i_or_c(struct ccnl_relay_s *relay, struct ccnl_face_s *from,
         c = ccnl_content_new(relay, &buf, &p, &ppkd, content, contlen);
 
         if (c) { // CONFORM: Step 2 (and 3)
-            if (!ccnl_content_serve_pending(relay, c)) { // unsolicited content
+            if (!ccnl_content_serve_pending(relay, c, from)) { // unsolicited content
                 // CONFORM: "A node MUST NOT forward unsolicited data [...]"
                 DEBUGMSG(7, "  removed because no matching interest\n");
                 free_content(c);

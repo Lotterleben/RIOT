@@ -34,6 +34,18 @@ ifeq ($(shell $(CC) -Wno-cpp -E - 2>/dev/null >/dev/null dev/null ; echo $$?),0)
 	endif
 endif
 
+BOARD_BLACKLIST := chronos mbed_lpc1768 msb-430 msb-430h redbee-econotag \
+                   telosb wsn430-v1_3b wsn430-v1_4 pttu
+# chronos: not enough RAM
+# mbed_lpc1768: see https://github.com/RIOT-OS/RIOT/issues/675
+# msb-430: see https://github.com/RIOT-OS/RIOT/issues/658
+# msb-430h: not enough RAM
+# redbee-econotag: not enough RAM
+# telosb: not enough RAM
+# wsn430-v1_3b: not enough RAM
+# wsn430-v1_4: not enough RAM
+# pttu: see https://github.com/RIOT-OS/RIOT/issues/659
+
 # Modules to include:
 
 USEMODULE += shell
@@ -41,14 +53,7 @@ USEMODULE += shell_commands
 USEMODULE += posix
 USEMODULE += ps
 USEMODULE += vtimer
-ifeq ($(strip $(BOARD)),native)
-	USEMODULE += nativenet
-else ifeq ($(strip $(BOARD)),msba2)
-	USEMODULE += cc110x
-else ifeq ($(strip $(BOARD)),iot-lab_M3)
-	USEMODULE += at86rf231
-endif
-USEMODULE += sixlowpan
+USEMODULE += defaulttransceiver
 USEMODULE += rpl
 USEMODULE += destiny
 

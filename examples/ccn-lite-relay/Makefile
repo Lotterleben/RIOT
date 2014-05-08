@@ -27,18 +27,23 @@ export RIOTBASE ?= $(CURDIR)/../..
 # Change this to 0 show compiler invocation lines by default:
 export QUIET ?= 1
 
+BOARD_BLACKLIST := chronos mbed_lpc1768 msb-430 msb-430h redbee-econotag \
+                   telosb wsn430-v1_3b wsn430-v1_4 pttu
+# chronos: not enough RAM
+# mbed_lpc1768: see https://github.com/RIOT-OS/RIOT/issues/675
+# msb-430: see https://github.com/RIOT-OS/RIOT/issues/658
+# msb-430h: not enough RAM
+# redbee-econotag: see https://github.com/RIOT-OS/RIOT/issues/676
+# telosb: not enough RAM
+# wsn430-v1_3b: not enough RAM
+# wsn430-v1_4: not enough RAM
+# pttu: see https://github.com/RIOT-OS/RIOT/issues/659
+
 # Modules to include:
 
-USEMODULE += config
 USEMODULE += posix
 
-USEMODULE += transceiver
-ifeq ($(BOARD),msba2)
-	USEMODULE += cc110x_ng
-else ifeq ($(BOARD),native)
-	USEMODULE += nativenet
-endif
-
+USEMODULE += defaulttransceiver
 USEMODULE += rtc
 USEMODULE += crypto_sha256
 USEMODULE += ccn_lite
