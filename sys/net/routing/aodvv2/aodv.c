@@ -1,3 +1,20 @@
+/*
+ *
+ * This file is subject to the terms and conditions of the GNU Lesser General
+ * Public License. See the file LICENSE in the top level directory for more
+ * details.
+ */
+
+/**
+ * @ingroup     aodvv2
+ * @{
+ *
+ * @file        aodv.c
+ * @brief       aodvv2 routing protocol
+ *
+ * @author      Lotte Steenbrink <lotte.steenbrink@fu-berlin.de>
+ */
+
 #include "aodv.h"
 #include "aodvv2/aodvv2.h"
 
@@ -63,10 +80,6 @@ void aodv_init(void)
 
 }
 
-/* 
- * Change or set the metric type.
- * If metric_type does not match any known metric types, no changes will be made.
- */
 void aodv_set_metric_type(int metric_type)
 {
     if (metric_type != AODVV2_DEFAULT_METRIC_TYPE)
@@ -74,9 +87,6 @@ void aodv_set_metric_type(int metric_type)
     _metric_type = metric_type;
 }
 
-/**
- * Dispatch a RREQ.
- */
 void aodv_send_rreq(struct aodvv2_packet_data* packet_data)
 {
     DEBUG("[aodvv2] %s()\n", __func__);
@@ -102,9 +112,6 @@ void aodv_send_rreq(struct aodvv2_packet_data* packet_data)
     msg_send(&msg, sender_thread, false);
 }
 
-/**
- * Dispatch a RREP.
- */
 void aodv_send_rrep(struct aodvv2_packet_data* packet_data, struct netaddr* next_hop)
 {
     DEBUG("[aodvv2] %s()\n", __func__);
@@ -133,9 +140,6 @@ void aodv_send_rrep(struct aodvv2_packet_data* packet_data, struct netaddr* next
     msg_send(&msg, sender_thread, false);
 }
 
-/**
- * Dispatch a RERR.
- */
 void aodv_send_rerr(struct unreachable_node unreachable_nodes[], int len, int hoplimit, struct netaddr* next_hop)
 {
     DEBUG("[aodvv2] %s()\n", __func__);
@@ -162,7 +166,7 @@ void aodv_send_rerr(struct unreachable_node unreachable_nodes[], int len, int ho
 
 
 /* 
- * init the multicast address all RREQs are sent to 
+ * init the multicast address all RREQ and RERRS are sent to 
  * and the local address (source address) of this node
  */
 static void _init_addresses(void)
@@ -186,7 +190,7 @@ static void _init_addresses(void)
     sa_wp.sin6_port = HTONS(MANET_PORT);
 }
 
-/* Init everything needed for socket communication */
+/* init socket communication for sender */
 static void _init_sock_snd(void)
 {
     _sock_snd = destiny_socket(PF_INET6, SOCK_DGRAM, IPPROTO_UDP);
@@ -197,10 +201,12 @@ static void _init_sock_snd(void)
     }
 }
 
-/* Build and dispatch RREQs, RREPs and RERRs */
+/* Build RREQs, RREPs and RERRs from the information contained in the thread's 
+   message queue and send them */
 static void _aodv_sender_thread(void)
 {
-    msg_t msgq[1];
+    //msg_t msgq[1]; // TODO richtige größe?
+    msg_t msgq[RCV_MSG_Q_SIZE];
     msg_init_queue(msgq, sizeof msgq);
     DEBUG("[aodvv2] _aodv_sender_thread initialized.\n");
 
@@ -226,7 +232,7 @@ static void _aodv_sender_thread(void)
     }
 }
 
-/* receive RREQs and RREPs and handle them */
+/* receive RREQs, RREPs and RERRs and handle them */
 static void _aodv_receiver_thread(void)
 {
     DEBUG("[aodvv2] %s()\n", __func__);
@@ -266,15 +272,8 @@ static void _aodv_receiver_thread(void)
     destiny_socket_close(sock_rcv);    
 }
 
-/**
- * When set as ipv6_iface_routing_provider, this function will be called by 
- * RIOT's ipv6_sendto() to determine the next hop it should send a packet to dest to.
- * @param dest 
- * @return ipv6_addr_t* of the next hop towards dest if there is any, NULL if there is no next hop (yet)
- */
 static ipv6_addr_t* aodv_get_next_hop(ipv6_addr_t* dest)
-{   // TODO: warum ist *nur hier* v6_addr_local immer == dest? im receiver thred wird addr_local richtig angezeigt...
-    // evtl liegts an der doppelverwendung von addr_str?
+{   
     DEBUG("[aodvv2] %s: getting next hop for %s\n", ipv6_addr_to_str(addr_str, IPV6_MAX_ADDR_STR_LEN, &_v6_addr_local), ipv6_addr_to_str(addr_str2, IPV6_MAX_ADDR_STR_LEN, dest));
 
     struct netaddr _tmp_dest;
@@ -305,10 +304,11 @@ static ipv6_addr_t* aodv_get_next_hop(ipv6_addr_t* dest)
             ndp_nc_entry->state == NDP_NCE_STATUS_INCOMPLETE ||
             ndp_nc_entry->state == NDP_NCE_STATUS_PROBE) &&
             (rt_entry != NULL && rt_entry->state != ROUTE_STATE_BROKEN)) {
-            // mark all routes (active, idle, expired) that use next_hop as broken
-            // and add all *Active* routes to the list of unreachable nodes    
+
             DEBUG("\tNeighbor Cache entry found, but invalid (state: %i). Sending RERR.\n", ndp_nc_entry->state);
-    
+
+            /* mark all routes (active, idle, expired) that use next_hop as broken
+            and add all *Active* routes to the list of unreachable nodes */
             routingtable_break_and_get_all_hopping_over(&_tmp_dest, unreachable_nodes, &len);
 
             aodv_send_rerr(unreachable_nodes, len, AODVV2_MAX_HOPCOUNT, &na_mcast);
@@ -363,7 +363,8 @@ static ipv6_addr_t* aodv_get_next_hop(ipv6_addr_t* dest)
 
 
 /**
- * Handle the output of the RFC5444 packet creation process
+ * Handle the output of the RFC5444 packet creation process. This callback is 
+ * called by every writer_send_* function.
  * @param wr
  * @param iface
  * @param buffer

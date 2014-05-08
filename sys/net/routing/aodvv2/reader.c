@@ -473,7 +473,7 @@ static enum rfc5444_result _cb_rrep_end_callback(
     earlier RREQ, and RREP processing is completed.  Any packets
     buffered for OrigNode should be transmitted. */
     if (clienttable_is_client(&packet_data.origNode.addr)){
-        DEBUG("\t %s: This is my RREP. We are done here, thanks!\n", netaddr_to_string(&nbuf, &packet_data.origNode.addr));
+        DEBUG("\t{%" PRIu32 ":%" PRIu32 "} %s:  This is my RREP. We are done here, thanks!\n", now.seconds, now.microseconds, netaddr_to_string(&nbuf, &packet_data.origNode.addr));
     }
 
     /* 
