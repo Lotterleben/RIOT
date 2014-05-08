@@ -1,3 +1,20 @@
+/*
+ *
+ * This file is subject to the terms and conditions of the GNU Lesser General
+ * Public License. See the file LICENSE in the top level directory for more
+ * details.
+ */
+
+/**
+ * @ingroup     aodvv2
+ * @{
+ *
+ * @file        reader.c
+ * @brief       reading and handling of RFC5444 aodvv2 messages
+ *
+ * @author      Lotte Steenbrink <lotte.steenbrink@fu-berlin.de>
+ */
+
 #ifdef RIOT
 #include "net_help.h"
 #endif
@@ -465,8 +482,6 @@ static enum rfc5444_result _cb_rrep_end_callback(
         DEBUG("\tUpdating Routing Table entry...\n");
         _fill_routing_entry_t_rreq(&packet_data, rt_entry, link_cost);
     }
-
-    //();
     
     /*
     If HandlingRtr is RREQ_Gen then the RREP satisfies RREQ_Gen's
@@ -610,10 +625,6 @@ void reader_cleanup(void)
     rfc5444_reader_cleanup(&reader);
 }
 
-/**
- * 
- * @param sender Address of the node from which the packet was received
- */
 int reader_handle_packet(void* buffer, size_t length, struct netaddr* sender)
 {
     DEBUG("[aodvv2] %s()\n", __func__);
@@ -675,7 +686,6 @@ static void _update_metric(uint8_t metricType, uint8_t* metric)
         *metric = *metric+1; // TODO less derpy
 }
 
-// TODO: use memcpy?!
 /* Fills a routing table entry with the data of a RREQ */
 static void _fill_routing_entry_t_rreq(struct aodvv2_packet_data* packet_data, struct aodvv2_routing_entry_t* rt_entry, uint8_t link_cost)
 {
@@ -689,7 +699,6 @@ static void _fill_routing_entry_t_rreq(struct aodvv2_packet_data* packet_data, s
     rt_entry->state = ROUTE_STATE_ACTIVE;
 }
 
-// TODO: use memcpy?!
 /* Fills a routing table entry with the data of a RREQ */
 static void _fill_routing_entry_t_rrep(struct aodvv2_packet_data* packet_data, struct aodvv2_routing_entry_t* rt_entry, uint8_t link_cost)
 {
