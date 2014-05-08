@@ -1,3 +1,20 @@
+/*
+ *
+ * This file is subject to the terms and conditions of the GNU Lesser General
+ * Public License. See the file LICENSE in the top level directory for more
+ * details.
+ */
+
+/**
+ * @ingroup     aodvv2
+ * @{
+ *
+ * @file        constants.h
+ * @brief       constants for the aodvv2 routing protocol
+ *
+ * @author      Lotte Steenbrink <lotte.steenbrink@fu-berlin.de>
+ */
+
 #include "common/netaddr.h"
 #include "rfc5444/rfc5444_print.h"
 
@@ -38,7 +55,7 @@ struct node_data {
     uint16_t seqnum;
 };
 
-/* contains all data contained in an aodvv2 packet */
+/* all data contained in a RREQ or RREP */
 struct aodvv2_packet_data {
     uint8_t hoplimit;
     struct netaddr sender;

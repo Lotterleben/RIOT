@@ -1,7 +1,18 @@
 /*
- * Cobbled-together routing table.
- * This is neither efficient nor elegant, but until RIOT gets their own native
- * RT, this will have to do.
+ *
+ * This file is subject to the terms and conditions of the GNU Lesser General
+ * Public License. See the file LICENSE in the top level directory for more
+ * details.
+ */
+
+/**
+ * @ingroup     aodvv2
+ * @{
+ *
+ * @file        routing.c
+ * @brief       Cobbled-together routing table. 
+ *
+ * @author      Lotte Steenbrink <lotte.steenbrink@fu-berlin.de>
  */
 
 #include "routing.h" 
@@ -16,6 +27,7 @@ static struct aodvv2_routing_entry_t routing_table[AODVV2_MAX_ROUTING_ENTRIES];
 timex_t now, null_time, max_seqnum_lifetime, active_interval, max_idletime;
 struct netaddr_str nbuf;
 
+
 void routingtable_init(void)
 {   
     null_time = timex_set(0,0);
@@ -29,20 +41,18 @@ void routingtable_init(void)
     DEBUG("[aodvv2] routing table initialized.\n");
 }
 
-struct netaddr* routingtable_get_next_hop(struct netaddr* addr, uint8_t metricType)
+struct netaddr* routingtable_get_next_hop(struct netaddr* dest, uint8_t metricType)
 {
-    struct aodvv2_routing_entry_t* entry = routingtable_get_entry(addr, metricType);
+    struct aodvv2_routing_entry_t* entry = routingtable_get_entry(dest, metricType);
     if (!entry)
         return NULL;
     return(&entry->nextHopAddr);
 }
 
-
 void routingtable_add_entry(struct aodvv2_routing_entry_t* entry)
 {
-    /* only update if we don't already know the address
-     * TODO: does this always make sense?
-     */
+    // TODO: if entry already present, update it?
+    /* only add if we don't already know the address */
     if (!(routingtable_get_entry(&(entry->addr), entry->metricType))){
         /*find free spot in RT and place rt_entry there */
         for (uint8_t i = 0; i < AODVV2_MAX_ROUTING_ENTRIES; i++){
@@ -55,9 +65,6 @@ void routingtable_add_entry(struct aodvv2_routing_entry_t* entry)
     }
 }
 
-/*
- * retrieve pointer to a routing table entry. To edit, simply follow the pointer.
- */
 struct aodvv2_routing_entry_t* routingtable_get_entry(struct netaddr* addr, uint8_t metricType)
 {   
     for (uint8_t i = 0; i < AODVV2_MAX_ROUTING_ENTRIES; i++) {
@@ -84,16 +91,6 @@ void routingtable_delete_entry(struct netaddr* addr, uint8_t metricType)
     }
 }
 
-/**
- * Find all routing table entries that use hop as their nextHopAddress, mark them
- * as broken, write the active one into unreachable_nodes[] and increment len 
- * accordingly. (Sorry about the Name.)
- * TODO test/debug somehow
- *
- * @param hop
- * @param unreachable_nodes[] array to be filled. should be empty.
- * @param len int where the future length of unreachable_nodes[] should be noted
- */
 void routingtable_break_and_get_all_hopping_over(struct netaddr* hop, struct unreachable_node unreachable_nodes[], int* len) 
 {
     *len = 0; // to be sure

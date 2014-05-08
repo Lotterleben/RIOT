@@ -1,3 +1,21 @@
+/*
+ *
+ * This file is subject to the terms and conditions of the GNU Lesser General
+ * Public License. See the file LICENSE in the top level directory for more
+ * details.
+ */
+
+/**
+ * @ingroup     aodvv2
+ * @{
+ *
+ * @file        seqnum.c
+ * @brief       aodvv2 sequence number
+ *
+ * @author      Lotte Steenbrink <lotte.steenbrink@fu-berlin.de>
+ */
+
+
 #include "seqnum.h"
 
 #define ENABLE_DEBUG (0)
@@ -5,18 +23,11 @@
 
 static uint16_t seqnum; 
 
-/**
- * Initializes the AODVv2 SeqNum.
- **/
-
 void seqnum_init(void)
 {
     seqnum = 1;
 }
 
-/**
- * Increments the AODVv2 SeqNum by 1.
- **/
 void seqnum_inc(void)
 {   
     if (seqnum == 65535)
@@ -32,9 +43,7 @@ uint16_t seqnum_get(void)
     return seqnum;
 }
 
-/**
- * @return -1 when s1 is smaller, 0 if equal, 1 if s1 is bigger.
- */
+
 int seqnum_cmp(uint16_t s1, uint16_t s2)
 {
     uint16_t diff = s1 - s2;
