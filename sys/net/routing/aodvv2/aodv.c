@@ -205,7 +205,6 @@ static void _init_sock_snd(void)
    message queue and send them */
 static void _aodv_sender_thread(void)
 {
-    //msg_t msgq[1]; // TODO richtige größe?
     msg_t msgq[RCV_MSG_Q_SIZE];
     msg_init_queue(msgq, sizeof msgq);
     DEBUG("[aodvv2] _aodv_sender_thread initialized.\n");
@@ -262,7 +261,7 @@ static void _aodv_receiver_thread(void)
         if(rcv_size < 0) {
             DEBUG("[aodvv2] ERROR receiving data!\n");
         }
-        //DEBUG("[aodvv2] %s: UDP packet received from %s\n",ipv6_addr_to_str(addr_str, IPV6_MAX_ADDR_STR_LEN, &_v6_addr_local), ipv6_addr_to_str(addr_str_rec, IPV6_MAX_ADDR_STR_LEN, &sa_rcv.sin6_addr));
+        DEBUG("[aodvv2] _aodv_receiver_thread() %s: UDP packet received from %s\n",ipv6_addr_to_str(addr_str, IPV6_MAX_ADDR_STR_LEN, &_v6_addr_local), ipv6_addr_to_str(addr_str_rec, IPV6_MAX_ADDR_STR_LEN, &sa_rcv.sin6_addr));
         
         struct netaddr _sender;
         ipv6_addr_t_to_netaddr(&sa_rcv.sin6_addr, &_sender);
@@ -274,7 +273,7 @@ static void _aodv_receiver_thread(void)
 
 static ipv6_addr_t* aodv_get_next_hop(ipv6_addr_t* dest)
 {   
-    DEBUG("[aodvv2] %s: getting next hop for %s\n", ipv6_addr_to_str(addr_str, IPV6_MAX_ADDR_STR_LEN, &_v6_addr_local), ipv6_addr_to_str(addr_str2, IPV6_MAX_ADDR_STR_LEN, dest));
+    DEBUG("[aodvv2] aodv_get_next_hop() %s: getting next hop for %s\n", ipv6_addr_to_str(addr_str, IPV6_MAX_ADDR_STR_LEN, &_v6_addr_local), ipv6_addr_to_str(addr_str2, IPV6_MAX_ADDR_STR_LEN, dest));
 
     struct netaddr _tmp_dest;
     ipv6_addr_t_to_netaddr(dest, &_tmp_dest);
@@ -297,7 +296,6 @@ static ipv6_addr_t* aodv_get_next_hop(ipv6_addr_t* dest)
     struct aodvv2_routing_entry_t* rt_entry = routingtable_get_entry(&_tmp_dest, _metric_type);
 
     if (ndp_nc_entry != NULL){
-        // trying to send to 1 hop neighbor; just send it already
         
         // Case 2: Broken Link (detected by lower layer) 
         if ((/*!ndp_nc_entry || */ // not sure if this is a dirty or correct fix
