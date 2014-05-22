@@ -351,6 +351,7 @@ static ipv6_addr_t* aodv_get_next_hop(ipv6_addr_t* dest)
             .addr = _tmp_dest,
         }
     };
+    seqnum_inc();
 
     printf("\tNo route found towards %s, starting route discovery... \n", ipv6_addr_to_str(addr_str, IPV6_MAX_ADDR_STR_LEN, dest));
     aodv_send_rreq(&rreq_data);
@@ -391,7 +392,7 @@ static void _write_packet(struct rfc5444_writer *wr __attribute__ ((unused)),
     /* When originating a RREQ, add it to our RREQ table/update its predecessor */
     if (wt->type == RFC5444_MSGTYPE_RREQ &&
         netaddr_cmp(&wt->packet_data.origNode.addr, &na_local) == 0) {
-        DEBUG("[aodvv2] originating RREQ towards %s; updating RREQ table...\n", netaddr_to_string(&nbuf, &wt->packet_data.targNode.addr));
+        DEBUG("[aodvv2] originating RREQ with SeqNum %d towards %s; updating RREQ table...\n", wt->packet_data.origNode.seqnum, netaddr_to_string(&nbuf, &wt->packet_data.targNode.addr));
         rreqtable_is_redundant(&wt->packet_data);
     }
 
