@@ -491,7 +491,7 @@ static enum rfc5444_result _cb_rrep_end_callback(
         /* The incoming routing information is better than existing routing 
          * table information and SHOULD be used to improve the route table. */ 
         VDEBUG("\tUpdating Routing Table entry...\n");
-        _fill_routing_entry_t_rreq(&packet_data, rt_entry, link_cost);
+        _fill_routing_entry_t_rrep(&packet_data, rt_entry, link_cost);
     }
     
     //print_routingtable();
@@ -501,7 +501,10 @@ static enum rfc5444_result _cb_rrep_end_callback(
     earlier RREQ, and RREP processing is completed.  Any packets
     buffered for OrigNode should be transmitted. */
     if (clienttable_is_client(&packet_data.origNode.addr)){
-        DEBUG("\t{%" PRIu32 ":%" PRIu32 "} %s:  This is my RREP. We are done here, thanks!\n", now.seconds, now.microseconds, netaddr_to_string(&nbuf, &packet_data.origNode.addr));
+        // TODO: beide IPs sind gleich; wegen nbuf
+        DEBUG("\t{%" PRIu32 ":%" PRIu32 "} %s:  This is my RREP (SeqNum: %d). We are done here, thanks %s!\n", 
+                now.seconds, now.microseconds, netaddr_to_string(&nbuf, &packet_data.origNode.addr), 
+                packet_data.origNode.seqnum, netaddr_to_string(&nbuf, &packet_data.targNode.addr));
     }
 
     /* 
