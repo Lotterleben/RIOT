@@ -329,7 +329,7 @@ static ipv6_addr_t* aodv_get_next_hop(ipv6_addr_t* dest)
             return NULL;
         }
 
-        DEBUG("\t found dest in routing table: %s\n", netaddr_to_string(&nbuf, &rt_entry->nextHopAddr));
+        DEBUG("\tfound dest %s in routing table\n",  ipv6_addr_to_str(addr_str, IPV6_MAX_ADDR_STR_LEN, dest));
 
         vtimer_now(&now);
         rt_entry->lastUsed = now;
@@ -339,19 +339,21 @@ static ipv6_addr_t* aodv_get_next_hop(ipv6_addr_t* dest)
         return &rt_entry->nextHopAddr;
     } 
 
+    uint16_t seqnum = seqnum_get();
+    seqnum_inc();
+
     struct aodvv2_packet_data rreq_data = (struct aodvv2_packet_data) {
         .hoplimit = AODVV2_MAX_HOPCOUNT,
         .metricType = _metric_type,
         .origNode = (struct node_data) {
             .addr = na_local,
             .metric = 0,
-            .seqnum = seqnum_get(),
+            .seqnum = seqnum,
         },
         .targNode = (struct node_data) { 
             .addr = _tmp_dest,
         }
     };
-    seqnum_inc();
 
     printf("\tNo route found towards %s, starting route discovery... \n", ipv6_addr_to_str(addr_str, IPV6_MAX_ADDR_STR_LEN, dest));
     aodv_send_rreq(&rreq_data);
