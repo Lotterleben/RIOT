@@ -1,3 +1,21 @@
+/*
+ *
+ * This file is subject to the terms and conditions of the GNU Lesser General
+ * Public License. See the file LICENSE in the top level directory for more
+ * details.
+ */
+
+/**
+ * @ingroup     aodvv2
+ * @{
+ *
+ * @file        utils.c
+ * @brief       client- and RREQ-table, ipv6 address representation converters
+ *
+ * @author      Lotte Steenbrink <lotte.steenbrink@fu-berlin.de>
+ */
+
+
 #include "utils.h"
 
 #define ENABLE_DEBUG (0)
@@ -18,11 +36,9 @@ static struct aodvv2_rreq_entry rreq_table[AODVV2_RREQ_BUF];
 static struct netaddr_str nbuf;
 static timex_t null_time, now, _max_idletime;
 
-/*
- * Initialize table of clients that the router currently serves.
- */
+
 void clienttable_init(void)
-{   
+{
     if (mutex_lock(&clientt_mutex) == 1) {
         for (uint8_t i = 0; i < AODVV2_MAX_CLIENTS; i++) {
             memset(&client_table[i], 0, sizeof(client_table[i]));
@@ -33,11 +49,6 @@ void clienttable_init(void)
     DEBUG("[aodvv2] client table initialized.\n");
 }
 
-/*
- * Add client to the list of clients that the router currently serves. 
- * Since the current version doesn't offer support for Client Networks,
- * the prefixlen is currently ignored.
- */
 void clienttable_add_client(struct netaddr* addr)
 {
     if(!clienttable_is_client(addr)) {
@@ -56,11 +67,6 @@ void clienttable_add_client(struct netaddr* addr)
     }
 }
 
-/*
- * Find out if a client is in the list of clients that the router currently serves. 
- * Since the current version doesn't offer support for Client Networks,
- * the prefixlen embedded in the netaddr is currently ignored.
- */
 bool clienttable_is_client(struct netaddr* addr)
 {
     if (mutex_lock(&clientt_mutex) == 1) {
@@ -75,16 +81,11 @@ bool clienttable_is_client(struct netaddr* addr)
     return false;
 }
 
-/*
- * Delete a client from the list of clients that the router currently serves. 
- * Since the current version doesn't offer support for Client Networks,
- * the prefixlen embedded in the netaddr is currently ignored.
- */
 void clienttable_delete_client(struct netaddr* addr)
 {
     if (!clienttable_is_client(addr))
         return;
-    
+
     if (mutex_lock(&clientt_mutex) == 1) {
         for (uint8_t i = 0; i < AODVV2_MAX_CLIENTS; i++) {
             if (!netaddr_cmp(&client_table[i], addr)) {
@@ -96,9 +97,6 @@ void clienttable_delete_client(struct netaddr* addr)
     }
 }
 
-/*
- * Initialize table of clients that the router currently serves.
- */
 void rreqtable_init(void)
 {
     if (mutex_lock(&rreqt_mutex) == 1) {
@@ -113,34 +111,15 @@ void rreqtable_init(void)
     DEBUG("[aodvv2] RREQ table initialized.\n");
 }
 
-/**
- * Check if a RREQ is redundant, i.e. was received from another node already.
- * 
- * Behaves as described in Sections 5.7. and 7.6.:
- *
- * The RREQ Table is maintained so that no two entries in the RREQ Table
- * are comparable -- that is, all RREQs represented in the RREQ Table
- * either have different OrigNode addresses, different TargNode
- * addresses, or different metric types.  If two RREQs have the same
- * metric type and OrigNode and Targnode addresses, the information from
- * the one with the older Sequence Number is not needed in the table; in
- * case they have the same Sequence Number, the one with the greater
- * Metric value is not needed; in case they have the same Metric as
- * well, it does not matter which table entry is maintained.  Whenever a
- * RREQ Table entry is updated, its Timestamp field should also be
- * updated to reflect the Current_Time.
- * 
- * @param packet_data
- */
 bool rreqtable_is_redundant(struct aodvv2_packet_data* packet_data)
 {
     struct aodvv2_rreq_entry* comparable_rreq;
     int seqnum_comparison;
     timex_t now;
-    
+
     if (mutex_lock(&rreqt_mutex) == 1) {
         comparable_rreq = _get_comparable_rreq(packet_data);
-        
+
         /* if there is no comparable rreq stored, add one and return false */
         if (comparable_rreq == NULL){
             _add_rreq(packet_data);
@@ -150,7 +129,7 @@ bool rreqtable_is_redundant(struct aodvv2_packet_data* packet_data)
 
         seqnum_comparison = seqnum_cmp(packet_data->origNode.seqnum, comparable_rreq->seqnum);
 
-        /* 
+        /*
          * If two RREQs have the same
          * metric type and OrigNode and Targnode addresses, the information from
          * the one with the older Sequence Number is not needed in the table
@@ -165,7 +144,7 @@ bool rreqtable_is_redundant(struct aodvv2_packet_data* packet_data)
             comparable_rreq->seqnum = packet_data->origNode.seqnum;
         }
 
-        /* 
+        /*
          * in case they have the same Sequence Number, the one with the greater
          * Metric value is not needed
          */
@@ -188,21 +167,21 @@ bool rreqtable_is_redundant(struct aodvv2_packet_data* packet_data)
 }
 
 /*
- * retrieve pointer to a comparable (according to Section 6.7.) 
+ * retrieve pointer to a comparable (according to Section 6.7.)
  * RREQ table entry if it exists and NULL otherwise.
  * Two AODVv2 RREQ messages are comparable if:
  * - they have the same metric type
  * - they have the same OrigNode and TargNode addresses
  */
 static struct aodvv2_rreq_entry* _get_comparable_rreq(struct aodvv2_packet_data* packet_data)
-{       
+{
     for (uint8_t i = 0; i < AODVV2_RREQ_BUF; i++) {
         _reset_entry_if_stale(i);
 
         if (!netaddr_cmp(&rreq_table[i].origNode, &packet_data->origNode.addr)
             && !netaddr_cmp(&rreq_table[i].targNode, &packet_data->targNode.addr)
             && rreq_table[i].metricType == packet_data->metricType){
-            return &rreq_table[i];          
+            return &rreq_table[i];
         }
     }
 
@@ -219,19 +198,19 @@ static void _add_rreq(struct aodvv2_packet_data* packet_data)
             if (!rreq_table[i].timestamp.seconds
                 && !rreq_table[i].timestamp.microseconds) {
                 /* TODO: sanity check? */
-                rreq_table[i].origNode = packet_data->origNode.addr; 
-                rreq_table[i].targNode = packet_data->targNode.addr; 
-                rreq_table[i].metricType = packet_data->metricType; 
-                rreq_table[i].metric = packet_data->origNode.metric; 
+                rreq_table[i].origNode = packet_data->origNode.addr;
+                rreq_table[i].targNode = packet_data->targNode.addr;
+                rreq_table[i].metricType = packet_data->metricType;
+                rreq_table[i].metric = packet_data->origNode.metric;
                 rreq_table[i].seqnum = packet_data->origNode.seqnum;
                 rreq_table[i].timestamp = packet_data->timestamp;
                 return;
             }
         }
-    }    
+    }
 }
 
-/* 
+/*
  * Check if entry at index i is stale and clear the struct it fills if it is
  */
 static void _reset_entry_if_stale(uint8_t i)

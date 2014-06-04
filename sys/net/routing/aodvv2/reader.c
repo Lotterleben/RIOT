@@ -188,12 +188,12 @@ static enum rfc5444_result _cb_rreq_blocktlv_addresstlvs_okay(struct rfc5444_rea
     bool is_targNode_addr = false;
 
     VDEBUG("[aodvv2] %s()\n", __func__);
-    VDEBUG("\taddr: %s\n", netaddr_to_string(&nbuf, &cont->addr));
+    DEBUG("\taddr: %s\n", netaddr_to_string(&nbuf, &cont->addr));
 
     /* handle OrigNode SeqNum TLV */
     tlv = _rreq_rrep_address_consumer_entries[RFC5444_MSGTLV_ORIGSEQNUM].tlv;
     if (tlv) {
-        VDEBUG("\ttlv RFC5444_MSGTLV_ORIGSEQNUM: %d\n", *tlv->single_value);
+        DEBUG("\ttlv RFC5444_MSGTLV_ORIGSEQNUM: %d\n", *tlv->single_value);
         is_origNode_addr = true;
         packet_data.origNode.addr = cont->addr;
         packet_data.origNode.seqnum = *tlv->single_value;
@@ -202,7 +202,7 @@ static enum rfc5444_result _cb_rreq_blocktlv_addresstlvs_okay(struct rfc5444_rea
     /* handle TargNode SeqNum TLV */
     tlv = _rreq_rrep_address_consumer_entries[RFC5444_MSGTLV_TARGSEQNUM].tlv;
     if (tlv) {
-        VDEBUG("\ttlv RFC5444_MSGTLV_TARGSEQNUM: %d\n", *tlv->single_value);
+        DEBUG("\ttlv RFC5444_MSGTLV_TARGSEQNUM: %d\n", *tlv->single_value);
         is_targNode_addr = true;
         packet_data.targNode.addr = cont->addr;
         packet_data.targNode.seqnum = *tlv->single_value;
@@ -501,10 +501,12 @@ static enum rfc5444_result _cb_rrep_end_callback(
     earlier RREQ, and RREP processing is completed.  Any packets
     buffered for OrigNode should be transmitted. */
     if (clienttable_is_client(&packet_data.origNode.addr)){
-        // TODO: beide IPs sind gleich; wegen nbuf
+        // TODO: proper fix
+        static struct netaddr_str nbuf2;
+
         DEBUG("\t{%" PRIu32 ":%" PRIu32 "} %s:  This is my RREP (SeqNum: %d). We are done here, thanks %s!\n", 
                 now.seconds, now.microseconds, netaddr_to_string(&nbuf, &packet_data.origNode.addr), 
-                packet_data.origNode.seqnum, netaddr_to_string(&nbuf, &packet_data.targNode.addr));
+                packet_data.origNode.seqnum, netaddr_to_string(&nbuf2, &packet_data.targNode.addr));
     }
 
     /* 
