@@ -242,7 +242,7 @@ void writer_init(write_packet_func_ptr ptr)
  * @param packet_data parameters of the RREQ
  * @param next_hop Address the RREP is sent to
  */
-void writer_send_rreq(struct aodvv2_packet_data* packet_data, struct netaddr* next_hop) // ex forward rreq TODO diesen komemntar löschen
+void writer_send_rreq(struct aodvv2_packet_data* packet_data, struct netaddr* next_hop)
 {
     DEBUG("[aodvv2] %s()\n", __func__);
 

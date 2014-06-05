@@ -54,12 +54,9 @@ static enum rfc5444_result _cb_rerr_end_callback(
     struct rfc5444_reader_tlvblock_context *cont, bool dropped);
 
 /* helper functions */
-static bool _offers_improvement(struct aodvv2_routing_entry_t* rt_entry, struct node_data* node_data);
 static uint8_t _get_link_cost(uint8_t metricType, struct aodvv2_packet_data* data);
 static uint8_t _get_max_metric(uint8_t metricType);
 static void _update_metric(uint8_t metricType, uint8_t* metric);
-static void _fill_routing_entry_t_rreq(struct aodvv2_packet_data* packet_data, struct aodvv2_routing_entry_t* routing_entry, uint8_t link_cost);
-static void _fill_routing_entry_t_rrep(struct aodvv2_packet_data* packet_data, struct aodvv2_routing_entry_t* rt_entry, uint8_t link_cost);
 
 /* This is where we store data gathered from packets */
 static struct aodvv2_packet_data packet_data;
@@ -67,7 +64,6 @@ static struct unreachable_node unreachable_nodes[AODVV2_MAX_UNREACHABLE_NODES];
 static int num_unreachable_nodes;
 
 static struct rfc5444_reader reader;
-static timex_t validity_t;
 static struct netaddr_str nbuf;
 
 /*
@@ -89,7 +85,7 @@ static struct rfc5444_reader_tlvblock_consumer _rreq_address_consumer = {
     .addrblock_consumer = true,
     .block_callback = _cb_rreq_blocktlv_addresstlvs_okay,
 };
- 
+
 /*
  * Message consumer, will be called once for every message of
  * type RFC5444_MSGTYPE_RREP that contains all the mandatory message TLVs
@@ -162,7 +158,7 @@ static enum rfc5444_result _cb_rreq_blocktlv_messagetlvs_okay(struct rfc5444_rea
     if (!cont->has_hoplimit) {
         DEBUG("\tERROR: missing hop limit\n");
         return RFC5444_DROP_PACKET;
-    } 
+    }
 
     packet_data.hoplimit = cont->hoplimit;
     if (packet_data.hoplimit == 0) {
@@ -215,7 +211,7 @@ static enum rfc5444_result _cb_rreq_blocktlv_addresstlvs_okay(struct rfc5444_rea
 
     if (!is_origNode_addr && !is_targNode_addr) {
         DEBUG("\tERROR: mandatory RFC5444_MSGTLV_ORIGSEQNUM TLV missing.\n");
-        return RFC5444_DROP_PACKET;        
+        return RFC5444_DROP_PACKET;
     }
 
     /* handle Metric TLV */
@@ -254,14 +250,14 @@ static enum rfc5444_result _cb_rreq_end_callback(
     if (dropped) {
         DEBUG("\t Dropping packet.\n");
         return RFC5444_DROP_PACKET;
-    } 
+    }
     if ((packet_data.origNode.addr._type == AF_UNSPEC) || !packet_data.origNode.seqnum){
         DEBUG("\tERROR: missing OrigNode Address or SeqNum. Dropping packet.\n");
         return RFC5444_DROP_PACKET;
     }
     if (packet_data.targNode.addr._type == AF_UNSPEC){
         DEBUG("\tERROR: missing TargNode Address. Dropping packet.\n");
-        return RFC5444_DROP_PACKET; 
+        return RFC5444_DROP_PACKET;
     }
     if (packet_data.hoplimit == 0){
         DEBUG("\tERROR: Hoplimit is 0. Dropping packet.\n");
@@ -299,24 +295,22 @@ static enum rfc5444_result _cb_rreq_end_callback(
         VDEBUG("\tCreating new Routing Table entry...\n");
 
         struct aodvv2_routing_entry_t* tmp_rt_entry = (struct aodvv2_routing_entry_t*)malloc(sizeof(struct aodvv2_routing_entry_t));
-        memset(tmp_rt_entry, 0, sizeof(*tmp_rt_entry)); // TODO: muss ich das überhaupt? wird ja eh gefüllt
+        memset(tmp_rt_entry, 0, sizeof(*tmp_rt_entry));
 
-        _fill_routing_entry_t_rreq(&packet_data, tmp_rt_entry, link_cost);
+        routingtable_fill_routing_entry_t_rreq(&packet_data, tmp_rt_entry, link_cost);
         routingtable_add_entry(tmp_rt_entry);
-        //print_routingtable_entry(tmp_rt_entry);
+
         free(tmp_rt_entry);
     } else {
-        if (!_offers_improvement(rt_entry, &packet_data.origNode)){
+        if (!routingtable_offers_improvement(rt_entry, &packet_data.origNode)){
             DEBUG("\tPacket offers no improvement over known route. Dropping Packet.\n");
-            return RFC5444_DROP_PACKET; 
+            return RFC5444_DROP_PACKET;
         }
-        /* The incoming routing information is better than existing routing 
-         * table information and SHOULD be used to improve the route table. */ 
+        /* The incoming routing information is better than existing routing
+         * table information and SHOULD be used to improve the route table. */
         VDEBUG("\tUpdating Routing Table entry...\n");
-        _fill_routing_entry_t_rreq(&packet_data, rt_entry, link_cost);
+        routingtable_fill_routing_entry_t_rreq(&packet_data, rt_entry, link_cost);
     }
-
-    //print_routingtable();
 
     /*
      * If TargNode is a client of the router receiving the RREQ, then the
@@ -326,7 +320,7 @@ static enum rfc5444_result _cb_rreq_end_callback(
      */
     if (clienttable_is_client(&packet_data.targNode.addr)){
         DEBUG("[aodvv2] TargNode is in client list, sending RREP\n");
-        // make sure to start with a clean metric value 
+        // make sure to start with a clean metric value
         packet_data.targNode.metric = 0;
         aodv_send_rrep(&packet_data, &packet_data.sender);
     }
@@ -351,7 +345,7 @@ static enum rfc5444_result _cb_rrep_blocktlv_messagetlvs_okay(struct rfc5444_rea
     if (!cont->has_hoplimit) {
         VDEBUG("\tERROR: missing hop limit\n");
         return RFC5444_DROP_PACKET;
-    } 
+    }
 
     packet_data.hoplimit = cont->hoplimit;
     if (packet_data.hoplimit == 0) {
@@ -394,7 +388,7 @@ static enum rfc5444_result _cb_rrep_blocktlv_addresstlvs_okay(struct rfc5444_rea
         is_targNode_addr = false;
         packet_data.origNode.addr = cont->addr;
         packet_data.origNode.seqnum = *tlv->single_value;
-    } 
+    }
     if (!tlv && !is_targNode_addr) {
         DEBUG("\tERROR: mandatory SeqNum TLV missing.\n");
         return RFC5444_DROP_PACKET;
@@ -439,36 +433,28 @@ static enum rfc5444_result _cb_rrep_end_callback(
     if (dropped) {
         DEBUG("\t Dropping packet.\n");
         return RFC5444_DROP_PACKET;
-    } 
+    }
     if ((packet_data.origNode.addr._type == AF_UNSPEC) || !packet_data.origNode.seqnum) {
         DEBUG("\tERROR: missing OrigNode Address or SeqNum. Dropping packet.\n");
         return RFC5444_DROP_PACKET;
     }
     if ((packet_data.targNode.addr._type == AF_UNSPEC) || !packet_data.targNode.seqnum) {
         DEBUG("\tERROR: missing TargNode Address or SeqNum. Dropping packet.\n");
-        return RFC5444_DROP_PACKET; 
+        return RFC5444_DROP_PACKET;
     }
     if ((_get_max_metric(packet_data.metricType) - link_cost) <= packet_data.targNode.metric){
         DEBUG("\tMetric Limit reached. Dropping packet.\n");
         return RFC5444_DROP_PACKET;
     }
-    // TODO: warte mal; das verhindert doch acuh, dass RREPs zu "besseren" routen versendet werden?
-    /*
-    if (clienttable_is_client(&packet_data.targNode.addr)){
-        DEBUG("\tI already sent this RREP. Dropping packet.\n");
-        return RFC5444_DROP_PACKET;    
-    }
-    */
+    // TODO: warte mal; das verhindert doch auch, dass RREPs zu "besseren" routen versendet werden?
 
     _update_metric(packet_data.metricType, &packet_data.targNode.metric);
     vtimer_now(&now);
     packet_data.timestamp = now;
 
-    /* for every relevant
-     * address (RteMsg.Addr) in the RteMsg, HandlingRtr searches its route
-     * table to see if there is a route table entry with the same MetricType
-     * of the RteMsg, matching RteMsg.Addr.
-     */
+    /* for every relevant address (RteMsg.Addr) in the RteMsg, HandlingRtr
+    searches its route table to see if there is a route table entry with the
+    same MetricType of the RteMsg, matching RteMsg.Addr. */
 
     rt_entry = routingtable_get_entry(&packet_data.targNode.addr, packet_data.metricType);
 
@@ -476,41 +462,38 @@ static enum rfc5444_result _cb_rrep_end_callback(
         VDEBUG("\tCreating new Routing Table entry...\n");
 
         struct aodvv2_routing_entry_t* tmp_rt_entry = (struct aodvv2_routing_entry_t*)malloc(sizeof(struct aodvv2_routing_entry_t));
-        memset(tmp_rt_entry, 0, sizeof(*tmp_rt_entry)); // TODO: muss ich das überhaupt? wird ja eh gefüllt
+        memset(tmp_rt_entry, 0, sizeof(*tmp_rt_entry));
 
-        _fill_routing_entry_t_rrep(&packet_data, tmp_rt_entry, link_cost);
+        routingtable_fill_routing_entry_t_rrep(&packet_data, tmp_rt_entry, link_cost);
         routingtable_add_entry(tmp_rt_entry);
         //print_routingtable_entry(tmp_rt_entry);
 
         free(tmp_rt_entry);
     } else {
-        if (!_offers_improvement(rt_entry, &packet_data.targNode)) {
+        if (!routingtable_offers_improvement(rt_entry, &packet_data.targNode)) {
             DEBUG("\tPacket offers no improvement over known route. Dropping Packet.\n");
-            return RFC5444_DROP_PACKET; 
+            return RFC5444_DROP_PACKET;
         }
-        /* The incoming routing information is better than existing routing 
-         * table information and SHOULD be used to improve the route table. */ 
+        /* The incoming routing information is better than existing routing
+         * table information and SHOULD be used to improve the route table. */
         VDEBUG("\tUpdating Routing Table entry...\n");
-        _fill_routing_entry_t_rrep(&packet_data, rt_entry, link_cost);
+        routingtable_fill_routing_entry_t_rrep(&packet_data, rt_entry, link_cost);
     }
-    
+
     //print_routingtable();
-    
-    /*
-    If HandlingRtr is RREQ_Gen then the RREP satisfies RREQ_Gen's
+
+    /* If HandlingRtr is RREQ_Gen then the RREP satisfies RREQ_Gen's
     earlier RREQ, and RREP processing is completed.  Any packets
     buffered for OrigNode should be transmitted. */
     if (clienttable_is_client(&packet_data.origNode.addr)){
-        // TODO: proper fix
         static struct netaddr_str nbuf2;
 
-        DEBUG("\t{%" PRIu32 ":%" PRIu32 "} %s:  This is my RREP (SeqNum: %d). We are done here, thanks %s!\n", 
-                now.seconds, now.microseconds, netaddr_to_string(&nbuf, &packet_data.origNode.addr), 
+        DEBUG("\t{%" PRIu32 ":%" PRIu32 "} %s:  This is my RREP (SeqNum: %d). We are done here, thanks %s!\n",
+                now.seconds, now.microseconds, netaddr_to_string(&nbuf, &packet_data.origNode.addr),
                 packet_data.origNode.seqnum, netaddr_to_string(&nbuf2, &packet_data.targNode.addr));
     }
 
-    /* 
-    If HandlingRtr is not RREQ_Gen then the outgoing RREP is sent to the
+    /* If HandlingRtr is not RREQ_Gen then the outgoing RREP is sent to the
     Route.NextHopAddress for the RREP.AddrBlk[OrigNodeNdx]. */
     else {
         DEBUG("[aodvv2] Not my RREP, passing it on to the next hop\n");
@@ -526,7 +509,7 @@ static enum rfc5444_result _cb_rerr_blocktlv_messagetlvs_okay(struct rfc5444_rea
     if (!cont->has_hoplimit) {
         VDEBUG("\tERROR: missing hop limit\n");
         return RFC5444_DROP_PACKET;
-    } 
+    }
 
     packet_data.hoplimit = cont->hoplimit;
     if (packet_data.hoplimit == 0) {
@@ -552,13 +535,13 @@ static enum rfc5444_result _cb_rerr_blocktlv_addresstlvs_okay(struct rfc5444_rea
 
     VDEBUG("[aodvv2] %s()\n", __func__);
     VDEBUG("\tmessage type: %d\n", cont->type);
-    VDEBUG("\taddr: %s\n", netaddr_to_string(&nbuf, &cont->addr));  
+    VDEBUG("\taddr: %s\n", netaddr_to_string(&nbuf, &cont->addr));
 
     /* Out of buffer size for more unreachable nodes. We're screwed, basically. */
     if (num_unreachable_nodes == AODVV2_MAX_UNREACHABLE_NODES)
         return RFC5444_OKAY;
 
-    // gather packet data TODO: will this fail if there's no seqnum?
+    // gather packet data (TODO: will this fail if there's no seqnum?)
     packet_data.origNode.addr = cont->addr;
 
     /* handle this unreachable node's SeqNum TLV */
@@ -577,12 +560,12 @@ static enum rfc5444_result _cb_rerr_blocktlv_addresstlvs_okay(struct rfc5444_rea
         //print_routingtable_entry(unreachable_entry);
         VDEBUG("\n\n\t sender: %s\n", netaddr_to_string(&nbuf, &packet_data.sender));
         VDEBUG("\t tlv: %i\n", *tlv->single_value);
-        VDEBUG("\t seqnum entry: %i, sender: %i\n", unreachable_entry->seqnum, packet_data.origNode.seqnum);        
+        VDEBUG("\t seqnum entry: %i, sender: %i\n", unreachable_entry->seqnum, packet_data.origNode.seqnum);
         VDEBUG("na_cmp: %i, seqnum_cmp: %i\n", netaddr_cmp(&unreachable_entry->nextHopAddr, &packet_data.sender),
             seqnum_cmp(unreachable_entry->seqnum, packet_data.origNode.seqnum));
 
         /* check if route to unreachable node has to be marked as broken and RERR has to be forwarded */
-        if (netaddr_cmp(&unreachable_entry->nextHopAddr, &packet_data.sender) == 0 
+        if (netaddr_cmp(&unreachable_entry->nextHopAddr, &packet_data.sender) == 0
             && (!tlv || seqnum_cmp(unreachable_entry->seqnum, packet_data.origNode.seqnum) == 0)) {
             unreachable_entry->state = ROUTE_STATE_BROKEN;
             unreachable_nodes[num_unreachable_nodes].addr = packet_data.origNode.addr;
@@ -595,11 +578,11 @@ static enum rfc5444_result _cb_rerr_blocktlv_addresstlvs_okay(struct rfc5444_rea
 }
 
 static enum rfc5444_result _cb_rerr_end_callback(struct rfc5444_reader_tlvblock_context *cont, bool dropped)
-{    
+{
     if (dropped) {
         VDEBUG("\tDropping packet.\n");
         return RFC5444_DROP_PACKET;
-    } 
+    }
 
     if (num_unreachable_nodes == 0){
         VDEBUG("\tNo unreachable nodes from my routing table. Dropping Packet.\n");
@@ -613,8 +596,6 @@ static enum rfc5444_result _cb_rerr_end_callback(struct rfc5444_reader_tlvblock_
 void reader_init(void)
 {
     VDEBUG("[aodvv2] %s()\n", __func__);
-
-    validity_t = timex_set(AODVV2_ACTIVE_INTERVAL + AODVV2_MAX_IDLETIME, 0); 
 
     /* initialize reader */
     rfc5444_reader_init(&reader);
@@ -655,23 +636,6 @@ int reader_handle_packet(void* buffer, size_t length, struct netaddr* sender)
 //============= HELPER FUNCTIONS ===============================================
 
 /*
- * handle collected data as described in Section 6.1 
- */
-static bool _offers_improvement(struct aodvv2_routing_entry_t* rt_entry, struct node_data* node_data)
-{
-    /* Check if new info is stale */    
-    if (seqnum_cmp(node_data->seqnum, rt_entry->seqnum) == -1)
-        return false;
-    /* Check if new info is more costly */
-    if ((node_data->metric >= rt_entry->metric) && !(rt_entry->state != ROUTE_STATE_BROKEN))
-        return false;
-    /* Check if new info repairs a broken route */
-    if (!(rt_entry->state != ROUTE_STATE_BROKEN))
-        return false;
-    return true;
-}
-
-/*
  * Cost(L): Get Cost of a Link regarding the specified metric.
  * (currently only AODVV2_DEFAULT_METRIC_TYPE (HopCt) implemented)
  * returns cost if metric is known, NULL otherwise
@@ -701,31 +665,5 @@ static uint8_t _get_max_metric(uint8_t metricType)
 static void _update_metric(uint8_t metricType, uint8_t* metric)
 {
     if (metricType == AODVV2_DEFAULT_METRIC_TYPE)
-        *metric = *metric+1; // TODO less derpy
-}
-
-/* Fills a routing table entry with the data of a RREQ */
-static void _fill_routing_entry_t_rreq(struct aodvv2_packet_data* packet_data, struct aodvv2_routing_entry_t* rt_entry, uint8_t link_cost)
-{
-    rt_entry->addr = packet_data->origNode.addr;
-    rt_entry->seqnum = packet_data->origNode.seqnum;
-    rt_entry->nextHopAddr = packet_data->sender;
-    rt_entry->lastUsed = packet_data->timestamp;
-    rt_entry->expirationTime = timex_add(packet_data->timestamp, validity_t);
-    rt_entry->metricType = packet_data->metricType;
-    rt_entry->metric = packet_data->origNode.metric + link_cost;
-    rt_entry->state = ROUTE_STATE_ACTIVE;
-}
-
-/* Fills a routing table entry with the data of a RREQ */
-static void _fill_routing_entry_t_rrep(struct aodvv2_packet_data* packet_data, struct aodvv2_routing_entry_t* rt_entry, uint8_t link_cost)
-{
-    rt_entry->addr = packet_data->targNode.addr;
-    rt_entry->seqnum = packet_data->targNode.seqnum;
-    rt_entry->nextHopAddr = packet_data->sender;
-    rt_entry->lastUsed = packet_data->timestamp;
-    rt_entry->expirationTime = timex_add(packet_data->timestamp, validity_t);
-    rt_entry->metricType = packet_data->metricType;
-    rt_entry->metric = packet_data->targNode.metric + link_cost;
-    rt_entry->state = ROUTE_STATE_ACTIVE;
+        *metric = *metric+1;
 }
