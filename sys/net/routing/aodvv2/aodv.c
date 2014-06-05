@@ -21,7 +21,7 @@
 #define ENABLE_DEBUG (1)
 #include "debug.h"
 
-#define UDP_BUFFER_SIZE     (128) // TODO öhm.
+#define UDP_BUFFER_SIZE     (128) // with respect to IEEE 802.15.4's MTU
 #define RCV_MSG_Q_SIZE      (64)
 
 static void _init_addresses(void);
@@ -64,7 +64,7 @@ void aodv_init(void)
 
     /* every node is its own client. */
     clienttable_add_client(&na_local);
-    rreqtable_init(); 
+    rreqtable_init();
 
     /* init reader and writer */
     reader_init();
@@ -165,8 +165,8 @@ void aodv_send_rerr(struct unreachable_node unreachable_nodes[], int len, int ho
 }
 
 
-/* 
- * init the multicast address all RREQ and RERRS are sent to 
+/*
+ * init the multicast address all RREQ and RERRS are sent to
  * and the local address (source address) of this node
  */
 static void _init_addresses(void)
@@ -179,7 +179,7 @@ static void _init_addresses(void)
     ipv6_net_if_get_best_src_addr(&_v6_addr_local, &_v6_addr_mcast);
     DEBUG("[aodvv2] my src address is:       %s\n", ipv6_addr_to_str(addr_str, IPV6_MAX_ADDR_STR_LEN, &_v6_addr_local));
 
-    /* store src & multicast address as netaddr as well for easy interaction 
+    /* store src & multicast address as netaddr as well for easy interaction
     with oonf based stuff */
     ipv6_addr_t_to_netaddr(&_v6_addr_local, &na_local);
     ipv6_addr_t_to_netaddr(&_v6_addr_mcast, &na_mcast);
@@ -201,7 +201,7 @@ static void _init_sock_snd(void)
     }
 }
 
-/* Build RREQs, RREPs and RERRs from the information contained in the thread's 
+/* Build RREQs, RREPs and RERRs from the information contained in the thread's
    message queue and send them */
 static void _aodv_sender_thread(void)
 {
@@ -219,8 +219,8 @@ static void _aodv_sender_thread(void)
             writer_send_rreq(rreq_data->packet_data, rreq_data->next_hop);
         } else if (mc->type == RFC5444_MSGTYPE_RREP) {
             struct rreq_rrep_data* rrep_data = (struct rreq_rrep_data*) mc->data;
-            writer_send_rrep(rrep_data->packet_data, rrep_data->next_hop); 
-        } else if (mc->type == RFC5444_MSGTYPE_RERR) { 
+            writer_send_rrep(rrep_data->packet_data, rrep_data->next_hop);
+        } else if (mc->type == RFC5444_MSGTYPE_RERR) {
             struct rerr_data* rerr_data = (struct rerr_data*) mc->data;
             writer_send_rerr(rerr_data->unreachable_nodes, rerr_data->len, rerr_data->hoplimit, rerr_data->next_hop);
         }
@@ -240,14 +240,14 @@ static void _aodv_receiver_thread(void)
     char buf_rcv[UDP_BUFFER_SIZE];
     char addr_str_rec[IPV6_MAX_ADDR_STR_LEN];
     msg_t msg_q[RCV_MSG_Q_SIZE];
-    
+
     msg_init_queue(msg_q, RCV_MSG_Q_SIZE);
 
     sockaddr6_t sa_rcv = { .sin6_family = AF_INET6,
                            .sin6_port = HTONS(MANET_PORT) };
 
     int sock_rcv = destiny_socket(PF_INET6, SOCK_DGRAM, IPPROTO_UDP);
-    
+
     if (-1 == destiny_socket_bind(sock_rcv, &sa_rcv, sizeof(sa_rcv))) {
         DEBUG("Error: bind to receive socket failed!\n");
         destiny_socket_close(sock_rcv);
@@ -255,24 +255,24 @@ static void _aodv_receiver_thread(void)
 
     DEBUG("[aodvv2] ready to receive data\n");
     for(;;) {
-        rcv_size = destiny_socket_recvfrom(sock_rcv, (void *)buf_rcv, UDP_BUFFER_SIZE, 0, 
+        rcv_size = destiny_socket_recvfrom(sock_rcv, (void *)buf_rcv, UDP_BUFFER_SIZE, 0,
                                           &sa_rcv, &fromlen);
 
         if(rcv_size < 0) {
             DEBUG("[aodvv2] ERROR receiving data!\n");
         }
         DEBUG("[aodvv2] _aodv_receiver_thread() %s: UDP packet received from %s\n",ipv6_addr_to_str(addr_str, IPV6_MAX_ADDR_STR_LEN, &_v6_addr_local), ipv6_addr_to_str(addr_str_rec, IPV6_MAX_ADDR_STR_LEN, &sa_rcv.sin6_addr));
-        
+
         struct netaddr _sender;
         ipv6_addr_t_to_netaddr(&sa_rcv.sin6_addr, &_sender);
         reader_handle_packet((void*) buf_rcv, rcv_size, &_sender);
     }
 
-    destiny_socket_close(sock_rcv);    
+    destiny_socket_close(sock_rcv);
 }
 
 static ipv6_addr_t* aodv_get_next_hop(ipv6_addr_t* dest)
-{   
+{
     DEBUG("[aodvv2] aodv_get_next_hop() %s: getting next hop for %s\n", ipv6_addr_to_str(addr_str, IPV6_MAX_ADDR_STR_LEN, &_v6_addr_local), ipv6_addr_to_str(addr_str2, IPV6_MAX_ADDR_STR_LEN, dest));
 
     struct netaddr _tmp_dest;
@@ -287,17 +287,17 @@ static ipv6_addr_t* aodv_get_next_hop(ipv6_addr_t* dest)
         return &_v6_addr_loopback;
     }
 
-    /* 
-       TODO use ndp_neighbor_get_ll_address() as soon as it's in the master.
+    /*
+       TODO use ndp_neighbor_get_ll_address() as soon as it's available.
        note: delete check for active/stale/delayed entries, get_ll_address
        does that for us then
     */
-    ndp_neighbor_cache_t* ndp_nc_entry = ndp_neighbor_cache_search(dest); 
+    ndp_neighbor_cache_t* ndp_nc_entry = ndp_neighbor_cache_search(dest);
     struct aodvv2_routing_entry_t* rt_entry = routingtable_get_entry(&_tmp_dest, _metric_type);
 
     if (ndp_nc_entry != NULL){
-        
-        // Case 2: Broken Link (detected by lower layer) 
+
+        // Case 2: Broken Link (detected by lower layer)
         if ((/*!ndp_nc_entry || */ // not sure if this is a dirty or correct fix
             ndp_nc_entry->state == NDP_NCE_STATUS_INCOMPLETE ||
             ndp_nc_entry->state == NDP_NCE_STATUS_PROBE) &&
@@ -311,7 +311,7 @@ static ipv6_addr_t* aodv_get_next_hop(ipv6_addr_t* dest)
 
             aodv_send_rerr(unreachable_nodes, len, AODVV2_MAX_HOPCOUNT, &na_mcast);
             return NULL;
-        } 
+        }
 
         printf("[aodvv2][ndp] found NC entry. Returning dest addr.\n");
         return dest;
@@ -319,7 +319,7 @@ static ipv6_addr_t* aodv_get_next_hop(ipv6_addr_t* dest)
     printf("\t[ndp] no entry for addr %s found\n", ipv6_addr_to_str(addr_str, IPV6_MAX_ADDR_STR_LEN, dest));
 
     if (rt_entry) {
-        // Case 1: Undeliverable Packet        
+        // Case 1: Undeliverable Packet
         if (rt_entry->state == ROUTE_STATE_BROKEN ||
             rt_entry->state == ROUTE_STATE_EXPIRED ) {
             DEBUG("\tRouting table entry found, but invalid. Sending RERR.\n");
@@ -337,7 +337,7 @@ static ipv6_addr_t* aodv_get_next_hop(ipv6_addr_t* dest)
             rt_entry->state = ROUTE_STATE_ACTIVE;
 
         return &rt_entry->nextHopAddr;
-    } 
+    }
 
     uint16_t seqnum = seqnum_get();
     seqnum_inc();
@@ -350,7 +350,7 @@ static ipv6_addr_t* aodv_get_next_hop(ipv6_addr_t* dest)
             .metric = 0,
             .seqnum = seqnum,
         },
-        .targNode = (struct node_data) { 
+        .targNode = (struct node_data) {
             .addr = _tmp_dest,
         }
     };
@@ -364,7 +364,7 @@ static ipv6_addr_t* aodv_get_next_hop(ipv6_addr_t* dest)
 
 
 /**
- * Handle the output of the RFC5444 packet creation process. This callback is 
+ * Handle the output of the RFC5444 packet creation process. This callback is
  * called by every writer_send_* function.
  * @param wr
  * @param iface
@@ -385,7 +385,7 @@ static void _write_packet(struct rfc5444_writer *wr __attribute__ ((unused)),
     abuf_clear(&_hexbuf);
     */
 
-    /* fetch the address the packet is supposed to be sent to (i.e. to a 
+    /* fetch the address the packet is supposed to be sent to (i.e. to a
        specific node or the multicast address) from the writer_target struct
        iface* is stored in. This is a bit hacky, but it does the trick. */
     wt = container_of(iface, struct writer_target, interface);
@@ -398,7 +398,7 @@ static void _write_packet(struct rfc5444_writer *wr __attribute__ ((unused)),
         rreqtable_is_redundant(&wt->packet_data);
     }
 
-    int bytes_sent = destiny_socket_sendto(_sock_snd, buffer, length, 
+    int bytes_sent = destiny_socket_sendto(_sock_snd, buffer, length,
                                             0, &sa_wp, sizeof sa_wp);
 
     DEBUG("[aodvv2] %d bytes sent.\n", bytes_sent);
