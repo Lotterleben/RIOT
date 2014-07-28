@@ -71,9 +71,9 @@ void aodv_init(void)
     writer_init(_write_packet);
 
     /* start listening & enable sending */
-    thread_create(aodv_rcv_stack_buf, KERNEL_CONF_STACKSIZE_MAIN, PRIORITY_MAIN, CREATE_STACKTEST, _aodv_receiver_thread, "_aodv_receiver_thread");
+    thread_create(aodv_rcv_stack_buf, KERNEL_CONF_STACKSIZE_MAIN, PRIORITY_MAIN, CREATE_STACKTEST, _aodv_receiver_thread, NULL, "_aodv_receiver_thread");
     printf("[aodvv2] listening on port %d\n", HTONS(MANET_PORT));
-    sender_thread = thread_create(aodv_snd_stack_buf, KERNEL_CONF_STACKSIZE_MAIN, PRIORITY_MAIN, CREATE_STACKTEST, _aodv_sender_thread, "_aodv_sender_thread");
+    sender_thread = thread_create(aodv_snd_stack_buf, KERNEL_CONF_STACKSIZE_MAIN, PRIORITY_MAIN, CREATE_STACKTEST, _aodv_sender_thread, NULL, "_aodv_sender_thread");
 
     /* register aodv for routing */
     ipv6_iface_set_routing_provider(aodv_get_next_hop);
