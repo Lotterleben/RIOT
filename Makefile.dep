@@ -52,6 +52,24 @@ ifneq (,$(filter aodvv2,$(USEMODULE)))
     endif
 endif
 
+ifneq (,$(filter aodvv2,$(USEMODULE)))
+    ifeq (,$(filter vtimer,$(USEMODULE)))
+        USEMODULE += vtimer
+    endif
+    ifeq (,$(filter destiny,$(USEMODULE)))
+        USEMODULE += destiny
+    endif
+    ifeq (,$(filter sixlowpan,$(USEMODULE)))
+        USEMODULE += sixlowpan
+    endif
+    ifeq (,$(filter oonf_common,$(USEMODULE)))
+        USEMODULE += oonf_common
+    endif
+    ifeq (,$(filter oonf_rfc5444,$(USEMODULE)))
+        USEMODULE += oonf_rfc5444
+    endif
+endif
+
 ifneq (,$(filter posix,$(USEMODULE)))
 	USEMODULE += uart0
 	USEMODULE += timex
