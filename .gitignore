@@ -8,3 +8,7 @@ doc/doxygen/*.log
 *.orig
 .*.swp
 cachegrind.out*
+.project
+.cproject
+.settings
+/toolchain

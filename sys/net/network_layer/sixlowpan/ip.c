@@ -25,7 +25,6 @@
 #include "vtimer.h"
 #include "mutex.h"
 #include "msg.h"
-#include "net_help.h"
 #include "net_if.h"
 #include "sixlowpan/mac.h"
 
@@ -84,7 +83,7 @@ int ipv6_send_packet(ipv6_hdr_t *packet)
                 nce->lladdr_len,
                 (uint8_t *)packet,
                 length) < 0) {
-            /* XXX: this is wrong, but until ND does not work correctly,
+            /* XXX: this is wrong, but until ND does work correctly,
              *      this is the only way (aka the old way)*/
             uint16_t raddr = NTOHS(packet->destaddr.uint16[7]);
             sixlowpan_lowpan_sendto(0, &raddr, 2, (uint8_t *)packet, length);
@@ -106,6 +105,7 @@ int ipv6_send_packet(ipv6_hdr_t *packet)
             return -1;
         }
 
+        DEBUG("Trying to find the next hop for %s\n", ipv6_addr_to_str(addr_str, IPV6_MAX_ADDR_STR_LEN, &packet->destaddr));
         ipv6_addr_t *dest = ip_get_next_hop(&packet->destaddr);
 
         if (dest == NULL) {
@@ -117,7 +117,7 @@ int ipv6_send_packet(ipv6_hdr_t *packet)
         if (nce == NULL || sixlowpan_lowpan_sendto(nce->if_id, &nce->lladdr,
                 nce->lladdr_len,
                 (uint8_t *)packet, length) < 0) {
-            /* XXX: this is wrong, but until ND does not work correctly,
+            /* XXX: this is wrong, but until ND does work correctly,
              *      this is the only way (aka the old way)*/
             uint16_t raddr = dest->uint16[7];
             sixlowpan_lowpan_sendto(0, &raddr, 2, (uint8_t *)packet, length);
@@ -331,8 +331,10 @@ int is_our_address(ipv6_addr_t *addr)
     return 0;
 }
 
-void ipv6_process(void)
+void *ipv6_process(void *arg)
 {
+    (void) arg;
+
     msg_t m_recv_lowpan, m_send_lowpan;
     msg_t m_recv, m_send;
     uint8_t i;
@@ -403,11 +405,13 @@ void ipv6_process(void)
                 }
 
                 default:
+                    DEBUG("INFO: Unknown next header\n");
                     break;
             }
         }
         /* destination is foreign address */
         else {
+            DEBUG("That's not for me, destination is %s\n", ipv6_addr_to_str(addr_str, IPV6_MAX_ADDR_STR_LEN, &ipv6_buf->destaddr));
             packet_length = IPV6_HDR_LEN + NTOHS(ipv6_buf->length);
             ndp_neighbor_cache_t *nce;
 
@@ -438,6 +442,11 @@ void ipv6_process(void)
                                         nce->lladdr_len,
                                         (uint8_t *)ipv6_get_buf_send(),
                                         packet_length);
+            } else {
+                /* XXX: this is wrong, but until ND does work correctly,
+                 *      this is the only way (aka the old way)*/
+                uint16_t raddr = dest->uint16[7];
+                sixlowpan_lowpan_sendto(0, &raddr, 2, (uint8_t *)ipv6_get_buf_send(), packet_length);
             }
         }
 

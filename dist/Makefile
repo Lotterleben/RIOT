@@ -7,7 +7,7 @@
 ####
 
 # Set the name of your application:
-export PROJECT = foobar
+export APPLICATION = foobar
 
 # If no BOARD is found in the environment, use this default:
 export BOARD ?= native
@@ -49,7 +49,7 @@ export QUIET ?= 1
 #export INCLUDES += -Iapplication_include
 
 # Specify custom dependencies for your application here ...
-# export PROJDEPS = proj_data.h
+# export APPDEPS = app_data.h config.h
 
 include $(RIOTBASE)/Makefile.include
 

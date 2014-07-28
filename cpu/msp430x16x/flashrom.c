@@ -46,7 +46,7 @@ uint8_t flashrom_erase(uint8_t *addr)
     return 1;
 }
 
-void flashrom_write(uint8_t *dst, uint8_t *src, size_t size)
+uint8_t flashrom_write(uint8_t *dst, const uint8_t *src, size_t size)
 {
     unsigned int i;
     FCTL3 = FWKEY;              /* Lock = 0 */
@@ -54,7 +54,7 @@ void flashrom_write(uint8_t *dst, uint8_t *src, size_t size)
 
     for (i = size; i > 0; i--) {
         FCTL1 = FWKEY | WRT;
-        *dst = *src;                /* program Flash word */
+        *(dst++) = *(src++);                /* program Flash word */
 
         while (!(FCTL3 & WAIT)) {
             nop();
@@ -64,6 +64,7 @@ void flashrom_write(uint8_t *dst, uint8_t *src, size_t size)
     busy_wait();
     FCTL1 = FWKEY;              /* WRT = 0 */
     FCTL3 = FWKEY | LOCK;              /* Lock = 1 */
+    return 1;
 }
 
 /*---------------------------------------------------------------------------*/

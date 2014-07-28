@@ -3,7 +3,7 @@
  *
  * Uses system calls to emulate CPU power modes.
  *
- * Copyright (C) 2013 Ludwig Ortmann
+ * Copyright (C) 2013 Ludwig Ortmann <ludwig.ortmann@fu-berlin.de>
  *
  * This file is subject to the terms and conditions of the GNU Lesser General
  * Public License. See the file LICENSE in the top level directory for more
@@ -43,7 +43,7 @@ void lpm_init(void)
     return;
 }
 
-void _native_lpm_sleep()
+void _native_lpm_sleep(void)
 {
 #ifdef MODULE_UART0
     int nfds;
@@ -80,7 +80,7 @@ void _native_lpm_sleep()
     /* otherwise select was interrupted because of a signal, continue below */
 #else
     _native_in_syscall++; // no switching here
-    pause();
+    real_pause();
     _native_in_syscall--;
 #endif
 

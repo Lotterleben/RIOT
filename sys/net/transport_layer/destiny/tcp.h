@@ -27,13 +27,17 @@
 #define TCP_TS_OPTION           (0x08)        /* Timestamp */
 
 enum tcp_flags {
-    TCP_ACK                    = 0x08,
-    TCP_URG_PSH                = 0x14,
-    TCP_RST                    = 0x20,
-    TCP_SYN                    = 0x40,
-    TCP_SYN_ACK                = 0x48,
-    TCP_FIN                    = 0x80,
-    TCP_FIN_ACK                = 0x88
+    TCP_FIN                    = (1 << 0),
+    TCP_SYN                    = (1 << 1),
+    TCP_RST                    = (1 << 2),
+    TCP_PSH                    = (1 << 3),
+    TCP_ACK                    = (1 << 4),
+    TCP_URG                    = (1 << 5),
+    TCP_ECE                    = (1 << 6),
+    TCP_CWR                    = (1 << 7),
+    TCP_SYN_ACK                = (TCP_SYN | TCP_ACK),
+    TCP_URG_PSH                = (TCP_URG | TCP_PSH),
+    TCP_FIN_ACK                = (TCP_FIN | TCP_ACK)
 };
 
 enum tcp_states {
@@ -76,7 +80,7 @@ enum tcp_codes {
 #define SET_TCP_FIN(a)          (a) = TCP_FIN
 #define SET_TCP_FIN_ACK(a)      (a) = TCP_FIN_ACK
 
-#define TCP_STACK_SIZE          (KERNEL_CONF_STACKSIZE_DEFAULT)
+#define TCP_STACK_SIZE          (KERNEL_CONF_STACKSIZE_MAIN)
 
 typedef struct __attribute__((packed)) tcp_mms_o_t {
     uint8_t     kind;
@@ -92,7 +96,7 @@ extern uint8_t             global_context_counter;
 extern mutex_t             global_sequence_counter_mutex;
 extern uint32_t            global_sequence_counter;
 
-void tcp_packet_handler(void);
+void *tcp_packet_handler(void *);
 uint16_t tcp_csum(ipv6_hdr_t *ipv6_header, tcp_hdr_t *tcp_header);
 void printTCPHeader(tcp_hdr_t *tcp_header);
 void printArrayRange_tcp(uint8_t *udp_header, uint16_t len);

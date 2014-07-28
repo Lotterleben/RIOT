@@ -53,7 +53,7 @@ int _net_if_ifconfig_ipv6_addr_convert(net_if_addr_t *addr, void *addr_data,
                                        char *addr_data_len);
 void _net_if_ifconfig_list(int if_id);
 
-int isnumber(char *str)
+int is_number(char *str)
 {
     for (; *str; str++) {
         if (!isdigit((int)*str)) {
@@ -156,7 +156,7 @@ void _net_if_ifconfig(int argc, char **argv)
         _net_if_ifconfig_create(argv[2]);
         return;
     }
-    else if (isnumber(argv[1])) {
+    else if (is_number(argv[1])) {
         int if_id = atoi(argv[1]);
 
         if (argc < 3) {
@@ -227,7 +227,7 @@ void _net_if_ifconfig_set_hwaddr(int if_id, char *addr_str)
         return;
     }
 
-    if (isnumber(addr_str)) {
+    if (is_number(addr_str)) {
         if ((addr = atoi(addr_str)) > 0xffff) {
             set_usage();
             return;
@@ -252,7 +252,7 @@ void _net_if_ifconfig_set_pan_id(int if_id, char *pan_str)
         return;
     }
 
-    if (isnumber(pan_str)) {
+    if (is_number(pan_str)) {
         if ((pan_id = atoi(pan_str)) > 0xffff) {
             set_usage();
             return;
@@ -277,7 +277,7 @@ void _net_if_ifconfig_set_channel(int if_id, char *chan_str)
         return;
     }
 
-    if (isnumber(chan_str)) {
+    if (is_number(chan_str)) {
         if ((channel = atoi(chan_str)) > 0xffff) {
             set_usage();
             return;
@@ -504,7 +504,7 @@ int _net_if_ifconfig_ipv6_addr_convert(net_if_addr_t *addr, void *addr_data,
                                        char *type, char *addr_data_str,
                                        char *addr_data_len)
 {
-    if (addr_data_len && !isnumber(addr_data_len)) {
+    if (addr_data_len && !is_number(addr_data_len)) {
         return 0;
     }
 
@@ -627,6 +627,7 @@ void _net_if_ifconfig_list(int if_id)
             puts("\n");
         }
 
+#ifdef MODULE_SIXLOWPAN
         if (addr_ptr->addr_protocol & NET_IF_L3P_IPV6) {
             char addr_str[IPV6_MAX_ADDR_STR_LEN];
             printf("            inet6 addr: ");
@@ -660,6 +661,7 @@ void _net_if_ifconfig_list(int if_id)
                 printf("error in conversion\n");
             }
         }
+#endif
     }
 
     puts("");

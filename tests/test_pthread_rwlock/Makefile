@@ -1,4 +1,4 @@
-PROJECT = test_pthread_rwlock
+APPLICATION = test_pthread_rwlock
 include ../Makefile.tests_common
 
 USEMODULE += pthread
@@ -9,10 +9,6 @@ DISABLE_MODULE += auto_init
 
 CFLAGS += -DNATIVE_AUTO_EXIT
 
-# these boards provide too little RAM for the example to run
-BOARD_BLACKLIST += chronos
-BOARD_BLACKLIST += mbed_lpc1768
-BOARD_BLACKLIST += msb-430
-BOARD_BLACKLIST += msb-430h
+BOARD_INSUFFICIENT_RAM += chronos mbed_lpc1768 msb-430 msb-430h stm32f0discovery
 
 include $(RIOTBASE)/Makefile.include

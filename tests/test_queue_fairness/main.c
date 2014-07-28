@@ -17,14 +17,12 @@
 
 #include <stdio.h>
 
-#include "flags.h"
-#include "kernel.h"
 #include "msg.h"
 #include "sched.h"
 #include "thread.h"
 #include "vtimer.h"
 
-#define STACK_SIZE (KERNEL_CONF_STACKSIZE_DEFAULT + KERNEL_CONF_STACKSIZE_PRINTF)
+#define STACK_SIZE (KERNEL_CONF_STACKSIZE_DEFAULT + KERNEL_CONF_STACKSIZE_MAIN)
 
 #define NUM_CHILDREN (3)
 #define NUM_ITERATIONS (10)
@@ -35,32 +33,35 @@ static char names[NUM_CHILDREN][8];
 
 static int parent_pid;
 
-static void child_fun(void)
+static void *child_fun(void *arg)
 {
-    printf("Start of %s.\n", active_thread->name);
+    (void) arg;
+    printf("Start of %s.\n", sched_active_thread->name);
 
     for (int i = 0; i < NUM_ITERATIONS; ++i) {
         msg_t m;
         m.type = i + 1;
-        m.content.ptr = (void *) active_thread->name;
+        m.content.ptr = (void *) sched_active_thread->name;
         msg_send(&m, parent_pid, true);
     }
 
-    printf("End of %s.\n", active_thread->name);
+    printf("End of %s.\n", sched_active_thread->name);
+    return NULL;
 }
 
 int main(void)
 {
     puts("Start.");
-    parent_pid = thread_pid;
+    parent_pid = sched_active_pid;
 
     for (int i = 0; i < NUM_CHILDREN; ++i) {
-        snprintf(names[i], sizeof (names[i]), "child%2u", i + 1);
+        snprintf(names[i], sizeof(names[i]), "child%2u", i + 1);
         pids[i] = thread_create(stacks[i],
-                                sizeof (stacks[i]),
+                                sizeof(stacks[i]),
                                 PRIORITY_MAIN + 1,
                                 CREATE_WOUT_YIELD | CREATE_STACKTEST,
                                 child_fun,
+                                NULL,
                                 names[i]);
     }
 
@@ -71,7 +72,7 @@ int main(void)
         int cur_iteration = (int) m.type;
         char *child = (char *) m.content.ptr;
 
-        printf("Received message from %s, iteration %u / %u: %s\n",
+        printf("Received message from %s, iteration %d / %u: %s\n",
                child, cur_iteration, NUM_ITERATIONS,
                cur_iteration >= last_iteration ? "okay" : "ERROR");
 

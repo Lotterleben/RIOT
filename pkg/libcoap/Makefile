@@ -20,7 +20,7 @@ all: patch
 patch: $(PKG_DIR)/Makefile
 
 $(PKG_DIR)/Makefile: $(PKG_DIR)/.git/config
-	cd "$(PKG_DIR)" && git am --ignore-whitespace "$(CURDIR)"/*.patch || true
+	cd "$(PKG_DIR)" && git am --ignore-whitespace "$(CURDIR)"/*.patch
 
 $(PKG_DIR)/.git/config:
 	test -d "$(PKG_DIR)" || git clone "$(PKG_URL)" "$(PKG_DIR)"; \
@@ -35,7 +35,7 @@ clean::
 		$(MAKE) patch || true
 
 
-distclean:: 
+distclean::
 	rm -rf "$(PKG_DIR)"
 
 Makefile.include:

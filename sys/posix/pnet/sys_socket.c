@@ -1,7 +1,7 @@
 /*
  * Copyright (C) 2013 Freie Universität Berlin
  *
- * This file subject to the terms and conditions of the GNU Lesser General
+ * This file is subject to the terms and conditions of the GNU Lesser General
  * Public License. See the file LICENSE in the top level directory for more
  * details.
  */
@@ -61,7 +61,8 @@ int accept(int socket, struct sockaddr *restrict address,
         return -1;
     }
 
-    return res;
+    return fd_new(res, flagless_recv, flagless_send,
+                  destiny_socket_close);
 }
 
 int bind(int socket, const struct sockaddr *address, socklen_t address_len)
@@ -96,6 +97,12 @@ int getsockopt(int socket, int level, int option_name,
                void *restrict option_value, socklen_t *restrict option_len)
 {
     // TODO
+    (void) socket;
+    (void) level;
+    (void) option_name;
+    (void) option_value;
+    (void) option_len;
+
     return -1;
 }
 
@@ -179,6 +186,12 @@ int setsockopt(int socket, int level, int option_name, const void *option_value,
                socklen_t option_len)
 {
     // TODO
+    (void) socket;
+    (void) level;
+    (void) option_name;
+    (void) option_value;
+    (void) option_len;
+
     return -1;
 }
 

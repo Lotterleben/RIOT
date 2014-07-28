@@ -10,7 +10,7 @@
  * @brief       Low-level GPIO peripheral driver
  * @{
  *
- * @file        gpio.h
+ * @file        periph/gpio.h
  * @brief       Low-level GPIO peripheral driver interface definitions
  *
  * @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
@@ -97,10 +97,10 @@ typedef enum {
 
 /**
  * @brief Initialize GPIO pin as output pin
- * 
+ *
  * @param[in] dev       the GPIO pin to set as output
  * @param[in] pullup    define if pull resistors should be used
- * 
+ *
  * @return              0 on success
  * @return              -1 on undefined device given
  * @return              -2 on pull-up mode unavailable
@@ -109,10 +109,10 @@ int gpio_init_out(gpio_t dev, gpio_pp_t pullup);
 
 /**
  * @brief Initialize a GPIO pin in input mode
- * 
+ *
  * @param[in] dev       the GPIO pin to use as input
  * @param[in] pullup    define if pull resistors should be used
- * 
+ *
  * @return              0 on success
  * @return              -1 on undefined device given
  * @return              -2 on pull-up mode unavailable
@@ -121,17 +121,17 @@ int gpio_init_in(gpio_t dev, gpio_pp_t pullup);
 
 /**
  * @brief Initialize a GPIO pin for external interrupt usage
- * 
+ *
  * The registered callback function will be called in interrupt context every time the defined flank(s)
  * are detected.
- * 
+ *
  * The interrupt is activated automatically after the initialization.
- * 
+ *
  * @param[in] dev       the GPIO pin to initialize
  * @param[in] pullup    define if pull resistors should be enabled
  * @param[in] flank     define the active flank(s)
  * @param[in] cb        register the callback that is called in interrupt context
- * 
+ *
  * @return              0 on success
  * @return              -1 on undefined device given
  * @return              -2 on pull-up mode unavailable
@@ -140,11 +140,31 @@ int gpio_init_in(gpio_t dev, gpio_pp_t pullup);
 int gpio_init_int(gpio_t dev, gpio_pp_t pullup, gpio_flank_t flank, void (*cb)(void));
 
 /**
+ * @brief Disable the GPIO pin's interrupt if configured as external interrupt source.
+ *
+ * @param[in] dev       the GPIO pin to disable the interrupt for
+ *
+ * @return              the previous interrupt state, 0 or 1
+ * @return              -1 if undefined device is given
+ */
+int gpio_irq_enable(gpio_t dev);
+
+/**
+ * @brief Enable the GPIO pin's interrupt if configured as external interrupt source.
+ *
+ * @param[in] dev       the GPIO pin to enable the interrupt for
+ *
+ * @return              the previous interrupt state, 0 or 1
+ * @return              -1 if undefined device is given
+ */
+int gpio_irq_disable(gpio_t dev);
+
+/**
  * @brief Get the current value of the given GPIO pin
- * 
+ *
  * @param[in] dev       the GPIO pin to read
  * @return          the current value, 0 for LOW, != 0 for HIGH
- * 
+ *
  * @return              0 when pin is LOW
  * @return              greater 0 for HIGH
  * @return              -1 on undefined device given
@@ -153,9 +173,9 @@ int gpio_read(gpio_t dev);
 
 /**
  * @brief Set the given GPIO pin to HIGH
- * 
+ *
  * @param[in] dev       the GPIO pin to set
- * 
+ *
  * @return              0 on success
  * @return              -1 on undefined device given
  */
@@ -163,9 +183,9 @@ int gpio_set(gpio_t dev);
 
 /**
  * @brief Set the given GPIO pin to LOW
- * 
+ *
  * @param[in] dev       the GPIO pin to clear
- * 
+ *
  * @return              0 on success
  * @return              -1 on undefined device given
  */
@@ -173,9 +193,9 @@ int gpio_clear(gpio_t dev);
 
 /**
  * @brief Toggle the value of the given GPIO pin
- * 
+ *
  * @param[in] dev       the GPIO pin to toggle
- * 
+ *
  * @return              0 on success
  * @return              -1 on undefined device given
  */
@@ -183,10 +203,10 @@ int gpio_toggle(gpio_t dev);
 
 /**
  * @brief Set the given GPIO pin to the given value
- * 
+ *
  * @param[in] dev       the GPIO pin to set
  * @param[in] value     value to set the pin to, 0 for LOW, HIGH otherwise
- * 
+ *
  * @return              0 on success
  * @return              -1 on undefined device given
  */

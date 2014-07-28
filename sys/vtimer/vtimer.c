@@ -1,7 +1,7 @@
 /**
  * virtual timer
  *
- * Copyright (C) 2013 Freie Universität Berlin
+ * Copyright (C) 2013, 2014 Freie Universität Berlin
  *
  * This file is subject to the terms and conditions of the GNU Lesser General
  * Public License. See the file LICENSE in the top level directory for more
@@ -41,15 +41,14 @@
 #define SECONDS_PER_TICK (4096U)
 #define MICROSECONDS_PER_TICK (4096UL * 1000000)
 
-void vtimer_callback(void *ptr);
-void vtimer_tick(void *ptr);
+static void vtimer_callback(void *ptr);
+static void vtimer_callback_tick(vtimer_t *timer);
+static void vtimer_callback_msg(vtimer_t *timer);
+static void vtimer_callback_wakeup(vtimer_t *timer);
+
 static int vtimer_set(vtimer_t *timer);
 static int set_longterm(vtimer_t *timer);
 static int set_shortterm(vtimer_t *timer);
-
-#if ENABLE_DEBUG
-void vtimer_print(vtimer_t *t);
-#endif
 
 static queue_node_t longterm_queue_root;
 static queue_node_t shortterm_queue_root;
@@ -99,7 +98,7 @@ static int update_shortterm(void)
     uint32_t now = HWTIMER_TICKS_TO_US(hwtimer_now());
 
     /* make sure the longterm_tick_timer does not get truncated */
-    if (((vtimer_t*)shortterm_queue_root.next)->action != vtimer_tick) {
+    if (((vtimer_t *) shortterm_queue_root.next)->action != vtimer_callback_tick) {
         /* the next vtimer to schedule is the long term tick */
         /* it has a shortterm offset of longterm_tick_start */
         next += longterm_tick_start;
@@ -116,10 +115,11 @@ static int update_shortterm(void)
     return 0;
 }
 
-void vtimer_tick(void *ptr)
+void vtimer_callback_tick(vtimer_t *timer)
 {
-    (void) ptr;
-    DEBUG("vtimer_tick().\n");
+    (void) timer;
+
+    DEBUG("vtimer_callback_tick().\n");
     seconds += SECONDS_PER_TICK;
 
     longterm_tick_start = longterm_tick_timer.absolute.microseconds;
@@ -139,6 +139,25 @@ void vtimer_tick(void *ptr)
     }
 }
 
+static void vtimer_callback_msg(vtimer_t *timer)
+{
+    msg_t msg;
+    msg.type = MSG_TIMER;
+    msg.content.value = (unsigned int) timer->arg;
+    msg_send_int(&msg, timer->pid);
+}
+
+static void vtimer_callback_wakeup(vtimer_t *timer)
+{
+    thread_wakeup(timer->pid);
+}
+
+static void vtimer_callback_unlock(vtimer_t *timer)
+{
+    mutex_t *mutex = (mutex_t *) timer->arg;
+    mutex_unlock(mutex);
+}
+
 static int set_shortterm(vtimer_t *timer)
 {
     DEBUG("set_shortterm(): Absolute: %" PRIu32 " %" PRIu32 "\n", timer->absolute.seconds, timer->absolute.microseconds);
@@ -150,39 +169,25 @@ static int set_shortterm(vtimer_t *timer)
 void vtimer_callback(void *ptr)
 {
     DEBUG("vtimer_callback ptr=%p\n", ptr);
-
     (void) ptr;
-    vtimer_t *timer;
+
     in_callback = true;
     hwtimer_id = -1;
 
     /* get the vtimer that fired */
-    timer = (vtimer_t *)queue_remove_head(&shortterm_queue_root);
+    vtimer_t *timer = (vtimer_t *)queue_remove_head(&shortterm_queue_root);
 
+    if (timer) {
 #if ENABLE_DEBUG
-    vtimer_print(timer);
+        vtimer_print(timer);
 #endif
-    DEBUG("vtimer_callback(): Shooting %" PRIu32 ".\n", timer->absolute.microseconds);
+        DEBUG("vtimer_callback(): Shooting %" PRIu32 ".\n", timer->absolute.microseconds);
 
-    /* shoot timer */
-    if (timer->action == (void (*)(void *)) msg_send_int) {
-        msg_t msg;
-        msg.type = MSG_TIMER;
-        msg.content.value = (unsigned int) timer->arg;
-        msg_send_int(&msg, timer->pid);
-    }
-    else if (timer->action == (void (*)(void *)) thread_wakeup){
-        timer->action(timer->arg);
-    }
-    else if (timer->action == vtimer_tick) {
-        vtimer_tick(NULL);
-    }
-    else if (timer->action == (void (*)(void *)) mutex_unlock) {
-        mutex_t *mutex = (mutex_t *) timer->arg;
-        timer->action(mutex);
+        /* shoot timer */
+        timer->action(timer);
     }
     else {
-        DEBUG("Timer was poisoned.\n");
+        DEBUG("vtimer_callback(): spurious call.\n");
     }
 
     in_callback = false;
@@ -231,8 +236,7 @@ static int vtimer_set(vtimer_t *timer)
         }
     }
 
-    int state = disableIRQ();
-
+    unsigned state = disableIRQ();
     if (timer->absolute.seconds != seconds) {
         /* we're long-term */
         DEBUG("vtimer_set(): setting long_term\n");
@@ -242,7 +246,6 @@ static int vtimer_set(vtimer_t *timer)
         DEBUG("vtimer_set(): setting short_term\n");
 
         if (set_shortterm(timer)) {
-
             /* delay update of next shortterm timer if we
             * are called from within vtimer_callback. */
 
@@ -251,8 +254,6 @@ static int vtimer_set(vtimer_t *timer)
             }
         }
     }
-
-
     restoreIRQ(state);
 
     return result;
@@ -287,7 +288,7 @@ void vtimer_get_localtime(struct tm *localt)
     // TODO: fill the other fields
 }
 
-int vtimer_init()
+int vtimer_init(void)
 {
     DEBUG("vtimer_init().\n");
     int state = disableIRQ();
@@ -295,7 +296,7 @@ int vtimer_init()
 
     longterm_tick_start = 0;
 
-    longterm_tick_timer.action = vtimer_tick;
+    longterm_tick_timer.action = vtimer_callback_tick;
     longterm_tick_timer.arg = NULL;
 
     longterm_tick_timer.absolute.seconds = 0;
@@ -312,13 +313,11 @@ int vtimer_init()
 
 int vtimer_set_wakeup(vtimer_t *t, timex_t interval, int pid)
 {
-    int ret;
-    t->action = (void(*)(void *)) thread_wakeup;
-    t->arg = (void *) pid;
+    t->action = vtimer_callback_wakeup;
+    t->arg = NULL;
     t->absolute = interval;
-    t->pid = 0;
-    ret = vtimer_set(t);
-    return ret;
+    t->pid = pid;
+    return vtimer_set(t);
 }
 
 int vtimer_usleep(uint32_t usecs)
@@ -329,14 +328,27 @@ int vtimer_usleep(uint32_t usecs)
 
 int vtimer_sleep(timex_t time)
 {
+    /**
+     * Use spin lock for short periods.
+     * Assumes that hardware timer ticks are shorter than a second.
+     * Decision based on hwtimer_wait implementation.
+     */
+    if (time.seconds == 0) {
+        unsigned long ticks = HWTIMER_TICKS(time.microseconds);
+        if (ticks <= 6) {
+            hwtimer_spin(ticks);
+            return 0;
+        }
+    }
+
     int ret;
     vtimer_t t;
     mutex_t mutex;
     mutex_init(&mutex);
     mutex_lock(&mutex);
 
-    t.action = (void(*)(void *)) mutex_unlock;
-    t.arg = (void *) &mutex;
+    t.action = vtimer_callback_unlock;
+    t.arg = &mutex;
     t.absolute = time;
 
     ret = vtimer_set(&t);
@@ -346,21 +358,20 @@ int vtimer_sleep(timex_t time)
 
 int vtimer_remove(vtimer_t *t)
 {
+    unsigned int irq_state = disableIRQ();
+
     queue_remove(&shortterm_queue_root, (queue_node_t *)t);
     queue_remove(&longterm_queue_root, (queue_node_t *)t);
-
     update_shortterm();
 
-    if (!inISR()) {
-        eINT();
-    }
+    restoreIRQ(irq_state);
 
     return 0;
 }
 
 int vtimer_set_msg(vtimer_t *t, timex_t interval, unsigned int pid, void *ptr)
 {
-    t->action = (void(*)(void *)) msg_send_int;
+    t->action = vtimer_callback_msg;
     t->arg = ptr;
     t->absolute = interval;
     t->pid = pid;
@@ -374,7 +385,7 @@ int vtimer_msg_receive_timeout(msg_t *m, timex_t timeout) {
     timeout_message.content.ptr = (char *) &timeout_message;
 
     vtimer_t t;
-    vtimer_set_msg(&t, timeout, thread_pid, &timeout_message);
+    vtimer_set_msg(&t, timeout, sched_active_pid, &timeout_message);
     msg_receive(m);
     if (m->type == MSG_TIMER && m->content.ptr == (char *) &timeout_message) {
         /* we hit the timeout */

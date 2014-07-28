@@ -3,7 +3,7 @@
  *
  * Copyright (C) 2013 Oliver Hahm <oliver.hahm@inria.fr>
  *
- * This file subject to the terms and conditions of the GNU Lesser General
+ * This file is subject to the terms and conditions of the GNU Lesser General
  * Public License. See the file LICENSE in the top level directory for more
  * details.
  *
@@ -89,7 +89,7 @@ void save_context(void)
     asm("push   {LR}");
     /* save exception return value */
 
-    asm("ldr     r1, =active_thread");
+    asm("ldr     r1, =sched_active_thread");
     /* load address of currend pdc */
     asm("ldr     r1, [r1]");
     /* deref pdc */
@@ -99,7 +99,7 @@ void save_context(void)
 
 void restore_context(void)
 {
-    asm("ldr     r0, =active_thread");
+    asm("ldr     r0, =sched_active_thread");
     /* load address of currend pdc */
     asm("ldr     r0, [r0]");
     /* deref pdc */

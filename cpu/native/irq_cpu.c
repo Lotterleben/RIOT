@@ -1,7 +1,7 @@
 /**
  * Native CPU irq.h implementation
  *
- * Copyright (C) 2013 Ludwig Ortmann
+ * Copyright (C) 2013 Ludwig Ortmann <ludwig.ortmann@fu-berlin.de>
  *
  * This file is subject to the terms and conditions of the GNU Lesser General
  * Public License. See the file LICENSE in the top level directory for more
@@ -45,7 +45,7 @@
 #define ENABLE_DEBUG (0)
 #include "debug.h"
 
-extern volatile tcb_t *active_thread;
+extern volatile tcb_t *sched_active_thread;
 
 volatile int native_interrupts_enabled;
 volatile int _native_in_isr;
@@ -105,7 +105,7 @@ void print_sigmasks(void)
     }
 }
 
-void native_print_signals()
+void native_print_signals(void)
 {
     sigset_t p, q;
     puts("native signals:\n");
@@ -253,15 +253,12 @@ int _native_popsig(void)
  * call signal handlers,
  * restore user context
  */
-void native_irq_handler()
+void native_irq_handler(void)
 {
-    int sig;
-
     DEBUG("\n\n\t\tnative_irq_handler\n\n");
 
     while (_native_sigpend > 0) {
-
-        sig = _native_popsig();
+        int sig = _native_popsig();
         _native_sigpend--;
 
         if (native_irq_handlers[sig].func != NULL) {
@@ -272,8 +269,7 @@ void native_irq_handler()
             DEBUG("ignoring SIGUSR1\n");
         }
         else {
-            DEBUG("XXX: no handler for signal %i\n", sig);
-            errx(1, "XXX: this should not have happened!\n");
+            errx(EXIT_FAILURE, "XXX: no handler for signal %i\nXXX: this should not have happened!\n", sig);
         }
     }
 
@@ -304,9 +300,9 @@ void native_isr_entry(int sig, siginfo_t *info, void *context)
     if (context == NULL) {
         errx(EXIT_FAILURE, "native_isr_entry: context is null - unhandled");
     }
-    if (active_thread == NULL) {
+    if (sched_active_thread == NULL) {
         _native_in_isr++;
-        warnx("native_isr_entry: active_thread is null - unhandled");
+        warnx("native_isr_entry: sched_active_thread is null - unhandled");
         _native_in_isr--;
         return;
     }
@@ -331,7 +327,7 @@ void native_isr_entry(int sig, siginfo_t *info, void *context)
     native_isr_context.uc_stack.ss_size = SIGSTKSZ;
     native_isr_context.uc_stack.ss_flags = 0;
     makecontext(&native_isr_context, native_irq_handler, 0);
-    _native_cur_ctx = (ucontext_t *)active_thread->sp;
+    _native_cur_ctx = (ucontext_t *)sched_active_thread->sp;
 
     DEBUG("\n\n\t\treturn to _native_sig_leave_tramp\n\n");
     /* disable interrupts in context */
@@ -504,7 +500,7 @@ void native_interrupt_init(void)
 
     _native_in_syscall = 0;
 
-    if (pipe(_sig_pipefd) == -1) {
+    if (real_pipe(_sig_pipefd) == -1) {
         err(EXIT_FAILURE, "native_interrupt_init(): pipe()");
     }
 

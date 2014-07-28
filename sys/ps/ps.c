@@ -39,32 +39,41 @@ const char *state_names[] = {
  */
 void thread_print_all(void)
 {
-    extern unsigned long hwtimer_now(void);
     const char queued_name[] = {'_', 'Q'};
     int i;
     int overall_stacksz = 0;
 
-    printf("\tpid | %-21s| %-9sQ | pri | stack ( used) location  | runtime | switches \n", "name", "state");
+    printf("\tpid | %-21s| %-9sQ | pri | stack ( used) location"
+#if SCHEDSTATISTICS
+           "  | runtime | switches"
+#endif
+           "\n"
+           , "name", "state");
 
     for (i = 0; i < MAXTHREADS; i++) {
         tcb_t *p = (tcb_t *)sched_threads[i];
 
         if (p != NULL) {
-            int state = p->status;                                                 // copy state
-            const char *sname = state_names[state];                                // get state name
-            const char *queued = &queued_name[(int)(state >= STATUS_ON_RUNQUEUE)]; // get queued flag
-            int stacksz = p->stack_size;                                           // get stack size
-            double runtime_ticks = 0 / 0.0;
-            int switches = -1;
+            int state = p->status;                                                 /* copy state */
+            const char *sname = state_names[state];                                /* get state name */
+            const char *queued = &queued_name[(int)(state >= STATUS_ON_RUNQUEUE)]; /* get queued flag */
+            int stacksz = p->stack_size;                                           /* get stack size */
 #if SCHEDSTATISTICS
-            runtime_ticks =  pidlist[i].runtime_ticks / (double) hwtimer_now() * 100;
-            switches = pidlist[i].schedules;
+            int runtime_ticks = sched_pidlist[i].runtime_ticks / (hwtimer_now()/1000UL + 1);
+            int switches = sched_pidlist[i].schedules;
 #endif
             overall_stacksz += stacksz;
             stacksz -= thread_measure_stack_free(p->stack_start);
-            printf("\t%3u | %-21s| %-8s %.1s | %3i | %5i (%5i) %p | %6.3f%% | ",
-                   p->pid, p->name, sname, queued, p->priority, p->stack_size, stacksz, p->stack_start, runtime_ticks);
-            printf(" %8u\n", switches);
+            printf("\t%3u | %-21s| %-8s %.1s | %3i | %5i (%5i) %p"
+#if SCHEDSTATISTICS
+                   " | %4d/1k |  %8d"
+#endif
+                   "\n",
+                   p->pid, p->name, sname, queued, p->priority, p->stack_size, stacksz, p->stack_start
+#if SCHEDSTATISTICS
+                   , runtime_ticks, switches
+#endif
+                  );
         }
     }
 

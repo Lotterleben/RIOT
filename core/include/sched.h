@@ -25,6 +25,7 @@
 #include <stddef.h>
 #include "bitarithm.h"
 #include "tcb.h"
+#include "attributes.h"
 
 #define MAXTHREADS 32 /**< the maximum number of threads to be scheduled */
 
@@ -39,7 +40,7 @@
 #endif
 
 /**
- * @brief   Triggers the scheduler to schedule the next thread 
+ * @brief   Triggers the scheduler to schedule the next thread
  */
 void sched_run(void);
 
@@ -54,18 +55,17 @@ void sched_set_status(tcb_t *process, unsigned int status);
 
 /**
  * @brief   Compare thread priorities and yield() (or set
- *          sched_context_switch_request if in_isr) when other_prio is higher
- *          (has a lower value) than current_prio
+ *          sched_context_switch_request if inISR()) when other_prio is higher
+ *          (has a lower value) than the current thread's priority
  *
- * @param[in]   current_prio    The priority of the current thread
  * @param[in]   other_prio      The priority of the target thread
  */
-void sched_switch(uint16_t current_prio, uint16_t other_prio);
+void sched_switch(uint16_t other_prio);
 
 /**
  * @brief   Call context switching at thread exit
  */
-void cpu_switch_context_exit(void);
+NORETURN void cpu_switch_context_exit(void);
 
 /**
  * Flag indicating whether a context switch is necessary after handling an
@@ -81,22 +81,17 @@ extern volatile tcb_t *sched_threads[MAXTHREADS];
 /**
  *  Currently active thread
  */
-extern volatile tcb_t *active_thread;
+extern volatile tcb_t *sched_active_thread;
 
 /**
  *  Number of running (non-terminated) threads
  */
-extern volatile int num_tasks;
+extern volatile int sched_num_threads;
 
 /**
  *  Process ID of active thread
  */
-extern volatile int thread_pid;
-
-/**
- *  Process ID of the thread that was active before the current one
- */
-extern volatile int last_pid;
+extern volatile int sched_active_pid;
 
 /**
  * List of runqueues per priority level
@@ -117,7 +112,7 @@ typedef struct {
 /**
  *  Thread statistics table
  */
-extern schedstat pidlist[MAXTHREADS];
+extern schedstat sched_pidlist[MAXTHREADS];
 
 /**
  *  @brief  Register a callback that will be called on every scheduler run

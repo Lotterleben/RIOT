@@ -1,5 +1,7 @@
-export PROJECT = test_condition_variable
+APPLICATION = test_condition_variable
 include ../Makefile.tests_common
+
+BOARD_INSUFFICIENT_RAM := stm32f0discovery
 
 USEMODULE += posix
 USEMODULE += pthread

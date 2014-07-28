@@ -1,10 +1,11 @@
 /**
  * Native uart0 implementation
  *
- * Copyright (C) 2013 Ludwig Ortmann
+ * Copyright (C) 2014 Ludwig Ortmann <ludwig.ortmann@fu-berlin.de>
  *
- * This file is subject to the terms and conditions of the LGPLv2. See
- * the file LICENSE in the top level directory for more details.
+ * This file is subject to the terms and conditions of the GNU Lesser General
+ * Public License. See the file LICENSE in the top level directory for more
+ * details.
  *
  * @ingroup native_board
  * @{
@@ -43,6 +44,9 @@
 
 int _native_uart_sock;
 int _native_uart_conn;
+
+int _native_replay_enabled;
+FILE *_native_replay_buffer;
 
 fd_set _native_uart_rfds;
 
@@ -92,7 +96,7 @@ void *get_in_addr(struct sockaddr *sa)
 int init_tcp_socket(char *tcpport)
 {
     struct addrinfo hints, *info, *p;
-    int i, s;
+    int i, s = -1;
     if (tcpport == NULL) {
         tcpport = UART_TCPPORT;
     }
@@ -138,7 +142,7 @@ int init_tcp_socket(char *tcpport)
     return s;
 }
 
-int init_unix_socket()
+int init_unix_socket(void)
 {
     int s;
     struct sockaddr_un sa;
@@ -148,8 +152,14 @@ int init_unix_socket()
     }
 
     sa.sun_family = AF_UNIX;
-    snprintf(sa.sun_path, sizeof(sa.sun_path), "/tmp/riot.tty.%d", getpid());
-    unlink(sa.sun_path); /* remove stale socket */
+
+    if (_native_unix_socket_path != NULL) {
+        snprintf(sa.sun_path, sizeof(sa.sun_path), "%s", _native_unix_socket_path);
+    }
+    else {
+        snprintf(sa.sun_path, sizeof(sa.sun_path), "/tmp/riot.tty.%d", _native_pid);
+    }
+    real_unlink(sa.sun_path); /* remove stale socket */
     if (bind(s, (struct sockaddr *)&sa, SUN_LEN(&sa)) == -1) {
         err(EXIT_FAILURE, "init_unix_socket: bind");
     }
@@ -161,7 +171,7 @@ int init_unix_socket()
     return s;
 }
 
-void handle_uart_in()
+void handle_uart_in(void)
 {
     char buf[42];
     int nread;
@@ -170,17 +180,17 @@ void handle_uart_in()
 
     nread = _native_read(STDIN_FILENO, buf, sizeof(buf));
     if (nread == -1) {
-        err(1, "handle_uart_in(): read()");
+        err(EXIT_FAILURE, "handle_uart_in(): read()");
     }
     else if (nread == 0) {
         /* end of file / socket closed */
         if (_native_uart_conn != 0) {
             if (_native_null_out_file != -1) {
-                if (dup2(_native_null_out_file, STDOUT_FILENO) == -1) {
+                if (real_dup2(_native_null_out_file, STDOUT_FILENO) == -1) {
                     err(EXIT_FAILURE, "handle_uart_in: dup2(STDOUT_FILENO)");
                 }
             }
-            if (dup2(_native_null_in_pipe[0], STDIN_FILENO) == -1) {
+            if (real_dup2(_native_null_in_pipe[0], STDIN_FILENO) == -1) {
                 err(EXIT_FAILURE, "handle_uart_in: dup2(STDIN_FILENO)");
             }
             _native_uart_conn = 0;
@@ -190,7 +200,7 @@ void handle_uart_in()
             errx(EXIT_FAILURE, "handle_uart_in: unhandled situation!");
         }
     }
-    for(int pos = 0; pos < nread; pos++) {
+    for (int pos = 0; pos < nread; pos++) {
         uart0_handle_incoming(buf[pos]);
     }
     uart0_notify_thread();
@@ -198,7 +208,7 @@ void handle_uart_in()
     thread_yield();
 }
 
-void handle_uart_sock()
+void handle_uart_sock(void)
 {
     int s;
     socklen_t t;
@@ -214,19 +224,47 @@ void handle_uart_sock()
         warnx("handle_uart_sock: successfully accepted socket");
     }
 
-    if (dup2(s, STDOUT_FILENO) == -1) {
+    if (real_dup2(s, STDOUT_FILENO) == -1) {
         err(EXIT_FAILURE, "handle_uart_sock: dup2()");
     }
-    if (dup2(s, STDIN_FILENO) == -1) {
+    if (real_dup2(s, STDIN_FILENO) == -1) {
         err(EXIT_FAILURE, "handle_uart_sock: dup2()");
     }
+
+    /* play back log from last position */
+    if (_native_replay_enabled) {
+        warnx("handle_uart_sock: replaying buffer");
+        size_t nread;
+        char buf[200];
+        while ((nread = real_fread(buf, 1, sizeof(buf), _native_replay_buffer)) != 0) {
+            int nwritten;
+            int pos = 0;
+            while ((nwritten = real_write(STDOUT_FILENO, &buf[pos], nread)) != -1) {
+                nread -= nwritten;
+                pos += nwritten;
+                if (nread == 0) {
+                    break;
+                }
+            }
+            if (nwritten == -1) {
+                err(EXIT_FAILURE, "handle_uart_sock: write");
+            }
+        }
+        if (real_feof(_native_replay_buffer) != 0) {
+            real_clearerr(_native_replay_buffer);
+        }
+        else if (real_ferror(_native_replay_buffer) != 0) {
+            err(EXIT_FAILURE, "handle_uart_sock(): fread()");
+        }
+    }
+
     _native_syscall_leave();
 
     _native_uart_conn = s;
 }
 
 #ifdef MODULE_UART0
-void _native_handle_uart0_input()
+void _native_handle_uart0_input(void)
 {
     if (FD_ISSET(STDIN_FILENO, &_native_rfds)) {
         handle_uart_in();
@@ -253,8 +291,18 @@ int _native_set_uart_fds(void)
 }
 #endif
 
-void _native_init_uart0(char *stdiotype, char *ioparam)
+void _native_init_uart0(char *stdiotype, char *ioparam, int replay)
 {
+    _native_replay_enabled = replay;
+
+    if (_native_replay_enabled) {
+        char stdout_logname[255];
+        snprintf(stdout_logname, sizeof(stdout_logname), "/tmp/riot.stdout.%d", _native_pid);
+        if ((_native_replay_buffer = real_fopen(stdout_logname, "r+")) == NULL) {
+            err(EXIT_FAILURE, "_native_init_uart0: fdopen(_native_null_out_file)");
+        }
+    }
+
     if (strcmp(stdiotype, "tcp") == 0) {
         _native_uart_sock = init_tcp_socket(ioparam);
     }

@@ -1,4 +1,3 @@
-MODULE = sys
 ifneq (,$(filter auto_init,$(USEMODULE)))
     DIRS += auto_init
 endif
@@ -71,23 +70,8 @@ endif
 ifneq (,$(filter bloom,$(USEMODULE)))
     DIRS += bloom
 endif
-ifneq (,$(filter crypto_3des,$(USEMODULE)))
-    DIRS += crypto/3des
-endif
-ifneq (,$(filter crypto_aes,$(USEMODULE)))
-    DIRS += crypto/aes
-endif
-ifneq (,$(filter crypto_rc5,$(USEMODULE)))
-    DIRS += crypto/rc5
-endif
-ifneq (,$(filter crypto_sha256,$(USEMODULE)))
-    DIRS += crypto/sha256
-endif
-ifneq (,$(filter crypto_skipjack,$(USEMODULE)))
-    DIRS += crypto/skipjack
-endif
-ifneq (,$(filter crypto_twofish,$(USEMODULE)))
-    DIRS += crypto/twofish
+ifneq (,$(filter crypto,$(USEMODULE)))
+    DIRS += crypto
 endif
 ifneq (,$(filter random,$(USEMODULE)))
     DIRS += random
@@ -104,8 +88,11 @@ endif
 ifneq (,$(filter quad_math,$(USEMODULE)))
     DIRS += quad_math
 endif
-
-all: $(BINDIR)$(MODULE).a
-	@for i in $(DIRS) ; do "$(MAKE)" -C $$i || exit 1; done ;
+ifneq (,$(filter oneway_malloc,$(USEMODULE)))
+    DIRS += oneway-malloc
+endif
+ifneq (,$(filter color,$(USEMODULE)))
+    DIRS += color
+endif
 
 include $(RIOTBASE)/Makefile.base

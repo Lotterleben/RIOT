@@ -3,7 +3,7 @@
  *
  * TODO: implement
  *
- * Copyright (C) 2014 Ludwig Ortmann
+ * Copyright (C) 2014 Ludwig Ortmann <ludwig.ortmann@fu-berlin.de>
  *
  * This file is subject to the terms and conditions of the GNU Lesser General
  * Public License. See the file LICENSE in the top level directory for more
@@ -19,7 +19,7 @@
 
 #include <inttypes.h>
 
-#include "hwtimer_arch.h"
+#include "arch/hwtimer_arch.h"
 
 #define ENABLE_DEBUG (1)
 #include "debug.h"

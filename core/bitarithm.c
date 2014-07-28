@@ -15,51 +15,37 @@
  *
  * @author      Kaspar Schleiser <kaspar@schleiser.de>
  * @author      Martin Lenders <mlenders@inf.fu-berlin.de>
+ * @author      René Kijewski <rene.kijewski@fu-berlin.de>
  *
  * @}
  */
 
 #include <stdio.h>
 
-unsigned
-number_of_highest_bit(unsigned v)
+#include "bitarithm.h"
+
+unsigned bitarithm_msb(unsigned v)
 {
-    register unsigned r; // result of log2(v) will go here
-
-#if ARCH_32_BIT
-    register unsigned shift;
-
-    r =     (v > 0xFFFF) << 4; v >>= r;
-    shift = (v > 0xFF  ) << 3; v >>= shift; r |= shift;
-    shift = (v > 0xF   ) << 2; v >>= shift; r |= shift;
-    shift = (v > 0x3   ) << 1; v >>= shift; r |= shift;
-                                            r |= (v >> 1);
-#else
-    r = 0;
-    while (v >>= 1) { // unroll for more speed...
-        r++;
+    if ((signed) v >= 0) {
+        v &= -v;
+        return bitarithm_lsb(v);
     }
-
-#endif
-
-    return r;
+    else {
+        return sizeof (v) * 8 - 1;
+    }
 }
-/*---------------------------------------------------------------------------*/
-unsigned
-number_of_lowest_bit(register unsigned v)
-{
-    register unsigned r = 0;
 
-    while ((v & 0x01) == 0) {
+unsigned bitarithm_lsb(unsigned v)
+{
+    unsigned r = 0;
+    while ((v & 1) == 0) {
         v >>= 1;
         r++;
-    };
-
+    }
     return r;
 }
-/*---------------------------------------------------------------------------*/
-unsigned
-number_of_bits_set(unsigned v)
+
+unsigned bitarithm_bits_set(unsigned v)
 {
     unsigned c; // c accumulates the total bits set in v
 

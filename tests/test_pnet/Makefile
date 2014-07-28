@@ -1,16 +1,14 @@
-export PROJECT = test_pnet
+APPLICATION = test_pnet
 include ../Makefile.tests_common
 
-BOARD_BLACKLIST := chronos mbed_lpc1768 msb-430 msb-430h redbee-econotag \
-                   telosb wsn430-v1_3b wsn430-v1_4
-# chronos:          not enough RAM
+BOARD_INSUFFICIENT_RAM := chronos msb-430h redbee-econotag telosb wsn430-v1_3b wsn430-v1_4 z1
+BOARD_BLACKLIST := arduino-due mbed_lpc1768 msb-430 udoo qemu-i386 stm32f0discovery \
+                   stm32f4discovery
 # mbed_lpc1768:     see https://github.com/RIOT-OS/RIOT/issues/675
 # msb-430:          see https://github.com/RIOT-OS/RIOT/issues/658
-# msb-430h:         not enough RAM
-# redbee-econotag:  not enough RAM
-# telosb:           not enough RAM
-# wsn430-v1_3b:     not enough RAM
-# wsn430-v1_4:      not enough RAM
+# qemu-i386:        no transceiver, yet
+# stm32f0discovery: no transceiver, yet
+# stm32f4discovery: no transceiver, yet
 
 USEMODULE += posix
 USEMODULE += pnet

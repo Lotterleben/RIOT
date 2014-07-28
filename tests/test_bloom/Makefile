@@ -1,25 +1,20 @@
-export PROJECT = test_bloom
+APPLICATION = test_bloom
 include ../Makefile.tests_common
 
-BOARD_BLACKLIST := chronos mbed_lpc1768 msb-430 msb-430h redbee-econotag \
-                   telosb wsn430-v1_3b wsn430-v1_4
-# chronos: not enough RAM
-# mbed_lpc1768: not enough RAM
-# msb-430: not enough RAM
-# msb-430h: not enough RAM
-# redbee-econotag: not enough RAM
-# telosb: not enough RAM
-# wsn430-v1_3b: not enough RAM
-# wsn430-v1_4: not enough RAM
+BOARD_INSUFFICIENT_RAM := chronos mbed_lpc1768 msb-430 msb-430h redbee-econotag \
+                          telosb wsn430-v1_3b wsn430-v1_4 z1 stm32f0discovery
 
 USEMODULE += hashes
 USEMODULE += bloom
 
-export PROJDEPS = sets.h
+APPDEPS = $(BINDIR)projdeps/sets.h
+
+INCLUDES += -I$(BINDIR)projdeps
 
 DISABLE_MODULE += auto_init
 
 include $(RIOTBASE)/Makefile.include
 
-sets.h: generate_sets.py words.txt.gz
-	./generate_sets.py 10000 20
+$(BINDIR)projdeps/sets.h: generate_sets.py words.txt.gz
+	mkdir -p ${@D}
+	./generate_sets.py words.txt.gz $@

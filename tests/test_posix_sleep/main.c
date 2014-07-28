@@ -34,10 +34,11 @@ int main(void)
     puts("sleep 1");
     for (int i = 0; i < 10; i++) {
         unsigned int s = i;
-        printf("calling sleep(%d)\n", s);
+        printf("calling sleep(%u)\n", s);
         sleep(s);
         puts("wake up");
     }
 
     puts("done");
+    return 0;
 }

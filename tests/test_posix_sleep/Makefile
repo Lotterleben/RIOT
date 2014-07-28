@@ -1,4 +1,4 @@
-export PROJECT = test_posix_sleep
+APPLICATION = test_posix_sleep
 include ../Makefile.tests_common
 
 USEMODULE += posix

@@ -3,7 +3,7 @@
  *
  * Copyright (C) 2013 Oliver Hahm <oliver.hahm@inria.fr>
  *
- * This file subject to the terms and conditions of the GNU Lesser General
+ * This file is subject to the terms and conditions of the GNU Lesser General
  * Public License. See the file LICENSE in the top level directory for more
  * details.
  *
@@ -64,7 +64,7 @@ void heap_stats(void) {
 /*-----------------------------------------------------------------------------------*/
 void __assert_func(const char *file, int line, const char *func, const char *failedexpr)
 {
-	printf("#! assertion %s failed\n\t%s() in %s:%u\n", failedexpr, func, file, line );
+	printf("#! assertion %s failed\n\t%s() in %s:%d\n", failedexpr, func, file, line );
 	_exit(3);
 }
 /*-----------------------------------------------------------------------------------*/
@@ -221,7 +221,7 @@ void _exit(int n)
 /*---------------------------------------------------------------------------*/
 int _getpid(void)
 {
-	return active_thread->pid;
+	return sched_active_thread->pid;
 }
 /*---------------------------------------------------------------------------*/
 int _kill_r(struct _reent *r, int pid, int sig)

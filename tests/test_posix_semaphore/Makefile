@@ -1,10 +1,7 @@
-export PROJECT = test_posix_semaphore
+APPLICATION = test_posix_semaphore
 include ../Makefile.tests_common
 
-BOARD_BLACKLIST := mbed_lpc1768 redbee-econotag chronos
-# mbed_lpc1768: not enough RAM
-# redbee-econotag: not enough RAM
-# chronos: not enough RAM
+BOARD_INSUFFICIENT_RAM := msb-430 msb-430h mbed_lpc1768 redbee-econotag chronos stm32f0discovery
 
 USEMODULE += posix
 

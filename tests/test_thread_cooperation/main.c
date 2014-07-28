@@ -20,12 +20,10 @@
 
 #include <stdio.h>
 #include <inttypes.h>
-#include <thread.h>
-#include <flags.h>
-#include <kernel.h>
-#include <mutex.h>
 
-#define STACK_SIZE (KERNEL_CONF_STACKSIZE_MAIN)
+#include "thread.h"
+#include "mutex.h"
+
 #define PROBLEM 12
 
 mutex_t mtx;
@@ -33,45 +31,39 @@ mutex_t mtx;
 volatile int storage = 1;
 int main_id;
 int ths[PROBLEM];
-char stacks[PROBLEM][STACK_SIZE];
+char stacks[PROBLEM][KERNEL_CONF_STACKSIZE_MAIN];
 
-void run(void)
+void *run(void *arg)
 {
-    int err;
+    (void) arg;
+
     int me = thread_getpid();
     printf("I am alive (%d)\n", me);
-    msg_t arg;
-    err = msg_receive(&arg);
-    printf("Thread %d has arg %" PRIu32 "\n", me, arg.content.value);
+    msg_t m;
+    msg_receive(&m);
+    printf("Thread %d has arg %" PRIu32 "\n", me, m.content.value);
 
-    err = mutex_lock(&mtx);
+    mutex_lock(&mtx);
 
-    if (err < 1) {
-        printf("[!!!] mutex_lock failed with %d\n", err);
-    }
-
-    storage *= arg.content.value;
+    storage *= m.content.value;
     mutex_unlock(&mtx);
 
     msg_t final;
     final.content.value = me;
-    err = msg_send(&final, main_id, 1);
+    int err = msg_send(&final, main_id, 1);
 
     if (err < 0) {
         printf("[!!!] Failed to send message from %d to main\n", me);
     }
+
+    return NULL;
 }
 
 int main(void)
 {
-    int err;
     main_id = thread_getpid();
 
-    err = mutex_init(&mtx);
-
-    if (err < 1) {
-        printf("[!!!] mutex_init failed with %d\n", err);
-    }
+    mutex_init(&mtx);
 
     printf("Problem: %d\n", PROBLEM);
 
@@ -79,15 +71,17 @@ int main(void)
 
     for (int i = 0; i < PROBLEM; ++i) {
         printf("Creating thread with arg %d\n", (i + 1));
-        ths[i] = thread_create(stacks[i], STACK_SIZE, PRIORITY_MAIN - 1, CREATE_WOUT_YIELD | CREATE_STACKTEST, run, "thread");
+        ths[i] = thread_create(stacks[i], sizeof(stacks[i]),
+                               PRIORITY_MAIN - 1, CREATE_WOUT_YIELD | CREATE_STACKTEST,
+                               run, NULL, "thread");
 
         if (ths[i] < 0)  {
-            printf("[!!!] Creating thread failed with %d\n", err);
+            printf("[!!!] Creating thread failed.\n");
         }
         else {
             args[i].content.value = i + 1;
-            err = msg_send(&args[i], ths[i], 1);
 
+            int err = msg_send(&args[i], ths[i], 1);
             if (err < 0) {
                 printf("[!!!] Sending message to thread %d failed\n", ths[i]);
             }

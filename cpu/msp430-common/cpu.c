@@ -20,24 +20,26 @@ volatile int __inISR = 0;
 
 char __isr_stack[MSP430_ISR_STACK_SIZE];
 
-void thread_yield()
+void thread_yield(void)
 {
     __save_context();
 
     dINT();
-    /* have active_thread point to the next thread */
+    /* have sched_active_thread point to the next thread */
     sched_run();
     eINT();
 
     __restore_context();
 }
 
-void cpu_switch_context_exit(void)
+NORETURN void cpu_switch_context_exit(void)
 {
-    active_thread = sched_threads[0];
+    sched_active_thread = sched_threads[0];
     sched_run();
 
     __restore_context();
+
+    UNREACHABLE();
 }
 
 /**
@@ -51,7 +53,7 @@ __attribute__((section (".fini9"))) void __main_epilogue(void) { __asm__("ret");
 //----------------------------------------------------------------------------
 // Processor specific routine - here for MSP
 //----------------------------------------------------------------------------
-char *thread_stack_init(void (*task_func)(void), void *stack_start, int stack_size)
+char *thread_stack_init(thread_task_func_t task_func, void *arg, void *stack_start, int stack_size)
 {
     unsigned short stk = (unsigned short)(stack_start + stack_size);
 
@@ -73,18 +75,20 @@ char *thread_stack_init(void (*task_func)(void), void *stack_start, int stack_si
     *stackptr = GIE;
     --stackptr;
 
+    /* set argument to task_func */
+    *stackptr = (unsigned short) arg;
+    --stackptr;
+
     /* Space for registers. */
-    for (unsigned int i = 15; i > 4; i--) {
+    for (unsigned int i = 14; i > 4; i--) {
         *stackptr = i;
         --stackptr;
     }
 
-    //stackptr -= 11;
-
     return (char *) stackptr;
 }
 
-int inISR()
+int inISR(void)
 {
     return __inISR;
 }

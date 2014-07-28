@@ -34,7 +34,7 @@ void thread_yield(void)
  * Processor specific routine - here for ARM7
  * sizeof(void*) = sizeof(int)
  *--------------------------------------------------------------------------*/
-char *thread_stack_init(void (*task_func)(void), void *stack_start, int stack_size)
+char *thread_stack_init(thread_task_func_t task_func, void *arg, void *stack_start, int stack_size)
 {
     unsigned int *stk;
     int i;
@@ -52,10 +52,14 @@ char *thread_stack_init(void (*task_func)(void), void *stack_start, int stack_si
     *stk = (unsigned int)((unsigned int)stack_start + stack_size) - 4;
 
     /* build base stack */
-    for (i = REGISTER_CNT; i >= 0 ; i--) {
+    for (i = REGISTER_CNT; i > 0 ; i--) {
         stk--;
         *stk = i;
     }
+
+    /* set argument to task_func */
+    stk--;
+    *stk = ((unsigned int) arg);
 
     /* set the entry point */
     stk--;
@@ -73,17 +77,17 @@ void thread_print_stack(void)
     asm("mov %0, sp" : "=r"(stack));
 
     register unsigned int *s = (unsigned int *)stack;
-    printf("task: %X SP: %X\n", (unsigned int) active_thread, (unsigned int) stack);
+    printf("task: %X SP: %X\n", (unsigned int) sched_active_thread, (unsigned int) stack);
     register int i = 0;
     s += 5;
 
     while (*s != STACK_MARKER) {
-        printf("STACK (%u) addr=%X = %X \n", i, (unsigned int) s, (unsigned int) *s);
+        printf("STACK (%d) addr=%X = %X \n", i, (unsigned int) s, (unsigned int) *s);
         s++;
         i++;
     }
 
-    printf("STACK (%u)= %X \n", i, *s);
+    printf("STACK (%d)= %X \n", i, *s);
 }
 
 int reboot_arch(int mode)

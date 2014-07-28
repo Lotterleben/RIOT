@@ -3,10 +3,11 @@
  *
  * No functionality implemented at the moment.
  *
- * Copyright (C) 2013 Ludwig Ortmann
+ * Copyright (C) 2014 Ludwig Ortmann <ludwig.ortmann@fu-berlin.de>
  *
- * This file is subject to the terms and conditions of the LGPLv2. See
- * the file LICENSE in the top level directory for more details.
+ * This file is subject to the terms and conditions of the GNU Lesser General
+ * Public License. See the file LICENSE in the top level directory for more
+ * details.
  *
  * @ingroup native_board
  * @{
@@ -25,6 +26,7 @@
 #include "nativenet.h"
 #include "nativenet_internal.h"
 #endif
+#include "native_internal.h"
 
 #define ENABLE_DEBUG (0)
 #include "debug.h"
@@ -36,12 +38,10 @@ void config_load(void)
 {
     DEBUG("config_load()\n");
 
-    int pid = getpid();
-
-    sysconfig.id = pid;
+    sysconfig.id = _native_id;
 
 #ifdef MODULE_NATIVENET
-    _native_net_addr = pid;
+    _native_net_addr = _native_id;
 #endif
 
     return;

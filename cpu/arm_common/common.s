@@ -1,3 +1,11 @@
+/*
+ * Copyright (C) 2014 Freie Universität Berlin
+ *
+ * This file is subject to the terms and conditions of the GNU Lesser General
+ * Public License. See the file LICENSE in the top level directory for more
+ * details.
+ */
+
   /* GCC ARM assembler */
 
   .text
@@ -22,7 +30,7 @@
 
   /* External references */
 
-  .extern  active_thread
+  .extern  sched_active_thread
   .extern  sched_context_switch_request
   .extern  sched_run
   .extern  DEBUG_Routine
@@ -79,15 +87,15 @@ ctx_switch2:
     /* store return address and spsr on user mode stack */
     stmfd   lr!, {r0, r1}
 
-    /* save user mode stack pointer in *active_thread */
-    ldr     r1, =active_thread   /* r1 = &active_thread */
-    ldr     r1, [r1]                /* r1 = *r1 = active_thread */
+    /* save user mode stack pointer in *sched_active_thread */
+    ldr     r1, =sched_active_thread   /* r1 = &sched_active_thread */
+    ldr     r1, [r1]                /* r1 = *r1 = sched_active_thread */
 
     str     lr, [r1]                /* store stack pointer in tasks tcb*/
     /* now the calling task has all its registers saved on its stack and it's SP is saved in its tcb */
 
 
-    /* call scheduler so active_thread points to the next task */
+    /* call scheduler so sched_active_thread points to the next task */
     bl      sched_run
     b       task_return
     /* never coming back */
@@ -96,15 +104,15 @@ cpu_switch_context_exit:
     mov r0, #NOINT|SVCMODE
     msr cpsr, r0
 
-    /* call scheduler so active_thread points to the next task */
+    /* call scheduler so sched_active_thread points to the next task */
     bl      sched_run
 
     /* continue in task_return: */
 
 task_return:
     /* load tcb->stackpointer in r0 */
-    ldr     r0, =active_thread   /* r0 = &active_thread */
-    ldr     r0, [r0]                /* r0 = *r0 = active_thread */
+    ldr     r0, =sched_active_thread   /* r0 = &sched_active_thread */
+    ldr     r0, [r0]                /* r0 = *r0 = sched_active_thread */
     ldr     r0, [r0]
 
     /* restore saved spsr and return address from tasks stack */

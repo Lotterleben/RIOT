@@ -1,16 +1,16 @@
 # name of your application
-export PROJECT = ccn-lite-relay
+APPLICATION = ccn-lite-relay
 
 # If no BOARD is found in the environment, use this default:
-export BOARD ?= native
+BOARD ?= native
 
 # This has to be the absolute path to the RIOT base directory:
-export RIOTBASE ?= $(CURDIR)/../..
+RIOTBASE ?= $(CURDIR)/../..
 
 # Uncomment these lines if you want to use platform support from external
 # repositories:
-#export RIOTCPU ?= $(CURDIR)/../../RIOT/thirdparty_cpu
-#export RIOTBOARD ?= $(CURDIR)/../../RIOT/thirdparty_boards
+#RIOTCPU ?= $(CURDIR)/../../RIOT/thirdparty_cpu
+#RIOTBOARD ?= $(CURDIR)/../../RIOT/thirdparty_boards
 
 # Uncomment this to enable scheduler statistics for ps:
 #CFLAGS += -DSCHEDSTATISTICS
@@ -25,19 +25,17 @@ export RIOTBASE ?= $(CURDIR)/../..
 #CFLAGS += -DDEVELHELP
 
 # Change this to 0 show compiler invocation lines by default:
-export QUIET ?= 1
+QUIET ?= 1
 
-BOARD_BLACKLIST := chronos mbed_lpc1768 msb-430 msb-430h redbee-econotag \
-                   telosb wsn430-v1_3b wsn430-v1_4 pttu
-# chronos: not enough RAM
-# mbed_lpc1768: see https://github.com/RIOT-OS/RIOT/issues/675
-# msb-430: see https://github.com/RIOT-OS/RIOT/issues/658
-# msb-430h: not enough RAM
-# redbee-econotag: see https://github.com/RIOT-OS/RIOT/issues/676
-# telosb: not enough RAM
-# wsn430-v1_3b: not enough RAM
-# wsn430-v1_4: not enough RAM
-# pttu: see https://github.com/RIOT-OS/RIOT/issues/659
+BOARD_INSUFFICIENT_RAM := chronos msb-430h telosb wsn430-v1_3b wsn430-v1_4 z1 redbee-econotag
+BOARD_BLACKLIST := arduino-due mbed_lpc1768 msb-430 pttu udoo qemu-i386 \
+                   stm32f0discovery stm32f4discovery
+# mbed_lpc1768:     see https://github.com/RIOT-OS/RIOT/issues/675
+# msb-430:          see https://github.com/RIOT-OS/RIOT/issues/658
+# pttu:             see https://github.com/RIOT-OS/RIOT/issues/659
+# qemu-i386:        no transceiver, yet
+# stm32f0discovery: no transceiver, yet
+# stm32f4discovery: no transceiver, yet
 
 # Modules to include:
 
@@ -45,7 +43,6 @@ USEMODULE += posix
 
 USEMODULE += defaulttransceiver
 USEMODULE += rtc
-USEMODULE += crypto_sha256
 USEMODULE += ccn_lite
 
 include $(RIOTBASE)/Makefile.include

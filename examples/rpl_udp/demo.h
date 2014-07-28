@@ -1,8 +1,6 @@
 #ifndef DEMO_H
 #define DEMO_H
 
-#include "kernel.h"
-
 #define APP_VERSION "1.1"
 
 #define RADIO_CHANNEL   (10)
@@ -46,7 +44,7 @@ void rpl_udp_ip(int argc, char **argv);
 void rpl_udp_ignore(int argc, char **argv);
 
 /* monitoring thread */
-void rpl_udp_monitor(void);
+void *rpl_udp_monitor(void *arg);
 
 extern radio_address_t id;
 extern ipv6_addr_t std_addr;

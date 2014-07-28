@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013 Ludwig Ortmann
+ * Copyright (C) 2013 Ludwig Ortmann <ludwig.ortmann@fu-berlin.de>
  *
  * This file is subject to the terms and conditions of the LGPLv2. See
  * the file LICENSE in the top level directory for more details.
@@ -25,9 +25,7 @@
 
 #include <stdint.h>
 
-/* TODO: choose better value? */
 #define F_CPU 1000000
-
 
 void _native_LED_GREEN_OFF(void);
 #define LED_GREEN_OFF (_native_LED_GREEN_OFF())

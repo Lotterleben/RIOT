@@ -8,7 +8,7 @@
  * The effect of calls like nativenet_set_channel depend on the
  * network layer.
  *
- * Copyright (C) 2013 Ludwig Ortmann
+ * Copyright (C) 2013 Ludwig Ortmann <ludwig.ortmann@fu-berlin.de>
  *
  * This file is subject to the terms and conditions of the GNU Lesser General
  * Public License. See the file LICENSE in the top level directory for more
@@ -33,7 +33,7 @@
 #ifndef NATIVE_MAX_DATA_LENGTH
 #include "tap.h"
 #ifdef MODULE_SIXLOWPAN
-#define NATIVE_MAX_DATA_LENGTH (255)
+#define NATIVE_MAX_DATA_LENGTH (127)
 #else
 #define NATIVE_MAX_DATA_LENGTH (TAP_MAX_DATA)
 #endif
@@ -51,7 +51,7 @@ void nativenet_init(int transceiver_pid);
 /**
  * Shutdown transceiver
  */
-void nativenet_powerdown();
+void nativenet_powerdown(void);
 
 /**
  * Enable/disable monitor mode
@@ -82,7 +82,7 @@ radio_address_t nativenet_set_address(radio_address_t address);
  *
  * @return the address
  */
-radio_address_t nativenet_get_address();
+radio_address_t nativenet_get_address(void);
 
 /**
  * @brief Sets the IEEE long address of the nativenet transceiver.
@@ -114,7 +114,7 @@ int16_t nativenet_set_channel(uint8_t channel);
  *
  * @return the channel
  */
-int16_t nativenet_get_channel();
+int16_t nativenet_get_channel(void);
 
 /**
  * Set transceiver pan
@@ -129,11 +129,11 @@ uint16_t nativenet_set_pan(uint16_t pan);
  *
  * @return the pan
  */
-uint16_t nativenet_get_pan();
+uint16_t nativenet_get_pan(void);
 
 /**
  * Enable transceiver rx mode
  */
-void nativenet_switch_to_rx();
+void nativenet_switch_to_rx(void);
 /** @} */
 #endif /* NATIVENET_H */

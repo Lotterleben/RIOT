@@ -1,7 +1,7 @@
 /**
  * Native CPU entry code
  *
- * Copyright (C) 2013 Ludwig Ortmann
+ * Copyright (C) 2013 Ludwig Ortmann <ludwig.ortmann@fu-berlin.de>
  *
  * This file is subject to the terms and conditions of the GNU Lesser General
  * Public License. See the file LICENSE in the top level directory for more
@@ -37,11 +37,13 @@
 #include "native_internal.h"
 #include "tap.h"
 
-int (*real_printf)(const char *format, ...);
 int _native_null_in_pipe[2];
 int _native_null_out_file;
 const char *_progname;
 char **_native_argv;
+pid_t _native_pid;
+pid_t _native_id;
+const char *_native_unix_socket_path = NULL;
 
 /**
  * initialize _native_null_in_pipe to allow for reading from stdin
@@ -50,16 +52,15 @@ char **_native_argv;
  */
 void _native_null_in(char *stdiotype)
 {
-
-    if (pipe(_native_null_in_pipe) == -1) {
-        err(1, "_native_null_in(): pipe()");
+    if (real_pipe(_native_null_in_pipe) == -1) {
+        err(EXIT_FAILURE, "_native_null_in(): pipe()");
     }
 
     if (strcmp(stdiotype, "stdio") == 0) {
         return;
     }
 
-    if (dup2(_native_null_in_pipe[0], STDIN_FILENO) == -1) {
+    if (real_dup2(_native_null_in_pipe[0], STDIN_FILENO) == -1) {
         err(EXIT_FAILURE, "_native_null_in: dup2(STDIN_FILENO)");
     }
 }
@@ -85,7 +86,7 @@ void _native_log_stdout(char *stdouttype)
     }
     else if (strcmp(stdouttype, "file") == 0) {
         char stdout_logname[255];
-        snprintf(stdout_logname, sizeof(stdout_logname), "/tmp/riot.stdout.%d", getpid());
+        snprintf(stdout_logname, sizeof(stdout_logname), "/tmp/riot.stdout.%d", _native_pid);
         if ((stdout_outfile = creat(stdout_logname, 0666)) == -1) {
             err(EXIT_FAILURE, "_native_log_stdout: open");
         }
@@ -94,7 +95,7 @@ void _native_log_stdout(char *stdouttype)
         errx(EXIT_FAILURE, "_native_log_stdout: unknown log type");
     }
 
-    if (dup2(stdout_outfile, STDOUT_FILENO) == -1) {
+    if (real_dup2(stdout_outfile, STDOUT_FILENO) == -1) {
         err(EXIT_FAILURE, "_native_log_stdout: dup2(STDOUT_FILENO)");
     }
     _native_null_out_file = stdout_outfile;
@@ -120,7 +121,7 @@ void _native_log_stderr(char *stderrtype)
     }
     else if (strcmp(stderrtype, "file") == 0) {
         char stderr_logname[255];
-        snprintf(stderr_logname, sizeof(stderr_logname), "/tmp/riot.stderr.%d", getpid());
+        snprintf(stderr_logname, sizeof(stderr_logname), "/tmp/riot.stderr.%d", _native_pid);
         if ((stderr_outfile = creat(stderr_logname, 0666)) == -1) {
             err(EXIT_FAILURE, "_native_log_stderr: open");
         }
@@ -129,26 +130,27 @@ void _native_log_stderr(char *stderrtype)
         errx(EXIT_FAILURE, "_native_log_stderr: unknown log type");
     }
 
-    if (dup2(stderr_outfile, STDERR_FILENO) == -1) {
+    if (real_dup2(stderr_outfile, STDERR_FILENO) == -1) {
         err(EXIT_FAILURE, "_native_log_stderr: dup2(STDERR_FILENO)");
     }
 }
 
-void daemonize()
+void daemonize(void)
 {
-    pid_t pid;
-
-    if ((pid = fork()) == -1) {
+    if ((_native_pid = real_fork()) == -1) {
         err(EXIT_FAILURE, "daemonize: fork");
     }
 
-    if (pid > 0) {
-        real_printf("RIOT pid: %d\n", pid);
+    if (_native_pid > 0) {
+        real_printf("RIOT pid: %d\n", _native_pid);
         exit(EXIT_SUCCESS);
+    }
+    else {
+        _native_pid = real_getpid();
     }
 }
 
-void usage_exit()
+void usage_exit(void)
 {
     real_printf("usage: %s", _progname);
 
@@ -157,25 +159,32 @@ void usage_exit()
 #endif
 
 #ifdef MODULE_UART0
-    real_printf(" [-t <port>|-u]");
+    real_printf(" [-t <port>|-u [path]] [-r]");
 #endif
 
-    real_printf(" [-d] [-e|-E] [-o]\n");
+    real_printf(" [-i <id>] [-d] [-e|-E] [-o]\n");
 
     real_printf(" help: %s -h\n", _progname);
 
     real_printf("\nOptions:\n\
--h      help\n\
--d      daemonize\n\
--e      redirect stderr to file\n\
--E      do not redirect stderr (i.e. leave sterr unchanged despite socket/daemon io)\n\
--o      redirect stdout to file when not attached to socket\n");
+-h          help\n");
 
 #ifdef MODULE_UART0
     real_printf("\
--u      redirect stdio to UNIX socket\n\
--t      redirect stdio to TCP socket\n");
+-t <port>   redirect stdio to TCP socket listening on <port>\n\
+-u <path>   redirect stdio to UNIX socket (<path> if given,\n\
+            /tmp/riot.tty.PID otherwise)\n\
+-r          replay missed output when (re-)attaching to socket\n\
+            (implies -o)\n");
 #endif
+    real_printf("\
+-i <id>     specify instance id (set by config module)\n\
+-d          daemonize\n\
+-e          redirect stderr to file\n\
+-E          do not redirect stderr (i.e. leave sterr unchanged despite\n\
+            daemon/socket io)\n\
+-o          redirect stdout to file (/tmp/riot.stdout.PID) when not attached\n\
+            to socket\n");
 
     real_printf("\n\
 The order of command line arguments matters.\n");
@@ -185,17 +194,14 @@ The order of command line arguments matters.\n");
 
 __attribute__((constructor)) static void startup(int argc, char **argv)
 {
-    /* get system read/write/printf */
-    *(void **)(&real_read) = dlsym(RTLD_NEXT, "read");
-    *(void **)(&real_write) = dlsym(RTLD_NEXT, "write");
-    *(void **)(&real_malloc) = dlsym(RTLD_NEXT, "malloc");
-    *(void **)(&real_realloc) = dlsym(RTLD_NEXT, "realloc");
-    *(void **)(&real_free) = dlsym(RTLD_NEXT, "free");
+    _native_init_syscalls();
 
-   *(void **)(&real_printf) = dlsym(RTLD_NEXT, "printf");
-
-   _native_argv = argv;
+    _native_argv = argv;
     _progname = argv[0];
+    _native_pid = real_getpid();
+
+    /* will possibly be overridden via option below: */
+    _native_id = _native_pid;
 
     int argp = 1;
     char *stderrtype = "stdio";
@@ -203,6 +209,7 @@ __attribute__((constructor)) static void startup(int argc, char **argv)
     char *stdiotype = "stdio";
 #ifdef MODULE_UART0
     char *ioparam = NULL;
+    int replay = 0;
 #endif
 
 #ifdef MODULE_NATIVENET
@@ -222,6 +229,15 @@ __attribute__((constructor)) static void startup(int argc, char **argv)
         char *arg = argv[argp];
         if ((strcmp("-h", arg) == 0) || (strcmp("--help", arg) == 0)) {
             usage_exit();
+        }
+        else if (strcmp("-i", arg) == 0) {
+            if (argp + 1 < argc) {
+                argp++;
+            }
+            else {
+                usage_exit();
+            }
+            _native_id = atol(argv[argp]);
         }
         else if (strcmp("-d", arg) == 0) {
             daemonize();
@@ -245,9 +261,13 @@ __attribute__((constructor)) static void startup(int argc, char **argv)
             stdouttype = "file";
         }
 #ifdef MODULE_UART0
+        else if (strcmp("-r", arg) == 0) {
+            stdouttype = "file";
+            replay = 1;
+        }
         else if (strcmp("-t", arg) == 0) {
             stdiotype = "tcp";
-            if (argp+1 < argc) {
+            if (argp + 1 < argc) {
                 ioparam = argv[++argp];
             }
             else {
@@ -268,6 +288,11 @@ __attribute__((constructor)) static void startup(int argc, char **argv)
             if (strcmp(stderrtype, "stdio") == 0) {
                 stderrtype = "null";
             }
+
+            /* parse optional path */
+            if ((argp + 1 < argc) && (argv[argp + 1][0] != '-')) {
+                _native_unix_socket_path = argv[++argp];
+            }
         }
 #endif
         else {
@@ -280,7 +305,7 @@ __attribute__((constructor)) static void startup(int argc, char **argv)
     _native_null_in(stdiotype);
 
 #ifdef MODULE_UART0
-    _native_init_uart0(stdiotype, ioparam);
+    _native_init_uart0(stdiotype, ioparam, replay);
 #endif
 
     native_hwtimer_pre_init();

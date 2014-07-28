@@ -7,7 +7,7 @@
  *
  * XXX: does not scale well with number of timers (overhead: O(N)).
  *
- * Copyright (C) 2013 Ludwig Ortmann
+ * Copyright (C) 2013 Ludwig Ortmann <ludwig.ortmann@fu-berlin.de>
  *
  * This file is subject to the terms and conditions of the GNU Lesser General
  * Public License. See the file LICENSE in the top level directory for more
@@ -35,7 +35,7 @@
 #include <err.h>
 
 #include "hwtimer.h"
-#include "hwtimer_arch.h"
+#include "arch/hwtimer_arch.h"
 
 #include "hwtimer_cpu.h"
 #include "cpu.h"
@@ -134,7 +134,14 @@ void schedule_timer(void)
     }
     if (next_timer == -1) {
         DEBUG("schedule_timer(): no valid timer found - nothing to schedule\n");
-        // TODO: unset timer
+        struct itimerval null_timer;
+        null_timer.it_interval.tv_sec = 0;
+        null_timer.it_interval.tv_usec = 0;
+        null_timer.it_value.tv_sec = 0;
+        null_timer.it_value.tv_usec = 0;
+        if (setitimer(ITIMER_REAL, &null_timer, NULL) == -1) {
+            err(EXIT_FAILURE, "schedule_timer: setitimer");
+        }
         return;
     }
 
@@ -179,7 +186,7 @@ void schedule_timer(void)
  *
  * set new system timer, call timer interrupt handler
  */
-void hwtimer_isr_timer()
+void hwtimer_isr_timer(void)
 {
     DEBUG("hwtimer_isr_timer()\n");
 
@@ -297,7 +304,7 @@ unsigned long hwtimer_arch_now(void)
  * Called once on process creation in order to mimic the behaviour a
  * regular hardware timer.
  */
-void native_hwtimer_pre_init()
+void native_hwtimer_pre_init(void)
 {
     /* initialize time delta */
     time_null = 0;

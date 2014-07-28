@@ -14,7 +14,7 @@ See the file LICENSE in the top level directory for more details.
 
 #include "cpu.h"
 #include "hwtimer.h"
-#include "hwtimer_arch.h"
+#include "arch/hwtimer_arch.h"
 
 #define ENABLE_DEBUG (0)
 #include "debug.h"
@@ -77,7 +77,7 @@ void timer_unset(short timer)
     *ptr = 0;
 }
 
-unsigned long hwtimer_arch_now()
+unsigned long hwtimer_arch_now(void)
 {
     return ((uint32_t)timer_round << 16) + TIMER_VAL_REG;
 }

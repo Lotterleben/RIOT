@@ -1,3 +1,11 @@
+/*
+ * Copyright (C) 2014 Ludwig Ortmann <ludwig.ortmann@fu-berlin.de>
+ *
+ * This file is subject to the terms and conditions of the GNU Lesser General
+ * Public License. See the file LICENSE in the top level directory for more
+ * details.
+ */
+
 .text
 
 #ifdef __MACH__
@@ -18,8 +26,7 @@ __native_sig_leave_tramp:
     popal
     popfl
 
-    popl __native_saved_eip
-    jmp *-4(%esp)
+    ret
 #else
 .extern $_native_saved_eip
 .extern $_native_isr_ctx
@@ -44,6 +51,5 @@ _native_sig_leave_tramp:
     popal
     popfl
 
-    popl _native_saved_eip
-    jmp *-4(%esp)
+    ret
 #endif

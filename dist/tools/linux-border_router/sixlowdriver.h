@@ -1,3 +1,11 @@
+/*
+ * Copyright (C) 2014 Freie Universität Berlin.
+ *
+ * This file is subject to the terms and conditions of the GNU Lesser General
+ * Public License. See the file LICENSE in the top level directory for more
+ * details.
+ */
+
 /**
  * @file    sixlowdriver.h
  * @author  Freie Universität Berlin, Computer Systems & Telemetics
@@ -158,13 +166,13 @@ int border_add_addr(const char *ip_addr);
  *          router.
  * @return  This border router's current version.
  */
-uint16_t get_abro_version();
+uint16_t get_abro_version(void);
 
 /**
  * @brief   Increments and updates the version for ABROs send by this
  *          router.
  * @return  This border router's new ABRO version.
  */
-uint16_t get_next_abro_version();
+uint16_t get_next_abro_version(void);
 
 #endif /* SIXLOWDRIVER_H*/

@@ -1,7 +1,7 @@
 /*
  * Copyright (C) 2013 Freie Universität Berlin
  *
- * This file subject to the terms and conditions of the GNU Lesser General
+ * This file is subject to the terms and conditions of the GNU Lesser General
  * Public License. See the file LICENSE in the top level directory for more
  * details.
  */
@@ -76,11 +76,9 @@ static volatile int pthread_reaper_pid = -1;
 
 static char pthread_reaper_stack[PTHREAD_REAPER_STACKSIZE];
 
-static void pthread_start_routine(void)
+static void *pthread_start_routine(void *pt_)
 {
-    pthread_t self = pthread_self();
-
-    pthread_thread_t *pt = pthread_sched_threads[self-1];
+    pthread_thread_t *pt = pt_;
     void *retval = pt->start_routine(pt->arg);
     pthread_exit(retval);
 }
@@ -100,14 +98,18 @@ static int insert(pthread_thread_t *pt)
     return result;
 }
 
-static void pthread_reaper(void)
+static void *pthread_reaper(void *arg)
 {
+    (void) arg;
+
     while (1) {
         msg_t m;
         msg_receive(&m);
         DEBUG("pthread_reaper(): free(%p)\n", m.content.ptr);
         free(m.content.ptr);
     }
+
+    return NULL;
 }
 
 int pthread_create(pthread_t *newthread, const pthread_attr_t *attr, void *(*start_routine)(void *), void *arg)
@@ -139,6 +141,7 @@ int pthread_create(pthread_t *newthread, const pthread_attr_t *attr, void *(*sta
                                              0,
                                              CREATE_STACKTEST,
                                              pthread_reaper,
+                                             NULL,
                                              "pthread-reaper");
             pthread_reaper_pid = pid;
         }
@@ -150,6 +153,7 @@ int pthread_create(pthread_t *newthread, const pthread_attr_t *attr, void *(*sta
                                    PRIORITY_MAIN,
                                    CREATE_WOUT_YIELD | CREATE_STACKTEST,
                                    pthread_start_routine,
+                                   pt,
                                    "pthread");
     if (pt->thread_pid < 0) {
         free(pt->stack);
@@ -158,7 +162,7 @@ int pthread_create(pthread_t *newthread, const pthread_attr_t *attr, void *(*sta
         return -1;
     }
 
-    sched_switch(active_thread->priority, PRIORITY_MAIN);
+    sched_switch(PRIORITY_MAIN);
 
     return 0;
 }
@@ -217,7 +221,7 @@ int pthread_join(pthread_t th, void **thread_return)
 
     switch (other->status) {
         case (PTS_RUNNING):
-            other->joining_thread = thread_pid;
+            other->joining_thread = sched_active_pid;
             /* go blocked, I'm waking up if other thread exits */
             thread_sleep();
             /* no break */
@@ -265,7 +269,7 @@ pthread_t pthread_self(void)
 {
     pthread_t result = 0;
     mutex_lock(&pthread_mutex);
-    int pid = thread_pid; /* thread_pid is volatile */
+    int pid = sched_active_pid; /* sched_active_pid is volatile */
     for (int i = 0; i < MAXTHREADS; i++) {
         if (pthread_sched_threads[i] && pthread_sched_threads[i]->thread_pid == pid) {
             result = i+1;

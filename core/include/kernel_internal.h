@@ -20,6 +20,8 @@
 #ifndef KERNEL_INTERNAL_H_
 #define KERNEL_INTERNAL_H_
 
+#include "attributes.h"
+
 /**
  * @brief   Initializes scheduler and creates main and idle task
  */
@@ -30,36 +32,29 @@ void kernel_init(void);
  */
 void board_init(void);
 
+typedef void *(*thread_task_func_t)(void *arg);
+
 /**
  * @brief   Gets called upon thread creation to set CPU registers
  *
  * @param[in] task_func     First function to call within the thread
+ * @param[in] arg           Argument to supply to task_func
  * @param[in] stack_start   Start address of the stack
  * @param[in] stack_size    Stack size
  *
  * @return stack pointer
  */
-char *thread_stack_init(void  (*task_func)(void), void *stack_start, int stack_size);
+char *thread_stack_init(thread_task_func_t task_func, void *arg, void *stack_start, int stack_size);
 
 /**
  * @brief  Removes thread from scheduler and set status to #STATUS_STOPPED
  */
-void sched_task_exit(void);
+NORETURN void sched_task_exit(void);
 
 /**
  * @brief   Prints human readable, ps-like thread information for debugging purposes
  */
 void thread_print_stack(void);
 
-/**
- * @brief       Reboot the system
- *
- * @param mode  The argument is ignored and only used for conformity
- *              with existing reboot implementations for now.
- *
- * @return      This call never returns when successful. -1 is returned otherwise.
- */
-int reboot_arch(int mode);
-
-/** @} */
 #endif /* KERNEL_INTERNAL_H_ */
+/** @} */

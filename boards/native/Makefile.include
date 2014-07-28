@@ -5,11 +5,12 @@ export NATIVEINCLUDES += -I$(RIOTBASE)/core/include/
 export NATIVEINCLUDES += -I$(RIOTBASE)/drivers/include/
 
 export CPU = native
-export ELF = $(BINDIR)$(PROJECT).elf
+export ELF = $(BINDIR)$(APPLICATION).elf
 
 # toolchain:
 export PREFIX =
 export CC ?= $(PREFIX)gcc
+export CXX ?= $(PREFIX)g++
 export AR ?= $(PREFIX)ar
 export AS ?= $(PREFIX)as
 export LINK ?= $(PREFIX)gcc
@@ -30,7 +31,12 @@ ifeq ($(shell uname -m),amd64)
 export CFLAGS += -DCOMPAT_32BIT -L/usr/lib32 -B/usr/lib32
 endif
 endif
-export LINKFLAGS += -m32 -gc
+
+# unwanted (CXXUWFLAGS) and extra (CXXEXFLAGS) flags for c++
+export CXXUWFLAGS +=
+export CXXEXFLAGS +=
+
+export LINKFLAGS += -m32
 ifeq ($(shell uname -s),FreeBSD)
 ifeq ($(shell uname -m),amd64)
 export LINKFLAGS += -DCOMPAT_32BIT -L/usr/lib32 -B/usr/lib32
@@ -39,6 +45,7 @@ export LINKFLAGS += -L $(BINDIR)
 else
 export LINKFLAGS += -ldl
 endif
+
 export ASFLAGS =
 export DEBUGGER_FLAGS = $(ELF)
 term-memcheck: export VALGRIND_FLAGS ?= --track-origins=yes

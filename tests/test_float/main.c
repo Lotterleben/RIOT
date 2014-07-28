@@ -19,16 +19,17 @@
  */
 
 #include <stdio.h>
-#include <board.h>
 #include <math.h>
+
+#include "board.h"
 
 int main(void)
 {
-    double  x = 1234567. / 1024., z;
+    double x = 1234567.0 / 1024.0;
 
     while (1) {
         x += 0.1;
-        z = x - floor(x);
+        double z = x - floor(x);
 
         if (z >= 1) {
             putchar('+');
