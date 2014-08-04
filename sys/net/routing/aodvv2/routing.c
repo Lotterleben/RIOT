@@ -53,7 +53,6 @@ struct netaddr* routingtable_get_next_hop(struct netaddr* dest, uint8_t metricTy
 
 void routingtable_add_entry(struct aodvv2_routing_entry_t* entry)
 {
-    // TODO: if entry already present, update it?
     /* only add if we don't already know the address */
     if (!(routingtable_get_entry(&(entry->addr), entry->metricType))){
         /*find free spot in RT and place rt_entry there */
@@ -74,6 +73,10 @@ struct aodvv2_routing_entry_t* routingtable_get_entry(struct netaddr* addr, uint
 
         if (!netaddr_cmp(&routing_table[i].addr, addr)
             && routing_table[i].metricType == metricType) {
+            DEBUG("[routing] found entry for %s :", netaddr_to_string(&nbuf, addr));
+#ifdef DEBUG
+            print_routingtable_entry(&routing_table[i]);
+#endif
             return &routing_table[i];
         }
     }
@@ -155,11 +158,15 @@ static void _reset_entry_if_stale(uint8_t i)
         if (timex_cmp(now, expirationTime) < 0)
             return;
 
+        /*
         if (state == ROUTE_STATE_IDLE &&
                 (timex_cmp(timex_sub(now, max_idletime), lastUsed) == 1  ||
                 timex_cmp(expirationTime, now) < 1)) {
-
+        */
+        if (state == ROUTE_STATE_IDLE &&
+                timex_cmp(expirationTime, now) < 1) {
             DEBUG("\t[routing] route towards %s Expired\n", netaddr_to_string(&nbuf, &routing_table[i].addr), i);
+            DEBUG("\t expirationTime: %"PRIu32":%"PRIu32" , now: %"PRIu32":%"PRIu32"\n", expirationTime.seconds, expirationTime.microseconds, now.seconds, now.microseconds);
             routing_table[i].state = ROUTE_STATE_EXPIRED;
             routing_table[i].lastUsed = now; // mark the time entry was set to Expired
         }

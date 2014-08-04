@@ -670,6 +670,8 @@ void ipv6_net_if_get_best_src_addr(ipv6_addr_t *src, const ipv6_addr_t *dest)
     else {
         while ((addr = (ipv6_net_if_addr_t *)net_if_iter_addresses(if_id,
                        (net_if_addr_t **)&addr))) {
+
+            //DEBUG("net_if_iter_addresses found this addr: %s\n", ipv6_addr_to_str(addr_str, IPV6_ADDR_LEN, addr->data));
             if (addr->ndp_state == NDP_ADDR_STATE_PREFERRED &&
                 ipv6_addr_is_link_local(addr->addr_data) &&
                 !ipv6_addr_is_multicast(addr->addr_data)) {

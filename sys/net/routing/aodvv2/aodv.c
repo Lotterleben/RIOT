@@ -71,15 +71,9 @@ void aodv_init(void)
     writer_init(_write_packet);
 
     /* start listening & enable sending */
-<<<<<<< HEAD
     thread_create(aodv_rcv_stack_buf, KERNEL_CONF_STACKSIZE_MAIN, PRIORITY_MAIN, CREATE_STACKTEST, _aodv_receiver_thread, NULL, "_aodv_receiver_thread");
     printf("[aodvv2] listening on port %d\n", HTONS(MANET_PORT));
     sender_thread = thread_create(aodv_snd_stack_buf, KERNEL_CONF_STACKSIZE_MAIN, PRIORITY_MAIN, CREATE_STACKTEST, _aodv_sender_thread, NULL, "_aodv_sender_thread");
-=======
-    thread_create(aodv_rcv_stack_buf, KERNEL_CONF_STACKSIZE_MAIN, PRIORITY_MAIN, CREATE_STACKTEST, _aodv_receiver_thread, "_aodv_receiver_thread");
-    printf("[aodvv2] listening on port %d\n", HTONS(MANET_PORT));
-    sender_thread = thread_create(aodv_snd_stack_buf, KERNEL_CONF_STACKSIZE_MAIN, PRIORITY_MAIN, CREATE_STACKTEST, _aodv_sender_thread, "_aodv_sender_thread");
->>>>>>> e39db364c4ad55caa3be73d3fe924338a0dedce9
 
     /* register aodv for routing */
     ipv6_iface_set_routing_provider(aodv_get_next_hop);
@@ -216,6 +210,7 @@ static void _aodv_sender_thread(void)
     DEBUG("[aodvv2] _aodv_sender_thread initialized.\n");
 
     while (true) {
+        DEBUG("[aodvv2] %s()\n", __func__);
         msg_t msg;
         msg_receive(&msg);
         struct msg_container* mc = (struct msg_container*) msg.content.ptr;
@@ -267,11 +262,17 @@ static void _aodv_receiver_thread(void)
         if(rcv_size < 0) {
             DEBUG("[aodvv2] ERROR receiving data!\n");
         }
+
         DEBUG("[aodvv2] _aodv_receiver_thread() %s: UDP packet received from %s\n",ipv6_addr_to_str(addr_str, IPV6_MAX_ADDR_STR_LEN, &_v6_addr_local), ipv6_addr_to_str(addr_str_rec, IPV6_MAX_ADDR_STR_LEN, &sa_rcv.sin6_addr));
 
         struct netaddr _sender;
         ipv6_addr_t_to_netaddr(&sa_rcv.sin6_addr, &_sender);
-        reader_handle_packet((void*) buf_rcv, rcv_size, &_sender);
+
+        /* For some reason we sometimes get passed our own packets. drop them. */
+        if (!netaddr_cmp(&_sender, &na_local) == 0) {
+            DEBUG("[aodvv2] received our own packet, dropping it.\n");
+            reader_handle_packet((void*) buf_rcv, rcv_size, &_sender);
+        }
     }
 
     destiny_socket_close(sock_rcv);
@@ -328,7 +329,7 @@ static ipv6_addr_t* aodv_get_next_hop(ipv6_addr_t* dest)
         // Case 1: Undeliverable Packet
         if (rt_entry->state == ROUTE_STATE_BROKEN ||
             rt_entry->state == ROUTE_STATE_EXPIRED ) {
-            DEBUG("\tRouting table entry found, but invalid. Sending RERR.\n");
+            DEBUG("\tRouting table entry found, but invalid (state %i). Sending RERR.\n", rt_entry->state);
             unreachable_nodes[0].addr = _tmp_dest;
             unreachable_nodes[0].seqnum = rt_entry->seqnum;
             aodv_send_rerr(unreachable_nodes, 1, AODVV2_MAX_HOPCOUNT, &na_mcast);
@@ -384,12 +385,10 @@ static void _write_packet(struct rfc5444_writer *wr __attribute__ ((unused)),
     DEBUG("[aodvv2] %s()\n", __func__);
     /* generate hexdump and human readable representation of packet
        and print to console */
-    /*
     abuf_hexdump(&_hexbuf, "\t", buffer, length);
     rfc5444_print_direct(&_hexbuf, buffer, length);
     DEBUG("%s", abuf_getptr(&_hexbuf));
     abuf_clear(&_hexbuf);
-    */
 
     /* fetch the address the packet is supposed to be sent to (i.e. to a
        specific node or the multicast address) from the writer_target struct
