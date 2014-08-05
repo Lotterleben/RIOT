@@ -3,28 +3,26 @@
  *
  * Copyright (C) 2009-2013 Freie Universität Berlin
  *
- * This file is subject to the terms and conditions of the GNU Lesser General
- * Public License. See the file LICENSE in the top level directory for more
- * details.
- *
+ * This file is subject to the terms and conditions of the GNU Lesser
+ * General Public License v2.1. See the file LICENSE in the top level
+ * directory for more details.
  */
 
 /**
- * @ingroup		dev_cc110x
+ * @ingroup     dev_cc110x
  * @{
  */
 
 /**
  * @file
  * @internal
- * @brief		TI Chipcon CC110x Radio driver
+ * @brief       TI Chipcon CC110x Radio driver
  *
- * @author      Freie Universität Berlin, Computer Systems & Telematics
- * @author		Thomas Hillebrandt <hillebra@inf.fu-berlin.de>
- * @author		Heiko Will <hwill@inf.fu-berlin.de>
+ * @author      Thomas Hillebrandt <hillebra@inf.fu-berlin.de>
+ * @author      Heiko Will <hwill@inf.fu-berlin.de>
  * @version     $Revision: 2283 $
  *
- * @note		$Id: cc1100.c 2283 2010-06-15 14:02:27Z hillebra $
+ * @note        $Id: cc1100.c 2283 2010-06-15 14:02:27Z hillebra $
  */
 
 #include <stdbool.h>
@@ -54,12 +52,12 @@
 #include "lpc2387.h"
 #endif
 
-#define PACKET_LENGTH				(0x3E)		///< Packet length = 62 Bytes.
-#define CC1100_SYNC_WORD_TX_TIME   (90000)		/* loop count (max. timeout ~ 15 ms) to wait for */
-												/* sync word to be transmitted (GDO2 from low to high) */
+#define PACKET_LENGTH               (0x3E)      ///< Packet length = 62 Bytes.
+#define CC1100_SYNC_WORD_TX_TIME   (90000)      /* loop count (max. timeout ~ 15 ms) to wait for */
+                                                /* sync word to be transmitted (GDO2 from low to high) */
 
 /**
- * @name	Virtual Radio Device methods (see vdevice_radio_methods)
+ * @name    Virtual Radio Device methods (see vdevice_radio_methods)
  * @{
  */
 static int rd_set_mode(int mode);
@@ -68,49 +66,49 @@ static int rd_set_mode(int mode);
 static void switch_to_wor(void);
 
 /*---------------------------------------------------------------------------*/
-//					Power control data structures
+//                  Power control data structures
 /*---------------------------------------------------------------------------*/
 
-static uint8_t pa_table_index = PATABLE;	///< Current PATABLE Index
-static uint8_t pa_table[] = {				///< PATABLE with available output powers
-				   0x00,					///< -52 dBm
-				   0x03,					///< -30 dBm
-				   0x0D,					///< -20 dBm
-				   0x1C,					///< -15 dBm
-				   0x34,					///< -10 dBm
-				   0x57,					///< - 5 dBm
-				   0x3F,					///< - 1 dBm
-				   0x8E,					///<   0 dBm
-				   0x85,					///< + 5 dBm
-				   0xCC,					///< + 7 dBm
-				   0xC6, 					///< + 9 dBm
-				   0xC3  					///< +10 dBm
+static uint8_t pa_table_index = PATABLE;    ///< Current PATABLE Index
+static uint8_t pa_table[] = {               ///< PATABLE with available output powers
+                   0x00,                    ///< -52 dBm
+                   0x03,                    ///< -30 dBm
+                   0x0D,                    ///< -20 dBm
+                   0x1C,                    ///< -15 dBm
+                   0x34,                    ///< -10 dBm
+                   0x57,                    ///< - 5 dBm
+                   0x3F,                    ///< - 1 dBm
+                   0x8E,                    ///<   0 dBm
+                   0x85,                    ///< + 5 dBm
+                   0xCC,                    ///< + 7 dBm
+                   0xC6,                    ///< + 9 dBm
+                   0xC3                     ///< +10 dBm
 }; /* If PATABLE is changed in size, adjust MAX_OUTPUT_POWER definition in CC1100 interface!*/
 
-static int8_t pa_table_dBm[] = {			///< Values of the PATABLE in dBm
-				   -52,
-				   -30,
-				   -20,
-				   -15,
-				   -10,
-				    -5,
-				    -1,
-				     0,
-				     5,
-				     7,
-				     9,
-				    10
+static int8_t pa_table_dBm[] = {            ///< Values of the PATABLE in dBm
+                   -52,
+                   -30,
+                   -20,
+                   -15,
+                   -10,
+                    -5,
+                    -1,
+                     0,
+                     5,
+                     7,
+                     9,
+                    10
 };
 
 /*---------------------------------------------------------------------------*/
-//					Main radio data structures
+//                  Main radio data structures
 /*---------------------------------------------------------------------------*/
 
-volatile cc1100_flags rflags;		///< Radio control flags
-static uint8_t radio_address;		///< Radio address
-static uint8_t radio_channel;		///< Radio channel number
+volatile cc1100_flags rflags;       ///< Radio control flags
+static uint8_t radio_address;       ///< Radio address
+static uint8_t radio_channel;       ///< Radio channel number
 
-const radio_t radio_cc1100 = {		///< Radio driver API
+const radio_t radio_cc1100 = {      ///< Radio driver API
     "CC1100",
     CC1100_BROADCAST_ADDRESS,
     MAX_OUTPUT_POWER,
@@ -126,21 +124,21 @@ const radio_t radio_cc1100 = {		///< Radio driver API
 };
 
 /*---------------------------------------------------------------------------*/
-//					 Data structures for mode control
+//                   Data structures for mode control
 /*---------------------------------------------------------------------------*/
 
-volatile uint8_t radio_mode;						///< Radio mode
-volatile uint8_t radio_state = RADIO_UNKNOWN;		///< Radio state
+volatile uint8_t radio_mode;                        ///< Radio mode
+volatile uint8_t radio_state = RADIO_UNKNOWN;       ///< Radio state
 
-volatile cc1100_mode_callback_t cc1100_go_idle;		///< Function for going IDLE
-volatile cc1100_mode_callback_t cc1100_go_receive;	///< Function for going RX
-volatile cc1100_mode_callback_t cc1100_go_after_tx;	///< Function to call after TX (burst send)
-volatile cc1100_mode_callback_t cc1100_setup_mode;	///< Function to set up selected mode (RX or WOR)
+volatile cc1100_mode_callback_t cc1100_go_idle;     ///< Function for going IDLE
+volatile cc1100_mode_callback_t cc1100_go_receive;  ///< Function for going RX
+volatile cc1100_mode_callback_t cc1100_go_after_tx; ///< Function to call after TX (burst send)
+volatile cc1100_mode_callback_t cc1100_setup_mode;  ///< Function to set up selected mode (RX or WOR)
 
 volatile int wor_hwtimer_id = -1;
 
 /*---------------------------------------------------------------------------*/
-/* 						Low-level hardware access */
+/*                      Low-level hardware access */
 /*---------------------------------------------------------------------------*/
 
 void cc1100_disable_interrupts(void)
@@ -163,11 +161,11 @@ void cc110x_gdo2_irq(void)
 }
 
 /*---------------------------------------------------------------------------*/
-/* 		High level CC1100 SPI functions for transferring packet out */
-//		of RX FIFO (don't call when in WOR mode)
+/*      High level CC1100 SPI functions for transferring packet out */
+//      of RX FIFO (don't call when in WOR mode)
 /*---------------------------------------------------------------------------*/
 
-static bool spi_receive_packet_variable(uint8_t *rxBuffer, uint8_t length)
+static bool spi_receive_packet_variable(uint8_t *rxBuffer, radio_packet_length_t length)
 {
     /* Needed here for statistics */
     extern cc1100_statistic_t cc1100_statistic;
@@ -217,7 +215,7 @@ static bool spi_receive_packet_variable(uint8_t *rxBuffer, uint8_t length)
     }
 }
 
-bool cc1100_spi_receive_packet(uint8_t *rxBuffer, uint8_t length)
+bool cc1100_spi_receive_packet(uint8_t *rxBuffer, radio_packet_length_t length)
 {
     uint8_t pkt_len_cfg = cc1100_spi_read_reg(CC1100_PKTCTRL0) & PKT_LENGTH_CONFIG;
 
@@ -231,7 +229,7 @@ bool cc1100_spi_receive_packet(uint8_t *rxBuffer, uint8_t length)
 }
 
 /*---------------------------------------------------------------------------*/
-/* 							CC1100 mode functionality */
+/*                          CC1100 mode functionality */
 /*---------------------------------------------------------------------------*/
 
 void cc1100_set_idle(void)
@@ -297,20 +295,20 @@ static void wakeup_from_wor(void)
  */
 void switch_to_wor2(void)
 {
-    //	if (cc110x_get_gdo2()) return;				/* If incoming packet, then don't go to WOR now */
-    cc1100_spi_strobe(CC1100_SIDLE);			/* Put CC1100 to IDLE */
-    radio_state = RADIO_IDLE;					/* Radio state now IDLE */
+    //  if (cc110x_get_gdo2()) return;              /* If incoming packet, then don't go to WOR now */
+    cc1100_spi_strobe(CC1100_SIDLE);            /* Put CC1100 to IDLE */
+    radio_state = RADIO_IDLE;                   /* Radio state now IDLE */
     cc1100_spi_write_reg(CC1100_MCSM2,
-                         cc1100_wor_config.rx_time_reg);		/* Configure RX_TIME (for use in WOR) */
-    cc1100_spi_write_reg(CC1100_MCSM0, 0x18);	/* Turn on FS-Autocal */
+                         cc1100_wor_config.rx_time_reg);        /* Configure RX_TIME (for use in WOR) */
+    cc1100_spi_write_reg(CC1100_MCSM0, 0x18);   /* Turn on FS-Autocal */
 
     if (rflags.WOR_RST) {
-        cc1100_spi_strobe(CC1100_SWORRST);		/* Resets the real time clock */
+        cc1100_spi_strobe(CC1100_SWORRST);      /* Resets the real time clock */
         rflags.WOR_RST = false;
     }
 
-    cc1100_spi_strobe(CC1100_SWOR);				/* Put radio back to sleep/WOR (must be in IDLE when this is done) */
-    radio_state = RADIO_WOR;					/* Radio state now WOR */
+    cc1100_spi_strobe(CC1100_SWOR);             /* Put radio back to sleep/WOR (must be in IDLE when this is done) */
+    radio_state = RADIO_WOR;                    /* Radio state now WOR */
 }
 
 /**
@@ -319,7 +317,7 @@ void switch_to_wor2(void)
 static void hwtimer_switch_to_wor2_wrapper(void *ptr)
 {
     (void) ptr;
-    wor_hwtimer_id = -1;							/* kernel timer handler function called, clear timer id */
+    wor_hwtimer_id = -1;                            /* kernel timer handler function called, clear timer id */
 
     if (rflags.TX) {
         return;    /* Stability: don't allow WOR timers at this point */
@@ -402,8 +400,8 @@ static void setup_wor_mode(void)
     cc1100_spi_write_reg(CC1100_MCSM0, 0x18);
 
     /* Put the radio to SLEEP by starting Wake-on-Radio. */
-    cc1100_spi_strobe(CC1100_SWORRST);	/* Resets the real time clock */
-    cc1100_spi_strobe(CC1100_SWOR);		/* Starts Wake-on-Radio */
+    cc1100_spi_strobe(CC1100_SWORRST);  /* Resets the real time clock */
+    cc1100_spi_strobe(CC1100_SWOR);     /* Starts Wake-on-Radio */
     radio_state = RADIO_WOR;
 }
 
@@ -564,7 +562,7 @@ void cc1100_hwtimer_go_receive_wrapper(void *ptr)
 }
 
 /*---------------------------------------------------------------------------*/
-/* 							CC1100 reset functionality */
+/*                          CC1100 reset functionality */
 /*---------------------------------------------------------------------------*/
 
 static void reset(void)
@@ -586,7 +584,7 @@ static void power_up_reset(void)
 }
 
 /*---------------------------------------------------------------------------*/
-/* 							CC1100 low level send function */
+/*                          CC1100 low level send function */
 /*---------------------------------------------------------------------------*/
 
 void cc1100_send_raw(uint8_t *tx_buffer, uint8_t size)
@@ -637,7 +635,7 @@ void cc1100_send_raw(uint8_t *tx_buffer, uint8_t size)
 }
 
 /*---------------------------------------------------------------------------*/
-/* 		Various functions (mode safe - they can be called in any radio mode) */
+/*      Various functions (mode safe - they can be called in any radio mode) */
 /*---------------------------------------------------------------------------*/
 uint8_t
 read_register(uint8_t r)
@@ -790,14 +788,14 @@ char *cc1100_get_marc_state(void)
 static int8_t
 rssi_2_dbm(uint8_t rssi)
 {
-	if (rssi >= 128) rssi -= 256;
-	rssi /= 2;
-	rssi -= 78;
-	return rssi;
+    if (rssi >= 128) rssi -= 256;
+    rssi /= 2;
+    rssi -= 78;
+    return rssi;
 }*/
 
 /*---------------------------------------------------------------------------*/
-/* 								Radio Driver API */
+/*                              Radio Driver API */
 /*---------------------------------------------------------------------------*/
 void cc1100_init(void)
 {
@@ -891,13 +889,13 @@ rd_set_mode(int mode)
 
     switch(mode) {
         case RADIO_MODE_ON:
-            cc110x_init_interrupts();			/* Enable interrupts */
-            cc1100_setup_mode();				/* Set chip to desired mode */
+            cc110x_init_interrupts();           /* Enable interrupts */
+            cc1100_setup_mode();                /* Set chip to desired mode */
             break;
 
         case RADIO_MODE_OFF:
-            cc1100_disable_interrupts();		/* Disable interrupts */
-            switch_to_pwd();					/* Set chip to power down mode */
+            cc1100_disable_interrupts();        /* Disable interrupts */
+            switch_to_pwd();                    /* Set chip to power down mode */
             break;
 
         case RADIO_MODE_GET:
@@ -913,24 +911,24 @@ rd_set_mode(int mode)
 }
 
 /*---------------------------------------------------------------------------*/
-/* 						Carrier sense interface functions */
+/*                      Carrier sense interface functions */
 /*---------------------------------------------------------------------------*/
 
 void cc1100_cs_init(void)
 {
-    cc1100_go_idle();							/* Wake CC1100 up from Wake-On-Radio mode */
+    cc1100_go_idle();                           /* Wake CC1100 up from Wake-On-Radio mode */
 
-    if (radio_state == RADIO_RX) {			/* If radio in RX mode */
-        cc1100_spi_strobe(CC1100_SIDLE);		/* Go back to IDLE for calibration */
+    if (radio_state == RADIO_RX) {          /* If radio in RX mode */
+        cc1100_spi_strobe(CC1100_SIDLE);        /* Go back to IDLE for calibration */
     }
 
-    cc1100_spi_write_reg(CC1100_MCSM0, 0x08);	/* Turn off FS-Autocal */
-    cc1100_spi_strobe(CC1100_SCAL);				/* Calibrate manually (721 us) */
-    hwtimer_wait(MANUAL_FS_CAL_TIME);			/* Wait for calibration to finish before packet burst can start */
-    radio_state = RADIO_AIR_FREE_WAITING;		/* Set status "waiting for air free" */
-    cc1100_spi_write_reg(CC1100_MCSM2, 0x07);	/* Configure RX_TIME = Until end of packet (no timeout) */
-    cc1100_spi_strobe(CC1100_SRX);				/* Switch to RX (88.4 us) (Carrier Sense) */
-    hwtimer_wait(CS_READY_TIME);					/* Wait until CC1100 is in RX + carrier sense ready (GDO0 ready for readout -> data rate dependent!!!) */
+    cc1100_spi_write_reg(CC1100_MCSM0, 0x08);   /* Turn off FS-Autocal */
+    cc1100_spi_strobe(CC1100_SCAL);             /* Calibrate manually (721 us) */
+    hwtimer_wait(MANUAL_FS_CAL_TIME);           /* Wait for calibration to finish before packet burst can start */
+    radio_state = RADIO_AIR_FREE_WAITING;       /* Set status "waiting for air free" */
+    cc1100_spi_write_reg(CC1100_MCSM2, 0x07);   /* Configure RX_TIME = Until end of packet (no timeout) */
+    cc1100_spi_strobe(CC1100_SRX);              /* Switch to RX (88.4 us) (Carrier Sense) */
+    hwtimer_wait(CS_READY_TIME);                    /* Wait until CC1100 is in RX + carrier sense ready (GDO0 ready for readout -> data rate dependent!!!) */
 }
 
 void cc1100_cs_set_enabled(bool enabled)

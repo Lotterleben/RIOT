@@ -1,9 +1,9 @@
 /*
  * Copyright (C) 2013 INRIA
  *
- * This file is subject to the terms and conditions of the GNU Lesser General
- * Public License. See the file LICENSE in the top level directory for more
- * details.
+ * This file is subject to the terms and conditions of the GNU Lesser
+ * General Public License v2.1. See the file LICENSE in the top level
+ * directory for more details.
  */
 
 /**
@@ -46,11 +46,13 @@ void udp_server(int argc, char **argv)
     (void) argc;
     (void) argv;
 
-    int udp_server_thread_pid = thread_create(
-            udp_server_stack_buffer, sizeof(udp_server_stack_buffer),
-            PRIORITY_MAIN, CREATE_STACKTEST,
-            init_udp_server, NULL, "init_udp_server");
-    printf("UDP SERVER ON PORT %d (THREAD PID: %d)\n", HTONS(SERVER_PORT), udp_server_thread_pid);
+    kernel_pid_t udp_server_thread_pid = thread_create(udp_server_stack_buffer,
+                                                       sizeof(udp_server_stack_buffer),
+                                                       PRIORITY_MAIN, CREATE_STACKTEST,
+                                                       init_udp_server,
+                                                       NULL,
+                                                       "init_udp_server");
+    printf("UDP SERVER ON PORT %d (THREAD PID: %" PRIkernel_pid ")\n", HTONS(SERVER_PORT), udp_server_thread_pid);
 }
 
 static void *init_udp_server(void *arg)

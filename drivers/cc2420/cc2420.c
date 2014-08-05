@@ -3,9 +3,9 @@
   * Copyright (C) 2013 Milan Babel <babel@inf.fu-berlin.de>
   * Copyright (C) 2014 Kévin Roussel <Kevin.Roussel@inria.fr>
   *
-  * This file is subject to the terms and conditions of the GNU Lesser General
-  * Public License. See the file LICENSE in the top level directory for more
-  * details.
+ * This file is subject to the terms and conditions of the GNU Lesser
+ * General Public License v2.1. See the file LICENSE in the top level
+ * directory for more details.
   */
 
 #include "crash.h"
@@ -14,6 +14,7 @@
 #include "cc2420_settings.h"
 #include "cc2420_arch.h"
 #include "hwtimer.h"
+#include "transceiver.h"
 
 #define ENABLE_DEBUG    (0)
 #include "debug.h"
@@ -74,7 +75,7 @@ void cc2420_initialize(void)
     cc2420_switch_to_rx();
 }
 
-void cc2420_init(int tpid)
+void cc2420_init(kernel_pid_t tpid)
 {
     transceiver_pid = tpid;
     cc2420_initialize();

@@ -3,9 +3,9 @@
  *
  * Copyright (C) 2013  INRIA.
  *
- * This file is subject to the terms and conditions of the GNU Lesser General
- * Public License. See the file LICENSE in the top level directory for more
- * details.
+ * This file is subject to the terms and conditions of the GNU Lesser
+ * General Public License v2.1. See the file LICENSE in the top level
+ * directory for more details.
  *
  * @ingroup destiny
  * @{
@@ -122,7 +122,7 @@ void handle_tcp_ack_packet(ipv6_hdr_t *ipv6_header, tcp_hdr_t *tcp_header,
                            socket_internal_t *tcp_socket)
 {
     msg_t m_recv_tcp, m_send_tcp;
-    uint8_t target_pid;
+    kernel_pid_t target_pid;
 
     if (tcp_socket->socket_values.tcp_control.state == TCP_LAST_ACK) {
         target_pid = tcp_socket->recv_pid;
@@ -290,7 +290,7 @@ void handle_tcp_no_flags_packet(ipv6_hdr_t *ipv6_header, tcp_hdr_t *tcp_header,
                    current_tcp_socket->tcp_control.send_wnd);
 
         /* Send packet */
-        //			block_continue_thread();
+        //          block_continue_thread();
 #ifdef TCP_HC
         current_tcp_socket->tcp_control.tcp_context.hc_type = COMPRESSED_HEADER;
 #endif
@@ -298,7 +298,7 @@ void handle_tcp_no_flags_packet(ipv6_hdr_t *ipv6_header, tcp_hdr_t *tcp_header,
     }
     /* ACK packet probably got lost */
     else {
-        //			block_continue_thread();
+        //          block_continue_thread();
 #ifdef TCP_HC
         current_tcp_socket->tcp_control.tcp_context.hc_type = FULL_HEADER;
 #endif

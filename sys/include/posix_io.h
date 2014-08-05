@@ -12,7 +12,6 @@
  * @file        posix_io.h
  * @brief       POSIX-like IO
  *
- * @author      Freie Universität Berlin
  * @author      Kaspar Schleiser <kaspar@schleiser.de>
  * @author      Stephan Zeisberg <zeisberg@mi.fu-berlin.de>
  * @author      Oliver Hahm <oleg@hobbykeller.org>
@@ -20,6 +19,8 @@
  */
 #ifndef __READ_H
 #define __READ_H
+
+#include "kernel_types.h"
 
 #define OPEN 0
 #define CLOSE 1
@@ -31,10 +32,10 @@ struct posix_iop_t {
     char *buffer;
 };
 
-int posix_open(int pid, int flags);
-int posix_close(int pid);
-int posix_read(int pid, char *buffer, int bufsize);
-int posix_write(int pid, char *buffer, int bufsize);
+int posix_open(kernel_pid_t pid, int flags);
+int posix_close(kernel_pid_t pid);
+int posix_read(kernel_pid_t pid, char *buffer, int bufsize);
+int posix_write(kernel_pid_t pid, char *buffer, int bufsize);
 
 /** @} */
 #endif /* __READ_H */

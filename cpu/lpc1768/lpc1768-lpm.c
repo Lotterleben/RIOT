@@ -3,9 +3,9 @@
  *
  * Copyright (C) 2013 Oliver Hahm <oliver.hahm@inria.fr>
  *
- * This file is subject to the terms and conditions of the GNU Lesser General
- * Public License. See the file LICENSE in the top level directory for more
- * details.
+ * This file is subject to the terms and conditions of the GNU Lesser
+ * General Public License v2.1. See the file LICENSE in the top level
+ * directory for more details.
  *
  * @ingroup  lpc1768
  * @{
@@ -24,13 +24,13 @@ static enum lpm_mode lpm;
 
 // TODO
 enum lpm_mode lpm_set(enum lpm_mode target) {
-	enum lpm_mode last_lpm = lpm;
+    enum lpm_mode last_lpm = lpm;
 
-	lpm = target;
+    lpm = target;
 
-	return last_lpm;
+    return last_lpm;
 }
 
 void lpm_awake(void) {
-	lpm = LPM_ON;
+    lpm = LPM_ON;
 }

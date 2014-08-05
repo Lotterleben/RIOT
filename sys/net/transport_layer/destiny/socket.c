@@ -3,9 +3,9 @@
  *
  * Copyright (C) 2013  INRIA.
  *
- * This file is subject to the terms and conditions of the GNU Lesser General
- * Public License. See the file LICENSE in the top level directory for more
- * details.
+ * This file is subject to the terms and conditions of the GNU Lesser
+ * General Public License v2.1. See the file LICENSE in the top level
+ * directory for more details.
  *
  * @ingroup destiny
  * @{
@@ -35,7 +35,7 @@
 
 #include "socket.h"
 
-#define EPHEMERAL_PORTS 	49152
+#define EPHEMERAL_PORTS     49152
 
 socket_internal_t sockets[MAX_SOCKETS];
 
@@ -236,7 +236,7 @@ bool is_tcp_socket(int s)
     }
 }
 
-int bind_udp_socket(int s, sockaddr6_t *name, int namelen, uint8_t pid)
+int bind_udp_socket(int s, sockaddr6_t *name, int namelen, kernel_pid_t pid)
 {
     int i;
 
@@ -256,7 +256,7 @@ int bind_udp_socket(int s, sockaddr6_t *name, int namelen, uint8_t pid)
     return 0;
 }
 
-int bind_tcp_socket(int s, sockaddr6_t *name, int namelen, uint8_t pid)
+int bind_tcp_socket(int s, sockaddr6_t *name, int namelen, kernel_pid_t pid)
 {
     int i;
 
@@ -383,9 +383,9 @@ uint16_t get_free_source_port(uint8_t protocol)
 void set_socket_address(sockaddr6_t *sockaddr, uint8_t sin6_family,
                         uint16_t sin6_port, uint32_t sin6_flowinfo, ipv6_addr_t *sin6_addr)
 {
-    sockaddr->sin6_family 	= sin6_family;
-    sockaddr->sin6_port 	= sin6_port;
-    sockaddr->sin6_flowinfo	= sin6_flowinfo;
+    sockaddr->sin6_family   = sin6_family;
+    sockaddr->sin6_port     = sin6_port;
+    sockaddr->sin6_flowinfo = sin6_flowinfo;
     memcpy(&sockaddr->sin6_addr, sin6_addr, 16);
 }
 
@@ -461,9 +461,9 @@ int send_tcp(socket_internal_t *current_socket, tcp_hdr_t *current_tcp_packet,
         tcp_mss_option_t current_mss_option;
         header_length += sizeof(tcp_mss_option_t) / 4;
 
-        current_mss_option.kind 	= TCP_MSS_OPTION;
-        current_mss_option.len 		= sizeof(tcp_mss_option_t);
-        current_mss_option.mss		= DESTINY_SOCKET_STATIC_MSS;
+        current_mss_option.kind     = TCP_MSS_OPTION;
+        current_mss_option.len      = sizeof(tcp_mss_option_t);
+        current_mss_option.mss      = DESTINY_SOCKET_STATIC_MSS;
         memcpy(((uint8_t *)current_tcp_packet) + TCP_HDR_LEN,
                &current_mss_option, sizeof(tcp_mss_option_t));
     }
@@ -553,7 +553,7 @@ int destiny_socket_connect(int socket, sockaddr6_t *addr, uint32_t addrlen)
     /* Fill lcoal TCP socket information */
     srand(addr->sin6_port);
 
-    current_tcp_socket->tcp_control.rcv_irs	= 0;
+    current_tcp_socket->tcp_control.rcv_irs = 0;
     mutex_lock(&global_sequence_counter_mutex);
     current_tcp_socket->tcp_control.send_iss = global_sequence_counter;
     mutex_unlock(&global_sequence_counter_mutex);
@@ -676,7 +676,7 @@ int destiny_socket_connect(int socket, sockaddr6_t *addr, uint32_t addrlen)
 
     current_tcp_socket->tcp_control.state = TCP_ESTABLISHED;
 
-    current_int_tcp_socket->recv_pid = 255;
+    current_int_tcp_socket->recv_pid = KERNEL_PID_NULL;
 
     destiny_socket_print_sockets();
     return 0;
@@ -851,7 +851,7 @@ int32_t destiny_socket_send(int s, const void *buf, uint32_t len, int flags)
                      *     TODO: If window size > MSS, ACK was valid only for
                      *     a few segments, handle retransmit of missing
                      *     segments
-                     *	break;
+                     *  break;
                      * } */
                     break;
                 }
@@ -1217,7 +1217,7 @@ socket_internal_t *get_waiting_connection_socket(int socket,
 }
 
 int handle_new_tcp_connection(socket_internal_t *current_queued_int_socket,
-                              socket_internal_t *server_socket, uint8_t pid)
+                              socket_internal_t *server_socket, kernel_pid_t pid)
 {
     (void) pid;
 
@@ -1293,8 +1293,8 @@ int handle_new_tcp_connection(socket_internal_t *current_queued_int_socket,
      * the TCP ACK packet */
     msg_reply(&msg_recv_client_ack, &msg_send_client_ack);
 
-    /* Reset PID to an unlikely value */
-    current_queued_int_socket->recv_pid = 255;
+    /* Reset PID to an invalid value */
+    current_queued_int_socket->recv_pid = KERNEL_PID_NULL;
 
     /* Waiting for Clients ACK waiting period to time out */
     vtimer_usleep(TCP_SYN_INITIAL_TIMEOUT / 2);

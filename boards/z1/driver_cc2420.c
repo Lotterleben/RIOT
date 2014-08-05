@@ -5,9 +5,9 @@
  * Copyright (C) 2013 Oliver Hahm <oliver.hahm@inria.fr>
  * Copyright (C) 2014 Kévin Roussel <Kevin.Roussel@inria.fr>
  *
- * This file is subject to the terms and conditions of the GNU Lesser General
- * Public License. See the file LICENSE in the top level directory for more
- * details.
+ * This file is subject to the terms and conditions of the GNU Lesser
+ * General Public License v2.1. See the file LICENSE in the top level
+ * directory for more details.
  */
 
 /**
@@ -164,7 +164,7 @@ uint8_t cc2420_txrx(uint8_t data)
     UCB0TXBUF = data;
     count = 0;
     do {
-    	count++;
+        count++;
         if (count >= MAX_SPI_WAIT) {
             core_panic(0x2420, "cc2420_txrx(): couldn't send byte!");
         }
@@ -172,7 +172,7 @@ uint8_t cc2420_txrx(uint8_t data)
     /* Read the byte that CC2420 has (normally, during TX) returned */
     count = 0;
     do {
-    	count++;
+        count++;
         if (count >= MAX_SPI_WAIT) {
             core_panic(0x2420, "cc2420_txrx(): couldn't receive byte!");
         }

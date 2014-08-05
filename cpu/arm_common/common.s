@@ -1,9 +1,9 @@
 /*
  * Copyright (C) 2014 Freie Universität Berlin
  *
- * This file is subject to the terms and conditions of the GNU Lesser General
- * Public License. See the file LICENSE in the top level directory for more
- * details.
+ * This file is subject to the terms and conditions of the GNU Lesser
+ * General Public License v2.1. See the file LICENSE in the top level
+ * directory for more details.
  */
 
   /* GCC ARM assembler */
@@ -129,7 +129,7 @@ task_return:
 *
 *----------------------------------------------------------------------------*/
 arm_irq_handler:
-    sub 	lr, lr, #4
+    sub     lr, lr, #4
 
     /* save interrupted tasks PC onto stack */
     stmfd  sp!, {lr}
@@ -151,7 +151,7 @@ arm_irq_handler:
     add    lr,pc,#4
 .else
     /* mc1322x seems to lack a VIC, distinction of IRQ has to be done in SW */
-	ldr    r0, =isr           /* mc1322x */
+    ldr    r0, =isr           /* mc1322x */
 .endif
 
     mov     pc, r0

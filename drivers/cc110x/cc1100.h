@@ -25,7 +25,6 @@
  * @file
  * @brief       TI Chipcon CC110x radio driver
  *
- * @author      Freie Universität Berlin, Computer Systems & Telematics
  * @author      Thomas Hillebrandt <hillebra@inf.fu-berlin.de>
  * @author      Heiko Will <hwill@inf.fu-berlin.de>
  */
@@ -246,7 +245,7 @@ void cc1100_gdo2_irq(void);
  * @return  true if operation succeeded; false otherwise (e.g. no data
  *          available, buffer to small or CRC check failed).
  */
-bool cc1100_spi_receive_packet(uint8_t *rxBuffer, uint8_t length);
+bool cc1100_spi_receive_packet(uint8_t *rxBuffer, radio_packet_length_t length);
 
 /**
  * @brief   Sends raw data.

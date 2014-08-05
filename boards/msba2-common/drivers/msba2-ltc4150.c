@@ -1,24 +1,23 @@
 /*
  * Copyright (C) 2008-2009, Freie Universitaet Berlin
  *
- * This file is subject to the terms and conditions of the GNU Lesser General
- * Public License. See the file LICENSE in the top level directory for more
- * details.
+ * This file is subject to the terms and conditions of the GNU Lesser
+ * General Public License v2.1. See the file LICENSE in the top level
+ * directory for more details.
  */
 
 /**
- * @ingroup		msba2
- * @ingroup		ltc4150
+ * @ingroup     msba2
+ * @ingroup     ltc4150
  * @{
  */
 
 /**
  * @file
- * @brief		LTC4150 MSB-A2 specific implemetation
+ * @brief       LTC4150 MSB-A2 specific implemetation
  *
- * @author      Freie Universität Berlin, Computer Systems & Telematics, FeuerWhere project
- * @author		Heiko Will
- * @author		Michael Baar
+ * @author      Heiko Will
+ * @author      Michael Baar
  * @author      Kaspar Schleiser <kaspar@schleiser.de>
  */
 

@@ -4,10 +4,9 @@ Copyright (C) 2013, Freie Universitaet Berlin (FUB). All rights reserved.
 These sources were developed at the Freie Universitaet Berlin, Computer Systems
 and Telematics group (http://cst.mi.fu-berlin.de).
 -------------------------------------------------------------------------------
-This file is part of RIOT.
-
-This file is subject to the terms and conditions of the LGPLv2.
-See the file LICENSE in the top level directory for more details.
+This file is subject to the terms and conditions of the GNU Lesser
+General Public License v2.1. See the file LICENSE in the top level
+directory for more details.
 *******************************************************************************/
 
 /**
@@ -18,14 +17,13 @@ See the file LICENSE in the top level directory for more details.
 
 /**
  * @file
- * @brief		LPC2387 Low-Power management
- * @ingroup		lpc2387
+ * @brief       LPC2387 Low-Power management
+ * @ingroup     lpc2387
  *
- * @author      Freie Universität Berlin, Computer Systems & Telematics
- * @author 		Heiko Will
+ * @author      Heiko Will
  * @version     $Revision$
  *
- * @note    	$Id$
+ * @note        $Id$
  */
 
 #include <stdio.h>
@@ -53,14 +51,14 @@ void lpm_init(void)
 
 void lpm_begin_awake(void)
 {
-    if (lpm >= LPM_SLEEP) {									// wake up from deep sleep
+    if (lpm >= LPM_SLEEP) {                                 // wake up from deep sleep
         init_clks1();
     }
 }
 
 void lpm_end_awake(void)
 {
-    if (lpm >= LPM_SLEEP) {									// wake up from deep sleep
+    if (lpm >= LPM_SLEEP) {                                 // wake up from deep sleep
         init_clks2();
     }
 
@@ -73,7 +71,7 @@ void lpm_awake(void)
     unsigned long usec = RTC_CTC;
 #endif
 
-    if (lpm >= LPM_SLEEP) {									// wake up from deep sleep
+    if (lpm >= LPM_SLEEP) {                                 // wake up from deep sleep
         /* benchmark */
         init_clks1();
         init_clks2();
@@ -110,7 +108,7 @@ enum lpm_mode lpm_set(enum lpm_mode target)
 
     DEBUG("# LPM power down %u -> %u", lpm, target);
 
-    PCON |= target_flags;										// set target power mode
+    PCON |= target_flags;                                       // set target power mode
     return last_lpm;
 }
 /*---------------------------------------------------------------------------*/

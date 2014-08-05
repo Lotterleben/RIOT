@@ -2,8 +2,9 @@
  * uart.c - Implementation for the TelosB UART
  * Copyright (C) 2013 Oliver Hahm <oliver.hahm@inria.fr>
  *
- * This file is subject to the terms and conditions of the LGPLv2. See the file
- * LICENSE in the top level directory for more details.
+ * This file is subject to the terms and conditions of the GNU Lesser
+ * General Public License v2.1. See the file LICENSE in the top level
+ * directory for more details.
  */
 
 #include <stdio.h>
@@ -82,8 +83,6 @@ void usart1irq(void);
  */
 interrupt(USART1RX_VECTOR) usart1irq(void)
 {
-    int c = 0;
-
     /* Check status register for receive errors. */
     if (U1RCTL & RXERR) {
         if (U1RCTL & FE) {
@@ -103,12 +102,13 @@ interrupt(USART1RX_VECTOR) usart1irq(void)
         }
 
         /* Clear error flags by forcing a dummy read. */
-        c = U1RXBUF;
+        volatile int c = U1RXBUF;
+        (void) c;
     }
 
 #ifdef MODULE_UART0
     else if (uart0_handler_pid) {
-        c = U1RXBUF;
+        volatile int c = U1RXBUF;
         uart0_handle_incoming(c);
         uart0_notify_thread();
     }

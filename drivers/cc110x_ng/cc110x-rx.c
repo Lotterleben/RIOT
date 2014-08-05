@@ -2,9 +2,9 @@
  * Copyright (C) 2009 Freie Universität Berlin
  * Copyright (C) 2013 INRIA
  *
- * This file is subject to the terms and conditions of the GNU Lesser General
- * Public License. See the file LICENSE in the top level directory for more
- * details.
+ * This file is subject to the terms and conditions of the GNU Lesser
+ * General Public License v2.1. See the file LICENSE in the top level
+ * directory for more details.
  */
 
 /**
@@ -36,8 +36,8 @@ radio_address_t ignored_addr[IGN_MAX];
 static uint8_t is_ignored(radio_address_t addr);
 #endif
 
-static uint8_t receive_packet_variable(uint8_t *rxBuffer, uint8_t length);
-static uint8_t receive_packet(uint8_t *rxBuffer, uint8_t length);
+static uint8_t receive_packet_variable(uint8_t *rxBuffer, radio_packet_length_t length);
+static uint8_t receive_packet(uint8_t *rxBuffer, radio_packet_length_t length);
 
 rx_buffer_t cc110x_rx_buffer[RX_BUF_SIZE];          ///< RX buffer
 volatile uint8_t rx_buffer_next;        ///< Next packet in RX queue
@@ -127,7 +127,7 @@ void cc110x_rx_handler(void)
 }
 
 
-static uint8_t receive_packet_variable(uint8_t *rxBuffer, uint8_t length)
+static uint8_t receive_packet_variable(uint8_t *rxBuffer, radio_packet_length_t length)
 {
     uint8_t status[2];
     uint8_t packetLength = 0;
@@ -177,7 +177,7 @@ static uint8_t receive_packet_variable(uint8_t *rxBuffer, uint8_t length)
     }
 }
 
-static uint8_t receive_packet(uint8_t *rxBuffer, uint8_t length)
+static uint8_t receive_packet(uint8_t *rxBuffer, radio_packet_length_t length)
 {
     uint8_t pkt_len_cfg = cc110x_read_reg(CC1100_PKTCTRL0) & PKT_LENGTH_CONFIG;
 

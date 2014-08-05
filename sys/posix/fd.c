@@ -1,9 +1,9 @@
 /*
  * Copyright (C) 2013 Freie Universität Berlin
  *
- * This file is subject to the terms and conditions of the GNU Lesser General
- * Public License. See the file LICENSE in the top level directory for more
- * details.
+ * This file is subject to the terms and conditions of the GNU Lesser
+ * General Public License v2.1. See the file LICENSE in the top level
+ * directory for more details.
  */
 
 /**
@@ -67,7 +67,7 @@ static int fd_get_next_free(void)
 
 int fd_new(int internal_fd, ssize_t (*internal_read)(int, void *, size_t),
            ssize_t (*internal_write)(int, const void *, size_t),
-           int (*internal_close)(int))
+           int (*internal_close)(kernel_pid_t))
 {
     int fd = fd_get_next_free();
 

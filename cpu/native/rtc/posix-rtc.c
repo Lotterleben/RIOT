@@ -8,8 +8,9 @@
  *
  * Copyright (C) 2013 Ludwig Ortmann <ludwig.ortmann@fu-berlin.de>
  *
- * This file is subject to the terms and conditions of the GNU Lesser General Public
- * License. See the file LICENSE in the top level directory for more details.
+ * This file is subject to the terms and conditions of the GNU Lesser
+ * General Public License v2.1. See the file LICENSE in the top level
+ * directory for more details.
  *
  * @author  Ludwig Ortmann <ludwig.ortmann@fu-berlin.de>
  *
@@ -30,17 +31,24 @@
 #include "native_internal.h"
 
 static int native_rtc_enabled;
+static int native_rtc_initialized;
 
 void rtc_init(void)
 {
     native_rtc_enabled = 0;
+    native_rtc_initialized = 1;
     printf("native rtc initialized\n");
 }
 
 void rtc_enable(void)
 {
     DEBUG("rtc_enable\n");
-    native_rtc_enabled = 1;
+    if (native_rtc_initialized == 1) {
+        native_rtc_enabled = 1;
+    }
+    else {
+        DEBUG("rtc not initialized, not enabling\n");
+    }
 }
 
 void rtc_disable(void)

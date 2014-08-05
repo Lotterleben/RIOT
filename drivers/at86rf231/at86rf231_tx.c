@@ -1,16 +1,16 @@
 /*
  * Copyright (C) 2014 INRIA
  *
- * This file is subject to the terms and conditions of the GNU Lesser General
- * Public License. See the file LICENSE in the top level directory for more
- * details.
+ * This file is subject to the terms and conditions of the GNU Lesser
+ * General Public License v2.1. See the file LICENSE in the top level
+ * directory for more details.
  */
 
 #include "at86rf231.h"
 #include "at86rf231_arch.h"
 #include "at86rf231_spi.h"
 
-static void at86rf231_xmit(uint8_t *data, uint8_t length);
+static void at86rf231_xmit(uint8_t *data, radio_packet_length_t length);
 static void at86rf231_gen_pkt(uint8_t *buf, at86rf231_packet_t *packet);
 
 static uint8_t sequenz_nr;
@@ -66,7 +66,7 @@ int16_t at86rf231_send(at86rf231_packet_t *packet)
     return packet->length;
 }
 
-static void at86rf231_xmit(uint8_t *data, uint8_t length)
+static void at86rf231_xmit(uint8_t *data, radio_packet_length_t length)
 {
     // Go to state PLL_ON
     at86rf231_reg_write(AT86RF231_REG__TRX_STATE, AT86RF231_TRX_STATE__PLL_ON);

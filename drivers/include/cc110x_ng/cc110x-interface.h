@@ -26,6 +26,8 @@
 #include "radio/radio.h"
 #include "radio/types.h"
 #include "cc110x-config.h"
+#include "kernel_types.h"
+#include "transceiver.h"
 
 #define CC1100_MAX_DATA_LENGTH (58)
 
@@ -88,10 +90,10 @@ Notes:
  */
 typedef struct __attribute__((packed))
 {
-    uint8_t length;                 ///< Length of the packet (without length byte)
-    uint8_t address;                ///< Destination address
-    uint8_t phy_src;                ///< Source address (physical source)
-    uint8_t flags;                  ///< Flags
+    uint8_t length;                         ///< Length of the packet (without length byte)
+    uint8_t address;                        ///< Destination address
+    uint8_t phy_src;                        ///< Source address (physical source)
+    uint8_t flags;                          ///< Flags
     uint8_t data[CC1100_MAX_DATA_LENGTH];   ///< Data (high layer protocol)
 }
 cc110x_packet_t;
@@ -115,9 +117,7 @@ extern volatile uint8_t rx_buffer_next;     ///< Next packet in RX queue
 extern volatile uint8_t radio_state;        ///< Radio state
 extern cc110x_statistic_t cc110x_statistic;
 
-extern int transceiver_pid;                 ///< the transceiver thread pid
-
-void cc110x_init(int transceiver_pid);
+void cc110x_init(kernel_pid_t transceiver_pid);
 
 void cc110x_rx_handler(void);
 

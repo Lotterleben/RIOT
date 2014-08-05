@@ -19,7 +19,6 @@
  * @file        board.h
  * @brief       Basic definitions for the Senslab WSN430 v1.3b board
  *
- * @author      Freie Universität Berlin, Computer Systems & Telematics, FeuerWhere project
  * @author      Milan Babel <babel@inf.fu-berlin.de>
  */
 
@@ -43,20 +42,20 @@
 /* LEDs ports MSB430 */
 #define LEDS_PxDIR P5DIR
 #define LEDS_PxOUT P5OUT
-#define LEDS_CONF_RED		0x04
-#define LEDS_CONF_GREEN		0x05
-#define LEDS_CONF_BLUE	0x06
+#define LEDS_CONF_RED       0x04
+#define LEDS_CONF_GREEN     0x05
+#define LEDS_CONF_BLUE  0x06
 
-#define LED_RED_ON      LEDS_PxOUT &=~LEDS_CONF_RED
-#define LED_RED_OFF     LEDS_PxOUT |= LEDS_CONF_RED
-#define LED_RED_TOGGLE     LEDS_PxOUT ^= LEDS_CONF_RED
+#define LED_RED_ON          LEDS_PxOUT &=~LEDS_CONF_RED
+#define LED_RED_OFF         LEDS_PxOUT |= LEDS_CONF_RED
+#define LED_RED_TOGGLE      LEDS_PxOUT ^= LEDS_CONF_RED
 
-#define LED_GREEN_ON      LEDS_PxOUT &=~LEDS_CONF_GREEN
-#define LED_GREEN_OFF     LEDS_PxOUT |= LEDS_CONF_GREEN
-#define LED_GREEN_TOGGLE     LEDS_PxOUT ^= LEDS_CONF_GREEN
+#define LED_GREEN_ON        LEDS_PxOUT &=~LEDS_CONF_GREEN
+#define LED_GREEN_OFF       LEDS_PxOUT |= LEDS_CONF_GREEN
+#define LED_GREEN_TOGGLE    LEDS_PxOUT ^= LEDS_CONF_GREEN
 
-#define LED_BLUE_ON      LEDS_PxOUT &=~LEDS_CONF_BLUE
-#define LED_BLUE_OFF     LEDS_PxOUT |= LEDS_CONF_BLUE
+#define LED_BLUE_ON         LEDS_PxOUT &=~LEDS_CONF_BLUE
+#define LED_BLUE_OFF        LEDS_PxOUT |= LEDS_CONF_BLUE
 #define LED_BLUE_TOGGLE     LEDS_PxOUT ^= LEDS_CONF_BLUE
 
 #include <msp430x16x.h>

@@ -1,9 +1,9 @@
 /*
  * Copyright (C) 2014 Freie Universität Berlin
  *
- * This file is subject to the terms and conditions of the GNU Lesser General
- * Public License. See the file LICENSE in the top level directory for more
- * details.
+ * This file is subject to the terms and conditions of the GNU Lesser
+ * General Public License v2.1. See the file LICENSE in the top level
+ * directory for more details.
  */
 
 /**
@@ -13,7 +13,6 @@
  * @file        sched.c
  * @brief       Scheduler implementation
  *
- * @author      Freie Universität Berlin, Computer Systems & Telematics
  * @author      Kaspar Schleiser <kaspar@schleiser.de>
  *
  * @}
@@ -44,7 +43,7 @@ volatile unsigned int sched_context_switch_request;
 volatile tcb_t *sched_threads[MAXTHREADS];
 volatile tcb_t *sched_active_thread;
 
-volatile int sched_active_pid = -1;
+volatile kernel_pid_t sched_active_pid = KERNEL_PID_NULL;
 
 clist_node_t *sched_runqueues[SCHED_PRIO_LEVELS];
 static uint32_t runqueue_bitcache = 0;
@@ -71,7 +70,7 @@ void sched_run(void)
 
 #ifdef SCHED_TEST_STACK
         if (*((unsigned int *)my_active_thread->stack_start) != (unsigned int) my_active_thread->stack_start) {
-            printf("scheduler(): stack overflow detected, task=%s pid=%u\n", my_active_thread->name, my_active_thread->pid);
+            printf("scheduler(): stack overflow detected, task=%s pid=%" PRIkernel_pid "\n", my_active_thread->name, my_active_thread->pid);
         }
 #endif
 
@@ -93,7 +92,7 @@ void sched_run(void)
     clist_advance(&(sched_runqueues[nextrq]));
     my_active_thread = (tcb_t *)next.data;
 
-    int my_next_pid = my_active_thread->pid;
+    kernel_pid_t my_next_pid = my_active_thread->pid;
 
 #if SCHEDSTATISTICS
     sched_pidlist[my_next_pid].laststart = time;

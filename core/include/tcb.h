@@ -13,7 +13,6 @@
  * @file        tcb.h
  * @brief       Thread context block definition
  *
- * @author      Freie Universität Berlin, Computer Systems & Telematics
  * @author      Heiko Will
  * @author      Kaspar Schleiser <kaspar@schleiser.de>
  */
@@ -22,7 +21,7 @@
 #define TCB_H_
 
 #include <stdint.h>
-#include "queue.h"
+#include "priority_queue.h"
 #include "clist.h"
 #include "cib.h"
 #include "msg.h"
@@ -60,20 +59,23 @@ typedef struct tcb_t {
     char *sp;                   /**< thread's stack pointer         */
     uint16_t status;            /**< thread's status                */
 
-    uint16_t pid;               /**< thread's process id            */
+    kernel_pid_t pid;           /**< thread's process id            */
     uint16_t priority;          /**< thread's priority              */
 
     clist_node_t rq_entry;      /**< run queue entry                */
 
     void *wait_data;            /**< holding messages               */
-    queue_node_t msg_waiters;   /**< threads waiting on message     */
+    priority_queue_t msg_waiters;   /**< threads waiting on message     */
 
     cib_t msg_queue;            /**< message queue                  */
     msg_t *msg_array;           /**< memory holding messages        */
 
     const char *name;           /**< thread's name                  */
     char *stack_start;          /**< thread's stack start address   */
+
+#ifdef DEVELHELP
     int stack_size;             /**< thread's stack size            */
+#endif
 } tcb_t;
 
 #endif /* TCB_H_ */

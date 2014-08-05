@@ -3,9 +3,9 @@
  *
  * Copyright (C) 2013  INRIA.
  *
- * This file is subject to the terms and conditions of the GNU Lesser General
- * Public License. See the file LICENSE in the top level directory for more
- * details.
+ * This file is subject to the terms and conditions of the GNU Lesser
+ * General Public License v2.1. See the file LICENSE in the top level
+ * directory for more details.
  *
  * @ingroup sixlowpan
  * @{
@@ -59,7 +59,7 @@ char addr_str[IPV6_MAX_ADDR_STR_LEN];
 #define SIXLOWPAN_MAX_REGISTERED        (4)
 
 #define LOWPAN_REAS_BUF_TIMEOUT         (15 * 1000 * 1000)
-/* TODO: Set back to 3 * 1000 *	(1000) */
+/* TODO: Set back to 3 * 1000 * (1000) */
 
 #define IPV6_LL_ADDR_LEN                (8)
 
@@ -121,14 +121,14 @@ uint8_t frag_size;
 uint8_t reas_buf[512];
 uint8_t comp_buf[512];
 uint8_t first_frag = 0;
-mutex_t fifo_mutex;
+mutex_t fifo_mutex = MUTEX_INIT;
 
-int ip_process_pid = 0;
-int nd_nbr_cache_rem_pid = 0;
-int contexts_rem_pid = 0;
-int transfer_pid = 0;
+kernel_pid_t ip_process_pid = KERNEL_PID_NULL;
+kernel_pid_t nd_nbr_cache_rem_pid = KERNEL_PID_NULL;
+kernel_pid_t contexts_rem_pid = KERNEL_PID_NULL;
+kernel_pid_t transfer_pid = KERNEL_PID_NULL;
 
-mutex_t lowpan_context_mutex;
+mutex_t lowpan_context_mutex = MUTEX_INIT;
 
 /* registered upper layer threads */
 int sixlowpan_reg[SIXLOWPAN_MAX_REGISTERED];
@@ -763,7 +763,7 @@ void add_fifo_packet(lowpan_reas_buf_t *current_packet)
 }
 
 /* Register an upper layer thread */
-uint8_t sixlowpan_lowpan_register(int pid)
+uint8_t sixlowpan_lowpan_register(kernel_pid_t pid)
 {
     uint8_t i;
 
@@ -1149,13 +1149,13 @@ uint8_t lowpan_iphc_encoding(int if_id, const uint8_t *dest, int dest_len,
 
     /*uint8_t *ptr;
     if (ipv6_buf->nextheader == IPV6_PROTO_NUM_TCP)
-    	{
-    	ptr = get_payload_buf_send(ipv6_ext_hdr_len);
-    	}
+        {
+        ptr = get_payload_buf_send(ipv6_ext_hdr_len);
+        }
     else
-    	{
-    	ptr = get_payload_buf(ipv6_ext_hdr_len);
-    	}
+        {
+        ptr = get_payload_buf(ipv6_ext_hdr_len);
+        }
     */
     memcpy(&ipv6_hdr_fields[hdr_pos], &ptr[IPV6_HDR_LEN], NTOHS(ipv6_buf->length));
 
@@ -1787,12 +1787,6 @@ int sixlowpan_lowpan_init(void)
 
     /* init mac-layer and radio transceiver */
     sixlowpan_mac_init();
-
-    /* init lowpan context mutex */
-    mutex_init(&lowpan_context_mutex);
-
-    /* init packet_fifo mutex */
-    mutex_init(&fifo_mutex);
 
     if (!ip_process_pid) {
         ip_process_pid = thread_create(ip_process_buf, IP_PROCESS_STACKSIZE,

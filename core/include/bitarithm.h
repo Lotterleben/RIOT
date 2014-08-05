@@ -13,7 +13,6 @@
  * @file        bitarithm.h
  * @brief       Helper functions for bit arithmetic
  *
- * @author      Freie Universität Berlin, Computer Systems & Telematics
  * @author      Kaspar Schleiser <kaspar@schleiser.de>
  * @author      Martin Lenders <mlenders@inf.fu-berlin.de>
  */
@@ -23,7 +22,7 @@
 
 /**
  * @def SETBIT
- * @brief Sets a bitbitmask for a bitfield
+ * @brief Sets a bitmask for a bitfield
  *
  * @param[in] val   The bitfield
  * @param[in] bit   Specifies the bits to be set

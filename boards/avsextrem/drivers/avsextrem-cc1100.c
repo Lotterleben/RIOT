@@ -1,19 +1,18 @@
 /*
-* avsextrem-cc1100.c - CC100 Transceiver Driver for the AVSEXTREM-BOARD.
-* Copyright (C) 2013 Heiko Will <hwill@inf.fu-berlin.de>
-*
-* This source code is licensed under the LGPLv2 license,
-* See the file LICENSE for more details.
-*
-*/
+ * avsextrem-cc1100.c - CC100 Transceiver Driver for the AVSEXTREM-BOARD.
+ * Copyright (C) 2013 Heiko Will <hwill@inf.fu-berlin.de>
+ *
+ * This file is subject to the terms and conditions of the GNU Lesser
+ * General Public License v2.1. See the file LICENSE in the top level
+ * directory for more details.
+ */
 
 
 /**
  * @file
- * @ingroup	LPC2387
- * @brief	CC1100 LPC2387 dependend functions
+ * @ingroup LPC2387
+ * @brief   CC1100 LPC2387 dependend functions
  *
- * @author      Freie Universität Berlin, Computer Systems & Telematics
  * @author      Heiko Will <hwill@inf.fu-berlin.de>
  * @author      Thomas Hillebrandt <hillebra@inf.fu-berlin.de>
  * @author      Zakaria Kasmi <zkasmi@inf.fu-berlin.de>
@@ -33,7 +32,7 @@
 
 #define CC1100_GDO0   (FIO2PIN & BIT6)  // read serial I/O (GDO0)
 #define CC1100_GDO1   (FIO0PIN & BIT8)  // read serial I/O (GDO1)
-#define CC1100_GDO2   (FIO0PIN & BIT28)	// read serial I/O (GDO2)
+#define CC1100_GDO2   (FIO0PIN & BIT28) // read serial I/O (GDO2)
 
 #define SPI_TX_EMPTY  (SSP1SR & SSPSR_TFE)
 #define SPI_BUSY      (SSP1SR & SSPSR_BSY)
@@ -115,7 +114,7 @@ void cc110x_spi_init(void)
 
     // Clear RxFIFO:
     while (SPI_RX_AVAIL) {   // while RNE (Receive FIFO Not Empty)...
-        dummy = SSP1DR;	     // read data
+        dummy = SSP1DR;      // read data
     }
 
     /* to suppress unused-but-set-variable */

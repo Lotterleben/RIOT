@@ -3,8 +3,9 @@
  *
  * Copyright (C) 2013 Zakaria Kasmi <zkasmi@inf.fu-berlin.de>
  *
- * This source code is licensed under the LGPLv2 license,
- * See the file LICENSE for more details.
+ * This file is subject to the terms and conditions of the GNU Lesser
+ * General Public License v2.1. See the file LICENSE in the top level
+ * directory for more details.
  */
 
 /**
@@ -14,7 +15,6 @@
  *              The connection between the MCU and the SRF08 is based on the
  *              i2c-interface.
  *
- * @author      Freie Universität Berlin, Computer Systems & Telematics
  * @author      Zakaria Kasmi <zkasmi@inf.fu-berlin.de>
  * @version     $Revision: 3856 $
  *

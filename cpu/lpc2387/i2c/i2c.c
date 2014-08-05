@@ -2,8 +2,9 @@
  * i2c.c - implementation of the I2C interface for the LPC2387 chip.
  * Copyright (C) 2013 Zakaria Kasmi <zkasmi@inf.fu-berlin.de>
  *
- * This source code is licensed under the LGPLv2 license,
- * See the file LICENSE for more details.
+ * This file is subject to the terms and conditions of the GNU Lesser
+ * General Public License v2.1. See the file LICENSE in the top level
+ * directory for more details.
  */
 
 /**
@@ -17,7 +18,6 @@
  *              user does not declare a handler, an appropriate interrupt is
  *              automatically registered for the specific i2c interface.
  *
- * @author      Freie Universität Berlin, Computer Systems & Telematics
  * @author      Zakaria Kasmi <zkasmi@inf.fu-berlin.de>
  * @author      Marco Ziegert <ziegert@inf.fu-berlin.de>
  * @author      Benjamin Aschenbrenner

@@ -6,27 +6,26 @@ and Telematics group (http://cst.mi.fu-berlin.de).
  * ----------------------------------------------------------------------------
  * This file is part of RIOT.
  *
- * This file is subject to the terms and conditions of the GNU Lesser General
- * Public License. See the file LICENSE in the top level directory for more
- * details.
+ * This file is subject to the terms and conditions of the GNU Lesser
+ * General Public License v2.1. See the file LICENSE in the top level
+ * directory for more details.
  *
 *******************************************************************************/
 
 /**
- * @defgroup	sht11 SHT11
- * @ingroup		drivers
- * @brief		Driver for the Sensirion SHT11 humidity and temperature sensor
+ * @defgroup    sht11 SHT11
+ * @ingroup     drivers
+ * @brief       Driver for the Sensirion SHT11 humidity and temperature sensor
  * @{
  */
 
 /**
  * @file
- * @brief		SHT11 Device Driver
+ * @brief       SHT11 Device Driver
  *
- * @author      Freie Universität Berlin, Computer Systems & Telematics
  * @version     $Revision: 2396 $
  *
- * @note		$Id: sht11.c 2396 2010-07-06 15:12:35Z ziegert $
+ * @note        $Id: sht11.c 2396 2010-07-06 15:12:35Z ziegert $
  */
 
 #include <stdio.h>
@@ -85,7 +84,7 @@ static void transmission_start(void);
 static inline void clk_signal(void);
 
 /* mutex for exclusive measurement operation */
-mutex_t sht11_mutex;
+mutex_t sht11_mutex = MUTEX_INIT;
 
 /*---------------------------------------------------------------------------*/
 static inline void clk_signal(void)
@@ -266,7 +265,6 @@ static uint8_t measure(uint8_t *p_value, uint8_t *p_checksum, uint8_t mode)
 void sht11_init(void)
 {
     sht11_temperature_offset = 0;
-    mutex_init(&sht11_mutex);
     SHT11_INIT;
     hwtimer_wait(11 * HWTIMER_TICKS(1000));
 }

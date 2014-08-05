@@ -3,8 +3,9 @@
  *
  * Copyright (C) 2013 Zakaria Kasmi <zkasmi@inf.fu-berlin.de>
  *
- * The source code is licensed under the LGPLv2 license,
- * See the file LICENSE for more details.
+ * This file is subject to the terms and conditions of the GNU Lesser
+ * General Public License v2.1. See the file LICENSE in the top level
+ * directory for more details.
  */
 
 /**
@@ -12,7 +13,6 @@
  * @internal
  * @brief   Show the heap state for the LPC2387 on the command shell.
  *
- * @author  Freie Universität Berlin, Computer Systems & Telematics
  * @author  Zakaria Kasmi <zkasmi@inf.fu-berlin.de>
  *
  * @note    $Id: sc_heap.c 3855 2013-09-05 12:40:11 kasmi $

@@ -1,9 +1,9 @@
 /*
  * Copyright (C) 2014 Freie Universität Berlin
  *
- * This file is subject to the terms and conditions of the GNU Lesser General
- * Public License. See the file LICENSE in the top level directory for more
- * details.
+ * This file is subject to the terms and conditions of the GNU Lesser
+ * General Public License v2.1. See the file LICENSE in the top level
+ * directory for more details.
  */
 
 /**
@@ -122,13 +122,12 @@ void hwtimer_wait(unsigned long ticks)
 {
     DEBUG("hwtimer_wait ticks=%lu\n", ticks);
 
-    mutex_t mutex;
-
     if (ticks <= 6 || inISR()) {
         hwtimer_spin(ticks);
         return;
     }
-    mutex_init(&mutex);
+
+    mutex_t mutex = MUTEX_INIT;
     mutex_lock(&mutex);
     /* -2 is to adjust the real value */
     int res = hwtimer_set(ticks - 2, hwtimer_releasemutex, &mutex);

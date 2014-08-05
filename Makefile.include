@@ -11,10 +11,6 @@ RIOTCPU := $(abspath $(RIOTCPU))
 RIOTBOARD ?= $(RIOTBASE)/boards
 RIOTBOARD := $(abspath $(RIOTBOARD))
 
-ifeq ($(strip $(MCU)),)
-	MCU = $(CPU)
-endif
-
 ifeq (,$(filter buildtest,$(MAKECMDGOALS)))
 	ifneq (,$(BOARD_WHITELIST))
 		ifeq (,$(filter $(BOARD),$(BOARD_WHITELIST)))
@@ -26,11 +22,6 @@ $(error This application only runs on following boards: $(BOARD_WHITELIST))
 $(error This application does not run on following boards: $(BOARD_BLACKLIST))
 	endif
 endif
-
-# if you want to publish the board into the sources as an uppercase #define
-BB = $(shell echo $(BOARD)|tr 'a-z' 'A-Z'|tr '-' '_')
-CPUDEF = $(shell echo $(CPU)|tr 'a-z' 'A-Z'|tr '-' '_')
-CFLAGS += -DBOARD_$(BB) -DCPU_$(CPUDEF)
 
 BINDIRBASE ?= $(CURDIR)/bin
 BINDIR ?= $(abspath $(BINDIRBASE)/$(BOARD))/
@@ -50,6 +41,18 @@ include $(RIOTBOARD)/$(BOARD)/Makefile.include
 include $(RIOTCPU)/$(CPU)/Makefile.include
 include $(RIOTBASE)/Makefile.dep
 
+ifeq ($(strip $(MCU)),)
+	MCU = $(CPU)
+endif
+
+# if you want to publish the board into the sources as an uppercase #define
+BOARDDEF := $(shell echo $(BOARD) | tr 'a-z' 'A-Z' | tr '-' '_')
+CPUDEF := $(shell echo $(CPU) | tr 'a-z' 'A-Z' | tr '-' '_')
+MCUDEF := $(shell echo $(MCU) | tr 'a-z' 'A-Z' | tr '-' '_')
+CFLAGS += -DBOARD_$(BOARDDEF)='"$(BOARD)"' -DRIOT_BOARD=BOARD_$(BOARDDEF)
+CFLAGS += -DCPU_$(CPUDEF)='"$(CPU)"' -DRIOT_CPU=CPU_$(CPUDEF)
+CFLAGS += -DMCU_$(MCUDEF)='"$(MCU)"' -DRIOT_MCU=MCU_$(MCUDEF)
+
 # OSX fails to create empty archives. Provide a wrapper to catch that error.
 ifneq (0, $(shell mkdir -p $(BINDIR); $(AR) -rc $(BINDIR)empty-archive.a 2> /dev/null; echo $$?))
 	AR := $(RIOTBASE)/dist/ar-wrapper $(AR)
@@ -64,16 +67,18 @@ endif
 include $(RIOTBASE)/Makefile.cflags
 
 # make the RIOT version available to the program
-GIT_STRING := $(shell git describe --always --abbrev=4 --dirty=-`hostname`)
-ifneq (,$(GIT_STRING))
-  GIT_BRANCH := $(shell git rev-parse --abbrev-ref HEAD)
-  ifeq ($(strip $(GIT_BRANCH)),master)
-    RIOT_VERSION := $(GIT_STRING)
+ifeq ($(origin RIOT_VERSION), undefined)
+  GIT_STRING := $(shell git describe --always --abbrev=4 --dirty=-`hostname` 2> /dev/null)
+  ifneq (,$(GIT_STRING))
+    GIT_BRANCH := $(shell git rev-parse --abbrev-ref HEAD)
+    ifeq ($(strip $(GIT_BRANCH)),master)
+      RIOT_VERSION := $(GIT_STRING)
+    else
+      RIOT_VERSION := $(GIT_STRING)-$(GIT_BRANCH)
+    endif
   else
-    RIOT_VERSION := $(GIT_STRING)-$(GIT_BRANCH)
+    RIOT_VERSION := UNKNOWN (builddir: $(RIOTBASE))
   endif
-else
-  RIOT_VERSION := UNKNOWN
 endif
 export CFLAGS += -DRIOT_VERSION='"$(RIOT_VERSION)"'
 
@@ -129,9 +134,9 @@ $(RIOTBASE)/pkg/%/Makefile.include::
 	$(AD)"$(MAKE)" -C $(RIOTBASE)/pkg/$* Makefile.include
 
 .PHONY: $(USEPKG:%=$(RIOTBASE)/pkg/%/Makefile.include)
-
 -include $(USEPKG:%=$(RIOTBASE)/pkg/%/Makefile.include)
 
+.PHONY: $(USEPKG:%=${BINDIR}%.a)
 $(USEPKG:%=${BINDIR}%.a):
 	@mkdir -p ${BINDIR}
 	"$(MAKE)" -C $(RIOTBASE)/pkg/$(patsubst ${BINDIR}%.a,%,$@)
@@ -144,7 +149,7 @@ flash: all
 	$(FLASHER) $(FFLAGS)
 
 term:
-	$(TERMPROG) $(PORT)
+	$(TERMPROG) $(TERMFLAGS) $(PORT)
 
 doc:
 	make -BC $(RIOTBASE) doc

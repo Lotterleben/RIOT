@@ -1,9 +1,9 @@
 /*
  * Copyright (C) 2014 Hamburg University of Applied Sciences (HAW)
  *
- * This file is subject to the terms and conditions of the GNU Lesser General
- * Public License. See the file LICENSE in the top level directory for more
- * details.
+ * This file is subject to the terms and conditions of the GNU Lesser
+ * General Public License v2.1. See the file LICENSE in the top level
+ * directory for more details.
  */
 
 /**
@@ -84,9 +84,7 @@ int pthread_cond_init(struct pthread_cond_t *cond, struct pthread_condattr_t *at
         DEBUG("pthread_cond_init: currently attributes are not supported.\n");
     }
 
-    cond->queue.priority = 0;
-    cond->queue.data = 0;
-    cond->queue.next = NULL;
+    cond->queue.first = NULL;
     return 0;
 }
 
@@ -98,14 +96,14 @@ int pthread_cond_destroy(struct pthread_cond_t *cond)
 
 int pthread_cond_wait(struct pthread_cond_t *cond, struct mutex_t *mutex)
 {
-    queue_node_t n;
+    priority_queue_node_t n;
     n.priority = sched_active_thread->priority;
     n.data = sched_active_thread->pid;
     n.next = NULL;
 
     /* the signaling thread may not hold the mutex, the queue is not thread safe */
     unsigned old_state = disableIRQ();
-    queue_priority_add(&(cond->queue), &n);
+    priority_queue_add(&(cond->queue), &n);
     restoreIRQ(old_state);
 
     mutex_unlock_and_sleep(mutex);
@@ -114,7 +112,7 @@ int pthread_cond_wait(struct pthread_cond_t *cond, struct mutex_t *mutex)
         /* on signaling n.data is set to -1u */
         /* if it isn't set, then the wakeup is either spurious or a timer wakeup */
         old_state = disableIRQ();
-        queue_remove(&(cond->queue), &n);
+        priority_queue_remove(&(cond->queue), &n);
         restoreIRQ(old_state);
     }
 
@@ -143,7 +141,7 @@ int pthread_cond_signal(struct pthread_cond_t *cond)
 {
     unsigned old_state = disableIRQ();
 
-    queue_node_t *head = queue_remove_head(&(cond->queue));
+    priority_queue_node_t *head = priority_queue_remove_head(&(cond->queue));
     int other_prio = -1;
     if (head != NULL) {
         tcb_t *other_thread = (tcb_t *) sched_threads[head->data];
@@ -175,7 +173,7 @@ int pthread_cond_broadcast(struct pthread_cond_t *cond)
     int other_prio = -1;
 
     while (1) {
-        queue_node_t *head = queue_remove_head(&(cond->queue));
+        priority_queue_node_t *head = priority_queue_remove_head(&(cond->queue));
         if (head == NULL) {
             break;
         }

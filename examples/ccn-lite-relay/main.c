@@ -1,9 +1,9 @@
 /*
  * Copyright (C) 2013 Freie Universität Berlin
  *
- * This file is subject to the terms and conditions of the GNU Lesser General
- * Public License. See the file LICENSE in the top level directory for more
- * details.
+ * This file is subject to the terms and conditions of the GNU Lesser
+ * General Public License v2.1. See the file LICENSE in the top level
+ * directory for more details.
  */
 
 /**
@@ -31,7 +31,7 @@
 // ccn
 #include "ccn_lite/ccnl-riot.h"
 
-int relay_pid;
+kernel_pid_t relay_pid;
 
 char t2_stack[KERNEL_CONF_STACKSIZE_MAIN];
 
@@ -47,7 +47,7 @@ void set_address_handler(uint16_t a)
     printf("trying to set address %" PRIu16 "\n", a);
     mesg.type = SET_ADDRESS;
 
-    printf("transceiver_pid=%d\n", transceiver_pid);
+    printf("transceiver_pid=%" PRIkernel_pid"\n", transceiver_pid);
 
     msg_send_receive(&mesg, &mesg, transceiver_pid);
     printf("got address: %" PRIu16 "\n", a);

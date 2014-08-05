@@ -6,9 +6,9 @@
  * ----------------------------------------------------------------------------
  * This file is part of RIOT.
  *
- * This file is subject to the terms and conditions of the GNU Lesser General
- * Public License. See the file LICENSE in the top level directory for more
- * details.
+ * This file is subject to the terms and conditions of the GNU Lesser
+ * General Public License v2.1. See the file LICENSE in the top level
+ * directory for more details.
  *
 *******************************************************************************/
 
@@ -19,7 +19,6 @@
  * @file        cc110x_spi.c
  * @brief       TI Chipcon CC1100 SPI driver
  *
- * @author      Freie Universität Berlin, Computer Systems & Telematics
  * @author      Thomas Hillebrandt <hillebra@inf.fu-berlin.de>
  * @author      Heiko Will <hwill@inf.fu-berlin.de>
  * @}

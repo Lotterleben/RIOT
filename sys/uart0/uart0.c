@@ -1,9 +1,9 @@
 /*
  * Copyright (C) 2013 INRIA
  *
- * This file is subject to the terms and conditions of the GNU Lesser General
- * Public License. See the file LICENSE in the top level directory for more
- * details.
+ * This file is subject to the terms and conditions of the GNU Lesser
+ * General Public License v2.1. See the file LICENSE in the top level
+ * directory for more details.
  */
 
 /**
@@ -36,10 +36,10 @@
 #endif
 
 /* increase when ENABLE_DEBUG in chardev_thread is set to 1! */
-#define UART0_STACKSIZE 	(KERNEL_CONF_STACKSIZE_DEFAULT)
+#define UART0_STACKSIZE     (KERNEL_CONF_STACKSIZE_DEFAULT)
 
 ringbuffer_t uart0_ringbuffer;
-int uart0_handler_pid;
+kernel_pid_t uart0_handler_pid;
 
 static char buffer[UART0_BUFSIZE];
 
@@ -48,7 +48,7 @@ static char uart0_thread_stack[UART0_STACKSIZE];
 void board_uart0_init(void)
 {
     ringbuffer_init(&uart0_ringbuffer, buffer, UART0_BUFSIZE);
-    int pid = thread_create(
+    kernel_pid_t pid = thread_create(
                   uart0_thread_stack,
                   sizeof(uart0_thread_stack),
                   PRIORITY_MAIN - 1,

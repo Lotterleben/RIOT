@@ -15,7 +15,6 @@
  * @file        io.h
  * @brief       Prototypes for system io functions
  *
- * @author      INRIA
  * @author      Oliver Hahm <oliver.hahm@inria.fr>
  */
 
@@ -25,8 +24,8 @@
 /**
  * @brief   Firmware putstring implementation
  *
- * @param[in] data  charachters to be written
- * @param[in] count number of charachters to be written
+ * @param[in] data  characters to be written
+ * @param[in] count number of characters to be written
  */
 int fw_puts(char *data, int count);
 

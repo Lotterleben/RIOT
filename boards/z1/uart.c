@@ -4,9 +4,9 @@
  *
  * Author : Kevin Roussel <kevin.roussel@inria.fr>
  *
- * This file is subject to the terms and conditions of the GNU Lesser General
- * Public License. See the file LICENSE in the top level directory for more
- * details.
+ * This file is subject to the terms and conditions of the GNU Lesser
+ * General Public License v2.1. See the file LICENSE in the top level
+ * directory for more details.
  */
 
 /**
@@ -123,10 +123,10 @@ interrupt(USCIAB0RX_VECTOR) __attribute__ ((naked)) usart1irq(void)
         c = UCA0RXBUF;
 #ifdef MODULE_UART0
     } else if (uart0_handler_pid) {
-    	/* All went well -> let's signal the reception to adequate callbacks */
-    	c = UCA0RXBUF;
-    	uart0_handle_incoming(c);
-    	uart0_notify_thread();
+        /* All went well -> let's signal the reception to adequate callbacks */
+        c = UCA0RXBUF;
+        uart0_handle_incoming(c);
+        uart0_notify_thread();
 #endif
     }
 

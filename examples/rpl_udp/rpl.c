@@ -1,9 +1,9 @@
 /*
  * Copyright (C) 2013 INRIA
  *
- * This file is subject to the terms and conditions of the GNU Lesser General
- * Public License. See the file LICENSE in the top level directory for more
- * details.
+ * This file is subject to the terms and conditions of the GNU Lesser
+ * General Public License v2.1. See the file LICENSE in the top level
+ * directory for more details.
  */
 
 /**
@@ -87,10 +87,13 @@ void rpl_udp_init(int argc, char **argv)
         }
 
         DEBUGF("Start monitor\n");
-        int monitor_pid = thread_create(
-                monitor_stack_buffer, sizeof(monitor_stack_buffer),
-                PRIORITY_MAIN - 2, CREATE_STACKTEST,
-                rpl_udp_monitor, NULL, "monitor");
+        kernel_pid_t monitor_pid = thread_create(monitor_stack_buffer,
+                                                 sizeof(monitor_stack_buffer),
+                                                 PRIORITY_MAIN - 2,
+                                                 CREATE_STACKTEST,
+                                                 rpl_udp_monitor,
+                                                 NULL,
+                                                 "monitor");
         DEBUGF("Register at transceiver %02X\n", TRANSCEIVER);
         transceiver_register(TRANSCEIVER, monitor_pid);
         ipv6_register_packet_handler(monitor_pid);

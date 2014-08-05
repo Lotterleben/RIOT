@@ -1,16 +1,16 @@
 /*
  * Copyright (C) 2008-2009, Freie Universitaet Berlin
  *
- * This file is subject to the terms and conditions of the GNU Lesser General
- * Public License. See the file LICENSE in the top level directory for more
- * details.
+ * This file is subject to the terms and conditions of the GNU Lesser
+ * General Public License v2.1. See the file LICENSE in the top level
+ * directory for more details.
  */
 
 /*
  * debug_uart.c: provides initial serial debug output
  *
- * Copyright (C) 2008, 2009  Kaspar Schleiser <kaspar@schleiser.de>
- *                           Heiko Will <hwill@inf.fu-berlin.de>
+ * @author Kaspar Schleiser <kaspar@schleiser.de>
+ * @author Heiko Will <hwill@inf.fu-berlin.de>
  */
 #include <stdlib.h>
 #include <string.h>
@@ -25,7 +25,6 @@
  * @file
  * @ingroup     lpc2387
  *
- * @author      Freie Universität Berlin, Computer Systems & Telematics, FeuerWhere project
  * @version     $Revision$
  *
  * @note    $Id$

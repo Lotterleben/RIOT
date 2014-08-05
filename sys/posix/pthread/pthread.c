@@ -1,9 +1,9 @@
 /*
  * Copyright (C) 2013 Freie Universität Berlin
  *
- * This file is subject to the terms and conditions of the GNU Lesser General
- * Public License. See the file LICENSE in the top level directory for more
- * details.
+ * This file is subject to the terms and conditions of the GNU Lesser
+ * General Public License v2.1. See the file LICENSE in the top level
+ * directory for more details.
  */
 
 /**
@@ -29,7 +29,7 @@
 #include "kernel_internal.h"
 #include "msg.h"
 #include "mutex.h"
-#include "queue.h"
+#include "priority_queue.h"
 #include "thread.h"
 #include "sched.h"
 
@@ -54,7 +54,7 @@ enum pthread_thread_status {
 };
 
 typedef struct pthread_thread {
-    int thread_pid;
+    kernel_pid_t thread_pid;
 
     enum pthread_thread_status status;
     int joining_thread;
@@ -72,7 +72,7 @@ typedef struct pthread_thread {
 static pthread_thread_t *volatile pthread_sched_threads[MAXTHREADS];
 static struct mutex_t pthread_mutex;
 
-static volatile int pthread_reaper_pid = -1;
+static volatile int pthread_reaper_pid = KERNEL_PID_NULL;
 
 static char pthread_reaper_stack[PTHREAD_REAPER_STACKSIZE];
 
@@ -116,7 +116,7 @@ int pthread_create(pthread_t *newthread, const pthread_attr_t *attr, void *(*sta
 {
     pthread_thread_t *pt = calloc(1, sizeof(pthread_thread_t));
 
-    int pthread_pid = insert(pt);
+    kernel_pid_t pthread_pid = insert(pt);
     if (pthread_pid < 0) {
         free(pt);
         return -1;
@@ -136,7 +136,7 @@ int pthread_create(pthread_t *newthread, const pthread_attr_t *attr, void *(*sta
         mutex_lock(&pthread_mutex);
         if (pthread_reaper_pid < 0) {
             /* volatile pid to overcome problems with double checking */
-            volatile int pid = thread_create(pthread_reaper_stack,
+            volatile kernel_pid_t pid = thread_create(pthread_reaper_stack,
                                              PTHREAD_REAPER_STACKSIZE,
                                              0,
                                              CREATE_STACKTEST,
@@ -184,7 +184,7 @@ void pthread_exit(void *retval)
             ct->__routine(ct->__arg);
         }
 
-        self->thread_pid = -1;
+        self->thread_pid = KERNEL_PID_NULL;
         DEBUG("pthread_exit(%p), self == %p\n", retval, (void *) self);
         if (self->status != PTS_DETACHED) {
             self->returnval = retval;
@@ -269,7 +269,7 @@ pthread_t pthread_self(void)
 {
     pthread_t result = 0;
     mutex_lock(&pthread_mutex);
-    int pid = sched_active_pid; /* sched_active_pid is volatile */
+    kernel_pid_t pid = sched_active_pid; /* sched_active_pid is volatile */
     for (int i = 0; i < MAXTHREADS; i++) {
         if (pthread_sched_threads[i] && pthread_sched_threads[i]->thread_pid == pid) {
             result = i+1;

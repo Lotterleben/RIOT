@@ -1,11 +1,9 @@
 /*
  * Copyright (C) 2013 Oliver Hahm <oliver.hahm@inria.fr>
  *
- * This source code is licensed under the GNU Lesser General Public License,
- * Version 2.  See the file LICENSE for more details.
- *
- * This file is part of RIOT.
- *
+ * This file is subject to the terms and conditions of the GNU Lesser
+ * General Public License v2.1. See the file LICENSE in the top level
+ * directory for more details.
  */
 
 /**
@@ -13,12 +11,12 @@
  * @ingroup     arm_common
  * @brief       LPC2387 Newlib gettimeofday() system call glue
  *
- * @author      Freie Universität Berlin, Computer Systems & Telematics
  * @author      Michael Baar <michael.baar@fu-berlin.de>
  * @author      René Kijewski <rene.kijewski@fu-berlin.de>
  */
 
 #include <sys/time.h>
+#include "kernel_types.h"
 
 #if defined MODULE_RTC
 #   include "rtc.h"
@@ -40,6 +38,7 @@ int _gettimeofday(struct timeval *tp, void *restrict tzp)
 #elif defined MODULE_VTIMER
     vtimer_gettimeofday(tp);
 #else
+    (void) tp;
     __gettimeofday_syscall_is_not_implemented_without_vtimer_or_rtc_module();
 #endif
 

@@ -1,10 +1,11 @@
 /**
-  * at86rf231.c - Implementation of at86rf231 functions.
-  * Copyright (C) 2013 Alaeddine Weslati <alaeddine.weslati@inria.fr>
-  *
-  * This source code is licensed under the GNU Lesser General Public License,
-  * Version 2.  See the file LICENSE for more details.
-  */
+ * at86rf231.c - Implementation of at86rf231 functions.
+ * Copyright (C) 2013 Alaeddine Weslati <alaeddine.weslati@inria.fr>
+ *
+ * This file is subject to the terms and conditions of the GNU Lesser
+ * General Public License v2.1. See the file LICENSE in the top level
+ * directory for more details.
+ */
 
 #include "at86rf231.h"
 #include "at86rf231_arch.h"
@@ -18,7 +19,7 @@ static uint8_t  radio_channel;
 static uint16_t radio_address;
 static uint64_t radio_address_long;
 
-void at86rf231_init(int tpid)
+void at86rf231_init(kernel_pid_t tpid)
 {
     transceiver_pid = tpid;
 

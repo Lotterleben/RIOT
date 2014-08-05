@@ -11,7 +11,6 @@
  * @file
  * @brief       definitions for the avsextrem board configuration
  *
- * @author      Freie Universität Berlin, Computer Systems & Telematics
  * @author      baar
  * @author      Zakaria Kasmi
  * @version     $Revision: 1127 $
@@ -43,7 +42,7 @@
 
 #ifdef MODULE_SYSMON
 #ifndef TRACELOG_CONF_NUM_ENTRIES
-#define TRACELOG_CONF_NUM_ENTRIES	10
+#define TRACELOG_CONF_NUM_ENTRIES   10
 #endif
 #else
 #undef TRACELOG_CONF_NUM_ENTRIES
@@ -57,17 +56,17 @@
 
 /**
  * @def FEUERWARE_CONF_BOARD_NAME
- * @brief	Defines the name of the board as a string
+ * @brief   Defines the name of the board as a string
  */
 
 /**
  * @def FEUERWARE_CONF_CPU_NAME
- * @brief	Defines the name of the cpu as a string
+ * @brief   Defines the name of the cpu as a string
  */
 
 /**
  * @def FEUERWARE_CONF_SUPPORTS_FILES
- * @brief	Defines if standard library file functions are available
+ * @brief   Defines if standard library file functions are available
  */
 #ifndef FEUERWARE_CONF_SUPPORTS_FILES
 #define FEUERWARE_CONF_SUPPORTS_FILES 0

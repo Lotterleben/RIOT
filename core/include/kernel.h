@@ -16,7 +16,6 @@
  *              A reboot() function is also provided
  *              (and used by core_panic() when needed).
  *
- * @author      Freie Universität Berlin, Computer Systems & Telematics
  * @author      Kaspar Schleiser <kaspar@schleiser.de>
  */
 
@@ -24,6 +23,7 @@
 #define KERNEL_H_
 
 #include <stdbool.h>
+#include <stdint.h>
 
 #include "attributes.h"
 #include "config.h"
@@ -67,12 +67,11 @@
 #endif
 
 /* ------------------------------------------------------------------------- */
-
 /**
  * @def PID_NULL
  * @brief Identifier to detect an invalid PID
  */
-#define PID_NULL -1
+#define KERNEL_PID_NULL -1
 
 /**
  * @def PRIORITY_MIN
@@ -118,7 +117,7 @@
 extern volatile int lpm_prevent_sleep;
 
 /**
- * @brief Variable used to store system configurationi
+ * @brief Variable used to store system configuration
  *
  * @detail This contains e.g. the node ID, name, default channel and so on
  */

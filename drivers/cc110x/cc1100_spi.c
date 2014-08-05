@@ -6,28 +6,27 @@ and Telematics group (http://cst.mi.fu-berlin.de).
  * ----------------------------------------------------------------------------
  *  This file is part of RIOT.
  *
- * This file is subject to the terms and conditions of the GNU Lesser General
- * Public License. See the file LICENSE in the top level directory for more
- * details.
+ * This file is subject to the terms and conditions of the GNU Lesser
+ * General Public License v2.1. See the file LICENSE in the top level
+ * directory for more details.
  *
 *******************************************************************************/
 
 /**
- * @ingroup		dev_cc110x
+ * @ingroup     dev_cc110x
  * @{
  */
 
 /**
  * @file
  * @internal
- * @brief		TI Chipcon CC1100 SPI driver
+ * @brief       TI Chipcon CC1100 SPI driver
  *
- * @author      Freie Universität Berlin, Computer Systems & Telematics
- * @author		Thomas Hillebrandt <hillebra@inf.fu-berlin.de>
- * @author		Heiko Will <hwill@inf.fu-berlin.de>
+ * @author      Thomas Hillebrandt <hillebra@inf.fu-berlin.de>
+ * @author      Heiko Will <hwill@inf.fu-berlin.de>
  * @version     $Revision: 1775 $
  *
- * @note		$Id: cc1100_spi.c 1775 2010-01-26 09:37:03Z hillebra $
+ * @note        $Id: cc1100_spi.c 1775 2010-01-26 09:37:03Z hillebra $
  */
 
 #include <stdio.h>
@@ -39,7 +38,7 @@ and Telematics group (http://cst.mi.fu-berlin.de).
 #include "cc1100-internal.h"
 
 /*---------------------------------------------------------------------------*/
-//					    CC1100 SPI access
+//                      CC1100 SPI access
 /*---------------------------------------------------------------------------*/
 
 uint8_t

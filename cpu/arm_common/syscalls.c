@@ -2,11 +2,9 @@
  * syscalls.c - arm system calls
  * Copyright (C) 2013 Oliver Hahm <oliver.hahm@inria.fr>
  *
- * This source code is licensed under the GNU Lesser General Public License,
- * Version 2.  See the file LICENSE for more details.
- *
- * This file is part of RIOT.
- *
+ * This file is subject to the terms and conditions of the GNU Lesser
+ * General Public License v2.1. See the file LICENSE in the top level
+ * directory for more details.
  */
 
 /**
@@ -14,7 +12,6 @@
  * @ingroup     arm_common
  * @brief       LPC2387 NewLib system calls implementation
  *
- * @author      Freie Universität Berlin, Computer Systems & Telematics
  * @author      Michael Baar <michael.baar@fu-berlin.de>
  *
  */
@@ -263,9 +260,9 @@ void _exit(int n)
     while (1);
 }
 /*---------------------------------------------------------------------------*/
-int _getpid(void)
+pid_t _getpid(void)
 {
-    return sched_active_thread->pid;
+    return (pid_t) sched_active_thread->pid;
 }
 /*---------------------------------------------------------------------------*/
 int _kill_r(struct _reent *r, int pid, int sig)

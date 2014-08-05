@@ -3,9 +3,9 @@
  *
  * Copyright (C) 2013  INRIA.
  *
- * This file is subject to the terms and conditions of the GNU Lesser General
- * Public License. See the file LICENSE in the top level directory for more
- * details.
+ * This file is subject to the terms and conditions of the GNU Lesser
+ * General Public License v2.1. See the file LICENSE in the top level
+ * directory for more details.
  *
  * @ingroup sixlowpan
  * @{
@@ -52,9 +52,9 @@ ipv6_hdr_t *ipv6_buf;
 icmpv6_hdr_t *icmp_buf;
 uint8_t *nextheader;
 
-int udp_packet_handler_pid = 0;
-int tcp_packet_handler_pid = 0;
-int rpl_process_pid = 0;
+kernel_pid_t udp_packet_handler_pid = KERNEL_PID_NULL;
+kernel_pid_t tcp_packet_handler_pid = KERNEL_PID_NULL;
+kernel_pid_t rpl_process_pid = KERNEL_PID_NULL;
 ipv6_addr_t *(*ip_get_next_hop)(ipv6_addr_t *) = 0;
 
 static ipv6_net_if_ext_t ipv6_net_if_ext[NET_IF_MAX];
@@ -72,6 +72,7 @@ int ipv6_send_packet(ipv6_hdr_t *packet)
     uint16_t length = IPV6_HDR_LEN + NTOHS(packet->length);
     ndp_neighbor_cache_t *nce;
 
+    DEBUGF("Got a packet to send to %s\n", ipv6_addr_to_str(addr_str, IPV6_MAX_ADDR_STR_LEN, &packet->destaddr));
     ipv6_net_if_get_best_src_addr(&packet->srcaddr, &packet->destaddr);
 
     if (!ipv6_addr_is_multicast(&packet->destaddr) &&
@@ -192,7 +193,7 @@ uint8_t ipv6_get_default_hop_limit(void)
 }
 
 /* Register an upper layer thread */
-uint8_t ipv6_register_packet_handler(int pid)
+uint8_t ipv6_register_packet_handler(kernel_pid_t pid)
 {
     uint8_t i;
 
@@ -258,7 +259,7 @@ int icmpv6_demultiplex(const icmpv6_hdr_t *hdr)
         case (ICMPV6_TYPE_RPL_CONTROL): {
             DEBUG("INFO: packet type: RPL message\n");
 
-            if (rpl_process_pid != 0) {
+            if (rpl_process_pid != KERNEL_PID_NULL) {
                 msg_t m_send;
                 m_send.content.ptr = (char *) &hdr->code;
                 msg_send(&m_send, rpl_process_pid, 1);
@@ -313,6 +314,7 @@ int is_our_address(ipv6_addr_t *addr)
     uint8_t prefix, suffix;
     int if_id = -1;
 
+    DEBUGF("Is this my addres: %s?\n", ipv6_addr_to_str(addr_str, IPV6_MAX_ADDR_STR_LEN, addr));
     while ((if_id = net_if_iter_interfaces(if_id)) >= 0) {
         net_if_ext = ipv6_net_if_get_ext(if_id);
         myaddr = NULL;
@@ -321,6 +323,7 @@ int is_our_address(ipv6_addr_t *addr)
 
         while ((myaddr = (ipv6_net_if_addr_t *)net_if_iter_addresses(if_id,
                          (net_if_addr_t **) &myaddr)) != NULL) {
+            DEBUGF("\tCompare with: %s?\n", ipv6_addr_to_str(addr_str, IPV6_MAX_ADDR_STR_LEN, (ipv6_addr_t*) myaddr->addr_data));
             if ((ipv6_get_addr_match(myaddr->addr_data, addr) >= net_if_ext->prefix) &&
                 (memcmp(&addr->uint8[prefix], &myaddr->addr_data->uint8[prefix], suffix) == 0)) {
                 return 1;
@@ -376,7 +379,7 @@ void *ipv6_process(void *arg)
                 }
 
                 case (IPV6_PROTO_NUM_TCP): {
-                    if (tcp_packet_handler_pid != 0) {
+                    if (tcp_packet_handler_pid != KERNEL_PID_NULL) {
                         m_send.content.ptr = (char *) ipv6_buf;
                         msg_send_receive(&m_send, &m_recv, tcp_packet_handler_pid);
                     }
@@ -388,7 +391,7 @@ void *ipv6_process(void *arg)
                 }
 
                 case (IPV6_PROTO_NUM_UDP): {
-                    if (udp_packet_handler_pid != 0) {
+                    if (udp_packet_handler_pid != KERNEL_PID_NULL) {
                         m_send.content.ptr = (char *) ipv6_buf;
                         msg_send_receive(&m_send, &m_recv, udp_packet_handler_pid);
                     }
@@ -749,17 +752,17 @@ uint8_t ipv6_is_router(void)
     return 0;
 }
 
-void set_tcp_packet_handler_pid(int pid)
+void set_tcp_packet_handler_pid(kernel_pid_t pid)
 {
     tcp_packet_handler_pid = pid;
 }
 
-void set_udp_packet_handler_pid(int pid)
+void set_udp_packet_handler_pid(kernel_pid_t pid)
 {
     udp_packet_handler_pid = pid;
 }
 
-void ipv6_register_next_header_handler(uint8_t next_header, int pid)
+void ipv6_register_next_header_handler(uint8_t next_header, kernel_pid_t pid)
 {
     switch (next_header) {
         case (IPV6_PROTO_NUM_TCP):
@@ -782,7 +785,7 @@ void ipv6_iface_set_routing_provider(ipv6_addr_t *(*next_hop)(ipv6_addr_t *dest)
     ip_get_next_hop = next_hop;
 }
 
-void ipv6_register_rpl_handler(int pid)
+void ipv6_register_rpl_handler(kernel_pid_t pid)
 {
     rpl_process_pid = pid;
 }

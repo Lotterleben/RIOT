@@ -2,19 +2,18 @@
  * LPC 2000 Loader, http://www.pjrc.com/arm/lpc2k_pgm
  * Copyright (c) 2004, PJRC.COM, LLC, <paul@pjrc.com>
  *
- * This program is free software; you can redistribute it and/or
- * modify it under the terms of the GNU General Public License
- * as published by the Free Software Foundation; either version 2
- * of the License.
+ * This program is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License as published by the
+ * Free Software Foundation; version 2 of the License.
  *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
+ * This program is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General
+ * Public License for more details.
  *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  *
  */
 
@@ -113,33 +112,33 @@ struct chip_info_struct chip_info[] = {
     {"LPC2104 (120k)", "4293984018", 0x40000200, 0x2000, 15, lpc2106_layout, boot_2xxx},
     {"LPC2105 (120k)", "4293984034", 0x40000200, 0x2000, 15, lpc2106_layout, boot_2xxx},
     {"LPC2106 (120k)", "4293984050", 0x40000200, 0x2000, 15, lpc2106_layout, boot_2xxx},
-    {"LPC2114 (120k)", "16908050",	 0x40000200, 0x2000, 15, lpc2106_layout, boot_2xxx},
-    {"LPC2119 (120k)", "33685266",	 0x40000200, 0x2000, 15, lpc2106_layout, boot_2xxx},
-    {"LPC2124 (120k)", "16908051",	 0x40000200, 0x2000, 15, lpc2106_layout, boot_2xxx},
-    {"LPC2129 (248k)", "33685267",	 0x40000200, 0x2000, 17, lpc2214_layout, boot_2xxx},
-    {"LPC2131 (32k)",  "196353",	 0x40000200, 0x1000,  8, lpc2138_layout, boot_2xxx},
-    {"LPC2132 (64k)",  "196369",	 0x40000200, 0x1000,  9, lpc2138_layout, boot_2xxx},
-    {"LPC2134 (128k)", "196370",	 0x40000200, 0x1000, 11, lpc2138_layout, boot_2xxx},
-    {"LPC2136 (256k)", "196387",	 0x40000200, 0x1000, 15, lpc2138_layout, boot_2xxx},
-    {"LPC2138 (500k)", "196389",	 0x40000200, 0x1000, 27, lpc2138_layout, boot_2xxx},
-    {"LPC2141 (32k)",  "67305217",	 0x40000200, 0x1000,  8, lpc2138_layout, boot_2xxx},
-    {"LPC2142 (64k)",  "67305233",	 0x40000200, 0x1000,  9, lpc2138_layout, boot_2xxx},
-    {"LPC2144 (128k)", "67305234",	 0x40000200, 0x1000, 11, lpc2138_layout, boot_2xxx},
-    {"LPC2146 (256k)", "67305251",	 0x40000200, 0x1000, 15, lpc2138_layout, boot_2xxx},
-    {"LPC2148 (500k)", "67305253",	 0x40000200, 0x1000, 27, lpc2138_layout, boot_2xxx},
-    {"LPC2194 (248k)", "50462483",	 0x40000200, 0x2000, 17, lpc2214_layout, boot_2xxx},
-    {"LPC2212 (248k)", "67239698",	 0x40000200, 0x2000, 17, lpc2214_layout, boot_2xxx},
-    {"LPC2214 (248k)", "100794131",	 0x40000200, 0x2000, 17, lpc2214_layout, boot_2xxx},
-    {"LPC2292 (248k)", "67239699",	 0x40000200, 0x2000, 17, lpc2214_layout, boot_2xxx},
-    {"LPC2294 (248k)", "84016915",	 0x40000200, 0x2000, 17, lpc2214_layout, boot_2xxx},
-    {"LPC2103 (32k)",  "327441",	 0x40000200, 0x1000,  8, lpc2138_layout, boot_2xxx},
-    {"LPC2364 (128k)", "100924162",	 0x40000200, 0x1000, 11, lpc2138_layout, boot_23xx},
-    {"LPC2366 (256k)", "100924195",	 0x40000200, 0x1000, 15, lpc2138_layout, boot_23xx},
-    {"LPC2368 (500k)", "100924197",	 0x40000200, 0x1000, 27, lpc2138_layout, boot_23xx},
-    {"LPC2378 (500k)", "117702437",	 0x40000200, 0x1000, 27, lpc2138_layout, boot_23xx},
-    {"LPC2387 (500k)", "402716981",	 0x40000200, 0x1000, 27, lpc2138_layout, boot_23xx},
-    {"LPC2387 (500k)", "385941301",	 0x40000200, 0x1000, 27, lpc2138_layout, boot_23xx},
-    {"LPC2468 (500k)", "100925237",	 0x40000200, 0x1000, 27, lpc2138_layout, boot_23xx},
+    {"LPC2114 (120k)", "16908050",   0x40000200, 0x2000, 15, lpc2106_layout, boot_2xxx},
+    {"LPC2119 (120k)", "33685266",   0x40000200, 0x2000, 15, lpc2106_layout, boot_2xxx},
+    {"LPC2124 (120k)", "16908051",   0x40000200, 0x2000, 15, lpc2106_layout, boot_2xxx},
+    {"LPC2129 (248k)", "33685267",   0x40000200, 0x2000, 17, lpc2214_layout, boot_2xxx},
+    {"LPC2131 (32k)",  "196353",     0x40000200, 0x1000,  8, lpc2138_layout, boot_2xxx},
+    {"LPC2132 (64k)",  "196369",     0x40000200, 0x1000,  9, lpc2138_layout, boot_2xxx},
+    {"LPC2134 (128k)", "196370",     0x40000200, 0x1000, 11, lpc2138_layout, boot_2xxx},
+    {"LPC2136 (256k)", "196387",     0x40000200, 0x1000, 15, lpc2138_layout, boot_2xxx},
+    {"LPC2138 (500k)", "196389",     0x40000200, 0x1000, 27, lpc2138_layout, boot_2xxx},
+    {"LPC2141 (32k)",  "67305217",   0x40000200, 0x1000,  8, lpc2138_layout, boot_2xxx},
+    {"LPC2142 (64k)",  "67305233",   0x40000200, 0x1000,  9, lpc2138_layout, boot_2xxx},
+    {"LPC2144 (128k)", "67305234",   0x40000200, 0x1000, 11, lpc2138_layout, boot_2xxx},
+    {"LPC2146 (256k)", "67305251",   0x40000200, 0x1000, 15, lpc2138_layout, boot_2xxx},
+    {"LPC2148 (500k)", "67305253",   0x40000200, 0x1000, 27, lpc2138_layout, boot_2xxx},
+    {"LPC2194 (248k)", "50462483",   0x40000200, 0x2000, 17, lpc2214_layout, boot_2xxx},
+    {"LPC2212 (248k)", "67239698",   0x40000200, 0x2000, 17, lpc2214_layout, boot_2xxx},
+    {"LPC2214 (248k)", "100794131",  0x40000200, 0x2000, 17, lpc2214_layout, boot_2xxx},
+    {"LPC2292 (248k)", "67239699",   0x40000200, 0x2000, 17, lpc2214_layout, boot_2xxx},
+    {"LPC2294 (248k)", "84016915",   0x40000200, 0x2000, 17, lpc2214_layout, boot_2xxx},
+    {"LPC2103 (32k)",  "327441",     0x40000200, 0x1000,  8, lpc2138_layout, boot_2xxx},
+    {"LPC2364 (128k)", "100924162",  0x40000200, 0x1000, 11, lpc2138_layout, boot_23xx},
+    {"LPC2366 (256k)", "100924195",  0x40000200, 0x1000, 15, lpc2138_layout, boot_23xx},
+    {"LPC2368 (500k)", "100924197",  0x40000200, 0x1000, 27, lpc2138_layout, boot_23xx},
+    {"LPC2378 (500k)", "117702437",  0x40000200, 0x1000, 27, lpc2138_layout, boot_23xx},
+    {"LPC2387 (500k)", "402716981",  0x40000200, 0x1000, 27, lpc2138_layout, boot_23xx},
+    {"LPC2387 (500k)", "385941301",  0x40000200, 0x1000, 27, lpc2138_layout, boot_23xx},
+    {"LPC2468 (500k)", "100925237",  0x40000200, 0x1000, 27, lpc2138_layout, boot_23xx},
     {NULL, NULL, 0, 0, 0, NULL}
 };
 

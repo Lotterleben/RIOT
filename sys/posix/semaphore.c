@@ -3,9 +3,9 @@
  *
  * Copyright (C) 2013 Freie Universität Berlin
  *
- * This file is subject to the terms and conditions of the GNU Lesser General
- * Public License. See the file LICENSE in the top level directory for more
- * details.
+ * This file is subject to the terms and conditions of the GNU Lesser
+ * General Public License v2.1. See the file LICENSE in the top level
+ * directory for more details.
  *
  * @ingroup posix
  *
@@ -39,16 +39,14 @@ int sem_init(sem_t *sem, int pshared, unsigned int value)
     sem->value = value;
 
     /* waiters for the mutex */
-    sem->queue.priority = 0;
-    sem->queue.data = 0;
-    sem->queue.next = NULL;
+    sem->queue.first = NULL;
 
     return 0;
 }
 
 int sem_destroy(sem_t *sem)
 {
-    if (sem->queue.next) {
+    if (sem->queue.first) {
         DEBUG("%s: tried to destroy active semaphore.\n", sched_active_thread->name);
         return -1;
     }
@@ -79,7 +77,7 @@ static void sem_thread_blocked(sem_t *sem)
     /* I'm going blocked */
     sched_set_status((tcb_t*) sched_active_thread, STATUS_MUTEX_BLOCKED);
 
-    queue_node_t n;
+    priority_queue_node_t n;
     n.priority = (uint32_t) sched_active_thread->priority;
     n.data = (size_t) sched_active_thread;
     n.next = NULL;
@@ -88,7 +86,7 @@ static void sem_thread_blocked(sem_t *sem)
           sched_active_thread->name, n.priority);
 
     /* add myself to the waiters queue */
-    queue_priority_add(&sem->queue, &n);
+    priority_queue_add(&sem->queue, &n);
 
     /* scheduler should schedule an other thread, that unlocks the
      * mutex in the future, when this happens I get scheduled again
@@ -144,7 +142,7 @@ int sem_post(sem_t *sem)
     int old_state = disableIRQ();
     ++sem->value;
 
-    queue_node_t *next = queue_remove_head(&sem->queue);
+    priority_queue_node_t *next = priority_queue_remove_head(&sem->queue);
     if (next) {
         tcb_t *next_process = (tcb_t*) next->data;
         DEBUG("%s: waking up %s\n", sched_active_thread->name, next_process->name);

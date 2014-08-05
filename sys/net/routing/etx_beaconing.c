@@ -3,9 +3,9 @@
  *
  * Copyright (C) 2013 Stephan Arndt <arndtste@zedat.fu-berlin.de>
  *
- * This file is subject to the terms and conditions of the GNU Lesser General
- * Public License. See the file LICENSE in the top level directory for more
- * details.
+ * This file is subject to the terms and conditions of the GNU Lesser
+ * General Public License v2.1. See the file LICENSE in the top level
+ * directory for more details.
  *
  * @ingroup rpl
  * @{
@@ -60,9 +60,9 @@ static uint8_t etx_send_buf[ETX_BUF_SIZE];
 static uint8_t etx_rec_buf[ETX_BUF_SIZE];
 
 //PIDs
-int etx_beacon_pid = 0;
-int etx_radio_pid = 0;
-int etx_clock_pid = 0;
+kernel_pid_t etx_beacon_pid = KERNEL_PID_NULL;
+kernel_pid_t etx_radio_pid = KERNEL_PID_NULL;
+kernel_pid_t etx_clock_pid = KERNEL_PID_NULL;
 
 //Message queue for radio
 static msg_t msg_que[ETX_RCV_QUEUE_SIZE];
@@ -98,7 +98,7 @@ static etx_neighbor_t candidates[ETX_MAX_CANDIDATE_NEIGHBORS];
  * In this time, no packet may be handled, otherwise it could assume values
  * from the last round to count for this round.
  */
-mutex_t etx_mutex;
+mutex_t etx_mutex = MUTEX_INIT;
 //Transceiver command for sending ETX probes
 transceiver_command_t tcmd;
 
@@ -141,7 +141,6 @@ void etx_show_candidates(void)
 
 void etx_init_beaconing(ipv6_addr_t *address)
 {
-    mutex_init(&etx_mutex);
     own_address = address;
     //set code
     puts("ETX BEACON INIT");

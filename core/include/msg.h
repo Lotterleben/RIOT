@@ -25,7 +25,6 @@
  * @file        msg.h
  * @brief       Messaging API for inter process communication
  *
- * @author      Freie Universität Berlin, Computer Systems & Telematics
  * @author      Kaspar Schleiser <kaspar@schleiser.de>
  * @author      Kévin Roussel <Kevin.Roussel@inria.fr>
  */
@@ -35,6 +34,7 @@
 
 #include <stdint.h>
 #include <stdbool.h>
+#include "kernel_types.h"
 
 /**
  * @brief Describes a message object which can be sent between threads.
@@ -45,7 +45,7 @@
  *
  */
 typedef struct msg {
-    uint16_t     sender_pid;    /**< PID of sending thread. Will be filled in
+    kernel_pid_t sender_pid;    /**< PID of sending thread. Will be filled in
                                      by msg_send. */
     uint16_t     type;          /**< Type field. */
     union {
@@ -75,7 +75,7 @@ typedef struct msg {
  *         ``block == 0``
  * @return -1, on error (invalid PID)
  */
-int msg_send(msg_t *m, unsigned int target_pid, bool block);
+int msg_send(msg_t *m, kernel_pid_t target_pid, bool block);
 
 
 /**
@@ -96,7 +96,7 @@ int msg_send_to_self(msg_t *m);
 /**
  * @brief Send message from interrupt.
  *
- * Will be automatically chosen instead of ``msg_sennd()`` if called from an
+ * Will be automatically chosen instead of ``msg_send()`` if called from an
  * interrupt/ISR.
  *
  * @param[in] m             Pointer to preallocated ``msg_t`` structure, must
@@ -107,7 +107,7 @@ int msg_send_to_self(msg_t *m);
  * @return 0, if receiver is not waiting and ``block == 0``
  * @return -1, on error (invalid PID)
  */
-int msg_send_int(msg_t *m, unsigned int target_pid);
+int msg_send_int(msg_t *m, kernel_pid_t target_pid);
 
 
 /**
@@ -151,7 +151,7 @@ int msg_try_receive(msg_t *m);
  *
  * @return  1, if successful.
  */
-int msg_send_receive(msg_t *m, msg_t *reply, unsigned int target_pid);
+int msg_send_receive(msg_t *m, msg_t *reply, kernel_pid_t target_pid);
 
 /**
  * @brief Replies to a message.
@@ -172,7 +172,7 @@ int msg_reply(msg_t *m, msg_t *reply);
  *
  * @param[in] array Pointer to preallocated array of ``msg_t`` structures, must
  *                  not be NULL.
- * @param[in] num   Number of ``msg_t`` structurs in array.
+ * @param[in] num   Number of ``msg_t`` structures in array.
  *                  **MUST BE POWER OF TWO!**
  *
  * @return 0, if successful

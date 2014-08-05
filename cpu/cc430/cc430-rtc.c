@@ -5,17 +5,16 @@ Copyright 2013, INRIA.
 These sources were developed at the Freie Universitaet Berlin, Computer Systems
 and Telematics group (http://cst.mi.fu-berlin.de).
 -------------------------------------------------------------------------------
-This file is part of RIOT.
-
-This file is subject to the terms and conditions of the LGPLv2.
-See the file LICENSE in the top level directory for more details.
+This file is subject to the terms and conditions of the GNU Lesser
+General Public License v2.1. See the file LICENSE in the top level
+directory for more details.
 *******************************************************************************/
 
 /**
  * @ingroup rtc
  * @file        cc430-rtc.c
- * @brief		CC430 real time clock implementation
- * @author		Oliver Hahm <oliver.hahm@inria.fr>
+ * @brief       CC430 real time clock implementation
+ * @author      Oliver Hahm <oliver.hahm@inria.fr>
  */
 
 #include <string.h>
@@ -27,7 +26,7 @@ See the file LICENSE in the top level directory for more details.
 //static volatile time_t epoch;
 static struct tm time_to_set;
 static int set_time = 0;
-int rtc_second_pid = 0;
+kernel_pid_t rtc_second_pid = 0;
 
 /*---------------------------------------------------------------------------*/
 void rtc_init(void)
@@ -62,10 +61,10 @@ void rtc_set_localtime(struct tm *localt)
 
 /*---------------------------------------------------------------------------
 void rtc_set(time_t time) {
-	struct tm* localt;
-	localt = localtime(&time);						// convert seconds to broken-down time
-	rtc_set_localtime(localt);
-	epoch = time - localt->tm_sec - localt->tm_min * 60;
+    struct tm* localt;
+    localt = localtime(&time);                      // convert seconds to broken-down time
+    rtc_set_localtime(localt);
+    epoch = time - localt->tm_sec - localt->tm_min * 60;
 }
 */
 
@@ -75,7 +74,7 @@ time_t rtc_time(void) {
     struct tm t;
     rtc_get_localtime(&t);
     sec = mktime(&t);
-	return sec;
+    return sec;
 }
 */
 /*---------------------------------------------------------------------------*/

@@ -3,8 +3,9 @@
  * and the AVSESTREM board.
  * Copyright (C) 2013 Freie Universität Berlin
  *
- * This source code is licensed under the LGPLv2 license,
- * See the file LICENSE for more details.
+ * This file is subject to the terms and conditions of the GNU Lesser
+ * General Public License v2.1. See the file LICENSE in the top level
+ * directory for more details.
  */
 
 /**
@@ -12,7 +13,6 @@
  * @internal
  * @brief       Implements the SPI0 interface for the LPC2387
  *
- * @author      Freie Universität Berlin, Computer Systems & Telematics
  * @author      Marco Ziegert <ziegert@inf.fu-berlin.de>
  * @author      Zakaria Kasmi <zkasmi@inf.fu-berlin.de>
  * @version     $Revision: 3854 $
@@ -47,10 +47,10 @@ uint32_t SSP0Init(void)
     //TODO: configure CLK, MISO, MOSI by default as  GPIOs.
 #if USE_CS
     //  P1.20 1.21 1.23 1.24
-    //	PINSEL3 |= BIT8 | BIT9 | BIT10 | BIT11 | BIT14 | BIT15 | BIT16 | BIT17;
+    //  PINSEL3 |= BIT8 | BIT9 | BIT10 | BIT11 | BIT14 | BIT15 | BIT16 | BIT17;
 #else
     //  No SSEL0
-    //	PINSEL3 |= BIT8 | BIT9 | BIT14 | BIT15 | BIT16 | BIT17; //1.20 1.23 1.24
+    //  PINSEL3 |= BIT8 | BIT9 | BIT14 | BIT15 | BIT16 | BIT17; //1.20 1.23 1.24
 #endif
 
 #if SSP1_INTERRUPT_MODE
@@ -82,7 +82,7 @@ uint8_t SSP0Prepare(uint8_t chip, uint8_t datasize, uint8_t cpol, uint8_t cpha,
         case SMB380_ACC: {
 #if USE_CS
             PINSEL3 |= BIT8 | BIT9 | BIT10 | BIT11 | BIT14 | BIT15 | BIT16 |
-                       BIT17;	//P1.20 1.21 1.23 1.24
+                       BIT17;   //P1.20 1.21 1.23 1.24
 #else
             // 1.20 1.23 1.24 are not configured as SSEL0
             PINSEL3 |= BIT8 | BIT9 | BIT14 | BIT15 | BIT16 | BIT17;
@@ -187,7 +187,7 @@ uint8_t SSP0Prepare(uint8_t chip, uint8_t datasize, uint8_t cpol, uint8_t cpha,
 
     SSP0CR1 = 0x00; // SSP0 disabled
 
-    // Setting	xx-Bit Datasize, CPOL and CPHA
+    // Setting  xx-Bit Datasize, CPOL and CPHA
     SSP0CR0 = SSP0CR0tmp;
 
     // Clock Setup
@@ -222,8 +222,8 @@ uint8_t SSP0Unprepare(uint8_t chip)
             PINSEL3 &= ~(BIT8 | BIT9 | BIT10 | BIT11 | BIT14 | BIT15 | BIT16 |
                          BIT17);
             FIO1DIR |= BIT20 | BIT21 | BIT24;
-            FIO1DIR &= ~BIT23;		 // MISO as Input
-            FIO1SET = BIT20 | BIT24;	 /*
+            FIO1DIR &= ~BIT23;       // MISO as Input
+            FIO1SET = BIT20 | BIT24;     /*
                                           * CLK + SSEL + MOSI GPIO as Output
                                           * TODO: depends on CPOL+CPHA Settings
                                           */

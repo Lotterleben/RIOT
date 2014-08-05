@@ -14,11 +14,10 @@ and Telematics group (http://cst.mi.fu-berlin.de).
 
 /**
  * @file
- * @ingroup		CC2420
- * @brief		CC2420 dependend functions
+ * @ingroup     CC2420
+ * @brief       CC2420 dependend functions
  *
- * @author      Freie Universität Berlin, Computer Systems & Telematics
- * @author		Heiko Will <hwill@inf.fu-berlin.de>
+ * @author      Heiko Will <hwill@inf.fu-berlin.de>
  * @author      Milan Babel <babel@inf.fu-berlin.de>
  * @author      Kévin Roussel <Kevin.Roussel@inria.fr>
  */

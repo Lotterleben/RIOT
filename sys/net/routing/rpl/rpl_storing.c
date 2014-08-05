@@ -3,9 +3,9 @@
  *
  * Copyright (C) 2014 Freie Universität Berlin
  *
- * This file is subject to the terms and conditions of the GNU Lesser General
- * Public License. See the file LICENSE in the top level directory for more
- * details.
+ * This file is subject to the terms and conditions of the GNU Lesser
+ * General Public License v2.1. See the file LICENSE in the top level
+ * directory for more details.
  *
  * @ingroup rpl
  * @{
@@ -496,7 +496,7 @@ void recv_rpl_DIO_mode(void)
                 dio_dodag.dio_interval_doubling = rpl_opt_dodag_conf_buf->DIOIntDoubl;
                 dio_dodag.dio_min = rpl_opt_dodag_conf_buf->DIOIntMin;
                 dio_dodag.dio_redundancy = rpl_opt_dodag_conf_buf->DIORedun;
-                dio_dodag.maxrankincrease =	rpl_opt_dodag_conf_buf->MaxRankIncrease;
+                dio_dodag.maxrankincrease = rpl_opt_dodag_conf_buf->MaxRankIncrease;
                 dio_dodag.minhoprankincrease = rpl_opt_dodag_conf_buf->MinHopRankIncrease;
                 dio_dodag.default_lifetime = rpl_opt_dodag_conf_buf->default_lifetime;
                 dio_dodag.lifetime_unit = rpl_opt_dodag_conf_buf->lifetime_unit;

@@ -19,10 +19,10 @@ RIOTBASE ?= $(CURDIR)/../..
 # with the target all-valgrind instead of all:
 # make -B clean all-valgrind
 
-# Uncomment this to enable code in RIOT that does safety checking
+# Comment this out to disable code in RIOT that does safety checking
 # which is not needed in a production environment but helps in the
 # development process:
-#CFLAGS += -DDEVELHELP
+CFLAGS += -DDEVELHELP
 
 # Change this to 0 show compiler invocation lines by default:
 QUIET ?= 1
@@ -30,13 +30,16 @@ QUIET ?= 1
 # Blacklist boards
 BOARD_BLACKLIST := arduino-due avsextrem chronos mbed_lpc1768 msb-430h msba2 redbee-econotag \
                    telosb wsn430-v1_3b wsn430-v1_4 msb-430 pttu udoo qemu-i386 z1 stm32f0discovery \
-                   stm32f4discovery
+                   stm32f3discovery stm32f4discovery pca10000 pca10005
 # This example only works with native for now.
 # msb430-based boards: msp430-g++ is not provided in mspgcc.
 # (People who want use c++ can build c++ compiler from source, or get binaries from Energia http://energia.nu/)
 # msba2: some changes should be applied to successfully compile c++. (_kill_r, _kill, __dso_handle)
 # stm32f0discovery: g++ does not support some used flags (e.g. -mthumb...)
+# stm32f3discovery: g++ does not support some used flags (e.g. -mthumb...)
 # stm32f4discovery: g++ does not support some used flags (e.g. -mthumb...)
+# pca10000:         g++ does not support some used flags (e.g. -mthumb...)
+# pca10005:         g++ does not support some used flags (e.g. -mthumb...)
 # others: untested.
 
 # If you want to add some extra flags when compile c++ files, add these flags

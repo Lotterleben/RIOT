@@ -3,9 +3,9 @@
  *
  * Copyright (C) 2013  INRIA.
  *
- * This file is subject to the terms and conditions of the GNU Lesser General
- * Public License. See the file LICENSE in the top level directory for more
- * details.
+ * This file is subject to the terms and conditions of the GNU Lesser
+ * General Public License v2.1. See the file LICENSE in the top level
+ * directory for more details.
  *
  * @ingroup sixlowpan
  * @{
@@ -150,6 +150,7 @@ static void *recv_ieee802154_frame(void *arg)
             }
             else {
                 DEBUG("Unknown IEEE 802.15.4 destination address mode.\n");
+                p->processing--;
                 continue;
             }
 
@@ -318,10 +319,11 @@ int sixlowpan_mac_send_ieee802154_frame(int if_id,
     }
 }
 
-int sixlowpan_mac_init(void)
+kernel_pid_t sixlowpan_mac_init(void)
 {
-    int recv_pid = thread_create(radio_stack_buffer, RADIO_STACK_SIZE,
-                                 PRIORITY_MAIN - 2, CREATE_STACKTEST, recv_ieee802154_frame, NULL, "radio");
+    kernel_pid_t recv_pid = thread_create(radio_stack_buffer, RADIO_STACK_SIZE,
+                                          PRIORITY_MAIN - 2, CREATE_STACKTEST,
+                                          recv_ieee802154_frame, NULL, "radio");
     int if_id = -1;
 
     while ((if_id = net_if_iter_interfaces(if_id)) >= 0) {
