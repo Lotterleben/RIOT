@@ -31,7 +31,8 @@
 #include "constants.h"
 #include "seqnum.h"
 
-struct writer_target {
+struct writer_target
+{
     struct rfc5444_writer_target interface;
     struct netaddr target_addr;
     struct aodvv2_packet_data packet_data;
@@ -58,7 +59,7 @@ void writer_cleanup(void);
  * @param packet_data parameters of the RREQ
  * @param next_hop Address the RREP is sent to
  */
-void writer_send_rreq(struct aodvv2_packet_data* packet_data, struct netaddr* next_hop);
+void writer_send_rreq(struct aodvv2_packet_data *packet_data, struct netaddr *next_hop);
 
 /**
  * Send a RREP. DO NOT use this function to dispatch packets from anything else
@@ -66,7 +67,7 @@ void writer_send_rreq(struct aodvv2_packet_data* packet_data, struct netaddr* ne
  * @param packet_data parameters of the RREP
  * @param next_hop Address the RREP is sent to
  */
-void writer_send_rrep(struct aodvv2_packet_data* packet_data, struct netaddr* next_hop);
+void writer_send_rrep(struct aodvv2_packet_data *packet_data, struct netaddr *next_hop);
 
 /**
  * Send a RERR. DO NOT use this function to dispatch packets from anything else
@@ -77,6 +78,6 @@ void writer_send_rrep(struct aodvv2_packet_data* packet_data, struct netaddr* ne
  * @param hoplimit            the message's hop limit
  * @param next_hop            Address the RREP is sent to
  */
-void writer_send_rerr(struct unreachable_node unreachable_nodes[], int len, int hoplimit, struct netaddr* next_hop);
+void writer_send_rerr(struct unreachable_node unreachable_nodes[], int len, int hoplimit, struct netaddr *next_hop);
 
 #endif /* WRITER_H_ */

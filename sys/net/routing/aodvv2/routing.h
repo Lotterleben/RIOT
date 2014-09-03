@@ -1,4 +1,4 @@
-/*
+Ï/*
  *
  * This file is subject to the terms and conditions of the GNU Lesser General
  * Public License. See the file LICENSE in the top level directory for more
@@ -28,7 +28,8 @@
 /*
  * A route table entry (i.e., a route) may be in one of the following states:
  */
-enum aodvv2_routing_states {
+enum aodvv2_routing_states
+{
     ROUTE_STATE_ACTIVE,
     ROUTE_STATE_IDLE,
     ROUTE_STATE_EXPIRED,
@@ -39,7 +40,8 @@ enum aodvv2_routing_states {
 /**
  * all fields of a routing table entry
  */
-struct aodvv2_routing_entry_t {
+struct aodvv2_routing_entry_t
+{
     struct netaddr addr;
     uint8_t seqnum;
     struct netaddr nextHopAddr;
@@ -63,7 +65,7 @@ void routingtable_init(void);
  * @param[in] metricType  Metric Type of the desired route
  * @return                next hop towards dest if it exists, NULL otherwise
  */
-struct netaddr* routingtable_get_next_hop(struct netaddr* dest, uint8_t metricType);
+struct netaddr *routingtable_get_next_hop(struct netaddr *dest, uint8_t metricType);
 
 /**
  * @brief     Add new entry to routing table, if there is no other entry
@@ -71,7 +73,7 @@ struct netaddr* routingtable_get_next_hop(struct netaddr* dest, uint8_t metricTy
  *
  * @param[in] entry        The routing table entry to add
  */
-void routingtable_add_entry(struct aodvv2_routing_entry_t* entry);
+void routingtable_add_entry(struct aodvv2_routing_entry_t *entry);
 
 /**
  * @brief     Retrieve pointer to a routing table entry.
@@ -82,7 +84,7 @@ void routingtable_add_entry(struct aodvv2_routing_entry_t* entry);
  * @param[in] metricType    Metric Type of the desired route
  * @return                  Routing table entry if it exists, NULL otherwise
  */
-struct aodvv2_routing_entry_t* routingtable_get_entry(struct netaddr* addr, uint8_t metricType);
+struct aodvv2_routing_entry_t *routingtable_get_entry(struct netaddr *addr, uint8_t metricType);
 
 /**
  * @brief     Delete routing table entry towards addr with metric type MetricType,
@@ -91,7 +93,7 @@ struct aodvv2_routing_entry_t* routingtable_get_entry(struct netaddr* addr, uint
  * @param[in] addr          The address towards which the route should point
  * @param[in] metricType    Metric Type of the desired route
  */
-void routingtable_delete_entry(struct netaddr* addr, uint8_t metricType);
+void routingtable_delete_entry(struct netaddr *addr, uint8_t metricType);
 
 /**
  * Find all routing table entries that use hop as their nextHopAddress, mark them
@@ -104,7 +106,7 @@ void routingtable_delete_entry(struct netaddr* addr, uint8_t metricType);
  * @param len                 int* which will contain the length of
  *                            unreachable_nodes[] after execution
  */
-void routingtable_break_and_get_all_hopping_over(struct netaddr* hop, struct unreachable_node unreachable_nodes[], int* len);
+void routingtable_break_and_get_all_hopping_over(struct netaddr *hop, struct unreachable_node unreachable_nodes[], int *len);
 
 /**
  * Check if the data of a RREQ or RREP offers improvement for an existing routing
@@ -116,7 +118,7 @@ void routingtable_break_and_get_all_hopping_over(struct netaddr* hop, struct unr
  *                            TargNode's data (i.e. packet_data.targNode) must
  *                            be passed.
  */
-bool routingtable_offers_improvement(struct aodvv2_routing_entry_t* rt_entry, struct node_data* node_data);
+bool routingtable_offers_improvement(struct aodvv2_routing_entry_t *rt_entry, struct node_data *node_data);
 
 /**
  * Fills a routing table entry with the data of a RREQ.
@@ -124,7 +126,7 @@ bool routingtable_offers_improvement(struct aodvv2_routing_entry_t* rt_entry, st
  * @param rt_entry            the routing table entry to fill
  * @param link_cost           the link cost for this RREQ
  */
-void routingtable_fill_routing_entry_t_rreq(struct aodvv2_packet_data* packet_data, struct aodvv2_routing_entry_t* rt_entry, uint8_t link_cost);
+void routingtable_fill_routing_entry_t_rreq(struct aodvv2_packet_data *packet_data, struct aodvv2_routing_entry_t *rt_entry, uint8_t link_cost);
 
 /**
  * Fills a routing table entry with the data of a RREP.
@@ -132,9 +134,9 @@ void routingtable_fill_routing_entry_t_rreq(struct aodvv2_packet_data* packet_da
  * @param rt_entry            the routing table entry to fill
  * @param link_cost           the link cost for this RREP
  */
-void routingtable_fill_routing_entry_t_rrep(struct aodvv2_packet_data* packet_data, struct aodvv2_routing_entry_t* rt_entry, uint8_t link_cost);
+void routingtable_fill_routing_entry_t_rrep(struct aodvv2_packet_data *packet_data, struct aodvv2_routing_entry_t *rt_entry, uint8_t link_cost);
 
 void print_routingtable(void);
-void print_routingtable_entry(struct aodvv2_routing_entry_t* rt_entry);
+void print_routingtable_entry(struct aodvv2_routing_entry_t *rt_entry);
 
 #endif /* ROUTING_H_ */

@@ -38,7 +38,7 @@ static mutex_t writer_mutex;
 struct rfc5444_writer writer;
 static struct writer_target _target;
 
-static struct unreachable_node* _unreachable_nodes;
+static struct unreachable_node *_unreachable_nodes;
 static int _num_unreachable_nodes;
 
 static uint8_t _msg_buffer[128];
@@ -53,13 +53,15 @@ static struct rfc5444_writer_message *_rerr_msg;
  * message content provider that will add message TLVs,
  * addresses and address block TLVs to all messages of type RREQ.
  */
-static struct rfc5444_writer_content_provider _rreq_message_content_provider = {
+static struct rfc5444_writer_content_provider _rreq_message_content_provider =
+{
     .msg_type = RFC5444_MSGTYPE_RREQ,
     .addAddresses = _cb_rreq_addAddresses,
 };
 
 /* declaration of all address TLVs added to the RREQ message */
-static struct rfc5444_writer_tlvtype _rreq_addrtlvs[] = {
+static struct rfc5444_writer_tlvtype _rreq_addrtlvs[] =
+{
     [RFC5444_MSGTLV_ORIGSEQNUM] = { .type = RFC5444_MSGTLV_ORIGSEQNUM },
     [RFC5444_MSGTLV_METRIC] = { .type = RFC5444_MSGTLV_METRIC, .exttype = AODVV2_DEFAULT_METRIC_TYPE },
 };
@@ -68,13 +70,15 @@ static struct rfc5444_writer_tlvtype _rreq_addrtlvs[] = {
  * message content provider that will add message TLVs,
  * addresses and address block TLVs to all messages of type RREQ.
  */
-static struct rfc5444_writer_content_provider _rrep_message_content_provider = {
+static struct rfc5444_writer_content_provider _rrep_message_content_provider =
+{
     .msg_type = RFC5444_MSGTYPE_RREP,
     .addAddresses = _cb_rrep_addAddresses,
 };
 
 /* declaration of all address TLVs added to the RREP message */
-static struct rfc5444_writer_tlvtype _rrep_addrtlvs[] = {
+static struct rfc5444_writer_tlvtype _rrep_addrtlvs[] =
+{
     [RFC5444_MSGTLV_ORIGSEQNUM] = { .type = RFC5444_MSGTLV_ORIGSEQNUM},
     [RFC5444_MSGTLV_TARGSEQNUM] = { .type = RFC5444_MSGTLV_TARGSEQNUM},
     [RFC5444_MSGTLV_METRIC] = { .type = RFC5444_MSGTLV_METRIC, .exttype = AODVV2_DEFAULT_METRIC_TYPE },
@@ -84,13 +88,15 @@ static struct rfc5444_writer_tlvtype _rrep_addrtlvs[] = {
  * message content provider that will add message TLVs,
  * addresses and address block TLVs to all messages of type RREQ.
  */
-static struct rfc5444_writer_content_provider _rerr_message_content_provider = {
+static struct rfc5444_writer_content_provider _rerr_message_content_provider =
+{
     .msg_type = RFC5444_MSGTYPE_RERR,
     .addAddresses = _cb_rerr_addAddresses,
 };
 
 /* declaration of all address TLVs added to the RREP message */
-static struct rfc5444_writer_tlvtype _rerr_addrtlvs[] = {
+static struct rfc5444_writer_tlvtype _rerr_addrtlvs[] =
+{
     [RFC5444_MSGTLV_UNREACHABLE_NODE_SEQNUM] = { .type = RFC5444_MSGTLV_UNREACHABLE_NODE_SEQNUM},
 };
 
@@ -122,11 +128,11 @@ _cb_rreq_addAddresses(struct rfc5444_writer *wr)
 
     /* add origNode address (has no address tlv); is mandatory address */
     origNode_addr = rfc5444_writer_add_address(wr, _rreq_message_content_provider.creator,
-                                               &_target.packet_data.origNode.addr, true);
+                    &_target.packet_data.origNode.addr, true);
 
     /* add targNode address (has no address tlv); is mandatory address */
     rfc5444_writer_add_address(wr, _rreq_message_content_provider.creator,
-                                               &_target.packet_data.targNode.addr, true);
+                               &_target.packet_data.targNode.addr, true);
 
     /* add SeqNum TLV and metric TLV to origNode */
     // TODO: allow_dup true or false?
@@ -182,10 +188,11 @@ _cb_rerr_addAddresses(struct rfc5444_writer *wr)
 
     struct rfc5444_writer_address *unreachableNode_addr;
 
-    for (int i = 0; i < _num_unreachable_nodes; i++){
+    for (int i = 0; i < _num_unreachable_nodes; i++)
+    {
         /* add unreachableNode addresses (has no address tlv); is mandatory address */
         unreachableNode_addr = rfc5444_writer_add_address(wr, _rerr_message_content_provider.creator,
-                                                   &_unreachable_nodes[i].addr, true);
+                               &_unreachable_nodes[i].addr, true);
 
         /* add SeqNum TLV to unreachableNode */
         // TODO: allow_dup true or false?
@@ -242,7 +249,7 @@ void writer_init(write_packet_func_ptr ptr)
  * @param packet_data parameters of the RREQ
  * @param next_hop Address the RREP is sent to
  */
-void writer_send_rreq(struct aodvv2_packet_data* packet_data, struct netaddr* next_hop)
+void writer_send_rreq(struct aodvv2_packet_data *packet_data, struct netaddr *next_hop)
 {
     DEBUG("[aodvv2] %s()\n", __func__);
 
@@ -250,7 +257,8 @@ void writer_send_rreq(struct aodvv2_packet_data* packet_data, struct netaddr* ne
         return;
 
     /* Make sure no other thread is using the writer right now */
-    if (mutex_lock(&writer_mutex) == 1) {
+    if (mutex_lock(&writer_mutex) == 1)
+    {
 
         memcpy(&_target.packet_data, packet_data, sizeof(struct aodvv2_packet_data));
         _target.type = RFC5444_MSGTYPE_RREQ;
@@ -272,7 +280,7 @@ void writer_send_rreq(struct aodvv2_packet_data* packet_data, struct netaddr* ne
  * @param packet_data parameters of the RREP
  * @param next_hop Address the RREP is sent to
  */
-void writer_send_rrep(struct aodvv2_packet_data* packet_data, struct netaddr* next_hop)
+void writer_send_rrep(struct aodvv2_packet_data *packet_data, struct netaddr *next_hop)
 {
     DEBUG("[aodvv2] %s()\n", __func__);
 
@@ -280,7 +288,8 @@ void writer_send_rrep(struct aodvv2_packet_data* packet_data, struct netaddr* ne
         return;
 
     /* Make sure no other thread is using the writer right now */
-    if (mutex_lock(&writer_mutex) == 1) {
+    if (mutex_lock(&writer_mutex) == 1)
+    {
 
         memcpy(&_target.packet_data, packet_data, sizeof(struct aodvv2_packet_data));
         _target.type = RFC5444_MSGTYPE_RREP;
@@ -304,14 +313,15 @@ void writer_send_rrep(struct aodvv2_packet_data* packet_data, struct netaddr* ne
  * @param hoplimit            the message's hop limit
  * @param next_hop            Address the RREP is sent to
  */
-void writer_send_rerr(struct unreachable_node unreachable_nodes[], int len, int hoplimit, struct netaddr* next_hop)
+void writer_send_rerr(struct unreachable_node unreachable_nodes[], int len, int hoplimit, struct netaddr *next_hop)
 {
     DEBUG("[aodvv2] %s()\n", __func__);
 
     if (unreachable_nodes == NULL || next_hop == NULL)
         return;
 
-    if (mutex_lock(&writer_mutex) == 1) {
+    if (mutex_lock(&writer_mutex) == 1)
+    {
 
         _target.packet_data.hoplimit = hoplimit;
         _target.type = RFC5444_MSGTYPE_RERR;

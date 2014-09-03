@@ -31,7 +31,6 @@
 #include "constants.h"
 #include "seqnum.h"
 #include "aodv.h"
- 
 
 /**
  * @brief Initialize reader.
@@ -44,11 +43,11 @@ void reader_init(void);
 void reader_cleanup(void);
 
 /**
- * @brief Read data buffer as RFC5444 packet and handle the data it contains 
+ * @brief Read data buffer as RFC5444 packet and handle the data it contains
  *
  * @param[in] buffer  Data to be read and handled
  * @param[in] length  Length of data
  * @param[in] sender  Address of the node from which the packet was received
  */
-int reader_handle_packet(void* buffer, size_t length, struct netaddr* sender);
+int reader_handle_packet(void *buffer, size_t length, struct netaddr *sender);
 #endif /* READER_H_ */

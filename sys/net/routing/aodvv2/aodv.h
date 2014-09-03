@@ -29,27 +29,30 @@
 
 #include "constants.h"
 #include "seqnum.h"
-#include "routing.h" 
+#include "routing.h"
 #include "utils.h"
 #include "reader.h"
 #include "writer.h"
 #include "thread.h"
 
-struct rreq_rrep_data {
-    struct aodvv2_packet_data* packet_data;
-    struct netaddr* next_hop;
-};
- 
-struct rerr_data {
-    struct unreachable_node* unreachable_nodes; // Beware, this is the start of an array.
-    int len;
-    int hoplimit;
-    struct netaddr* next_hop;
+struct rreq_rrep_data
+{
+    struct aodvv2_packet_data *packet_data;
+    struct netaddr *next_hop;
 };
 
-struct msg_container {
+struct rerr_data
+{
+    struct unreachable_node *unreachable_nodes; // Beware, this is the start of an array.
+    int len;
+    int hoplimit;
+    struct netaddr *next_hop;
+};
+
+struct msg_container
+{
     int type;
-    void* data;  
+    void *data;
 };
 
 /**
@@ -61,22 +64,22 @@ struct msg_container {
 void aodv_set_metric_type(int metric_type);
 
 /**
- * @brief   When set as ipv6_iface_routing_provider, this function is called by 
+ * @brief   When set as ipv6_iface_routing_provider, this function is called by
  *          ipv6_sendto() to determine the next hop towards dest. This function
  *          is non-blocking.
  *
- * @param[in] destination of the packet 
- * @return  Address of the next hop towards dest if there is any, 
+ * @param[in] destination of the packet
+ * @return  Address of the next hop towards dest if there is any,
  *          NULL if there is none (yet)
  */
-static ipv6_addr_t* aodv_get_next_hop(ipv6_addr_t* dest);
+static ipv6_addr_t *aodv_get_next_hop(ipv6_addr_t *dest);
 
 /**
  * @brief   Dispatch a RREQ
  *
  * @param[in] packet_data  Payload of the RREQ
  */
-void aodv_send_rreq(struct aodvv2_packet_data* packet_data);
+void aodv_send_rreq(struct aodvv2_packet_data *packet_data);
 
 /**
  * @brief   Dispatch a RREP
@@ -84,17 +87,17 @@ void aodv_send_rreq(struct aodvv2_packet_data* packet_data);
  * @param[in] packet_data  Payload of the RREP
  * @param[in] next_hop     Address of the next hop the RREP should be sent to
  */
-void aodv_send_rrep(struct aodvv2_packet_data* packet_data, struct netaddr* next_hop);
+void aodv_send_rrep(struct aodvv2_packet_data *packet_data, struct netaddr *next_hop);
 
 /**
  * @brief   Dispatch a RERR
  *
- * @param[in] unreachable_nodes  All nodes that are marked as unreachable 
- *                               by this RERR 
+ * @param[in] unreachable_nodes  All nodes that are marked as unreachable
+ *                               by this RERR
  * @param[in] len                Number of unreachable nodes
  * @param[in] hoplimit           Hoplimit of RERR
  * @param[in] next_hop           Address of the next hop the RERR should be sent to
  */
-void aodv_send_rerr(struct unreachable_node unreachable_nodes[], int len, int hoplimit, struct netaddr* next_hop);
+void aodv_send_rerr(struct unreachable_node unreachable_nodes[], int len, int hoplimit, struct netaddr *next_hop);
 
 #endif /* AODV_H_ */

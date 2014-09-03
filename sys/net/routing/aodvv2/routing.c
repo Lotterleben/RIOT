@@ -31,33 +31,37 @@ struct netaddr_str nbuf;
 
 void routingtable_init(void)
 {
-    null_time = timex_set(0,0);
-    max_seqnum_lifetime = timex_set(AODVV2_MAX_SEQNUM_LIFETIME,0);
+    null_time = timex_set(0, 0);
+    max_seqnum_lifetime = timex_set(AODVV2_MAX_SEQNUM_LIFETIME, 0);
     active_interval = timex_set(AODVV2_ACTIVE_INTERVAL, 0);
     max_idletime = timex_set(AODVV2_MAX_IDLETIME, 0);
     validity_t = timex_set(AODVV2_ACTIVE_INTERVAL + AODVV2_MAX_IDLETIME, 0);
 
-    for (uint8_t i = 0; i < AODVV2_MAX_ROUTING_ENTRIES; i++) {
+    for (uint8_t i = 0; i < AODVV2_MAX_ROUTING_ENTRIES; i++)
+    {
         memset(&routing_table[i], 0, sizeof(routing_table[i]));
     }
     DEBUG("[aodvv2] routing table initialized.\n");
 }
 
-struct netaddr* routingtable_get_next_hop(struct netaddr* dest, uint8_t metricType)
+struct netaddr *routingtable_get_next_hop(struct netaddr *dest, uint8_t metricType)
 {
-    struct aodvv2_routing_entry_t* entry = routingtable_get_entry(dest, metricType);
+    struct aodvv2_routing_entry_t *entry = routingtable_get_entry(dest, metricType);
     if (!entry)
         return NULL;
-    return(&entry->nextHopAddr);
+    return (&entry->nextHopAddr);
 }
 
-void routingtable_add_entry(struct aodvv2_routing_entry_t* entry)
+void routingtable_add_entry(struct aodvv2_routing_entry_t *entry)
 {
     /* only add if we don't already know the address */
-    if (!(routingtable_get_entry(&(entry->addr), entry->metricType))){
+    if (!(routingtable_get_entry(&(entry->addr), entry->metricType)))
+    {
         /*find free spot in RT and place rt_entry there */
-        for (uint8_t i = 0; i < AODVV2_MAX_ROUTING_ENTRIES; i++){
-            if (routing_table[i].addr._type == AF_UNSPEC) {
+        for (uint8_t i = 0; i < AODVV2_MAX_ROUTING_ENTRIES; i++)
+        {
+            if (routing_table[i].addr._type == AF_UNSPEC)
+            {
                 /* TODO: sanity check? */
                 memcpy(&routing_table[i], entry, sizeof(struct aodvv2_routing_entry_t));
                 return;
@@ -66,13 +70,15 @@ void routingtable_add_entry(struct aodvv2_routing_entry_t* entry)
     }
 }
 
-struct aodvv2_routing_entry_t* routingtable_get_entry(struct netaddr* addr, uint8_t metricType)
+struct aodvv2_routing_entry_t *routingtable_get_entry(struct netaddr *addr, uint8_t metricType)
 {
-    for (uint8_t i = 0; i < AODVV2_MAX_ROUTING_ENTRIES; i++) {
+    for (uint8_t i = 0; i < AODVV2_MAX_ROUTING_ENTRIES; i++)
+    {
         _reset_entry_if_stale(i);
 
         if (!netaddr_cmp(&routing_table[i].addr, addr)
-            && routing_table[i].metricType == metricType) {
+                && routing_table[i].metricType == metricType)
+        {
             DEBUG("[routing] found entry for %s :", netaddr_to_string(&nbuf, addr));
 #ifdef DEBUG
             print_routingtable_entry(&routing_table[i]);
@@ -83,29 +89,34 @@ struct aodvv2_routing_entry_t* routingtable_get_entry(struct netaddr* addr, uint
     return NULL;
 }
 
-void routingtable_delete_entry(struct netaddr* addr, uint8_t metricType)
+void routingtable_delete_entry(struct netaddr *addr, uint8_t metricType)
 {
-    for (uint8_t i = 0; i < AODVV2_MAX_ROUTING_ENTRIES; i++) {
+    for (uint8_t i = 0; i < AODVV2_MAX_ROUTING_ENTRIES; i++)
+    {
         _reset_entry_if_stale(i);
 
         if (!netaddr_cmp(&routing_table[i].addr, addr)
-            && routing_table[i].metricType == metricType) {
+                && routing_table[i].metricType == metricType)
+        {
             memset(&routing_table[i], 0, sizeof(routing_table[i]));
             return;
         }
     }
 }
 
-void routingtable_break_and_get_all_hopping_over(struct netaddr* hop, struct unreachable_node unreachable_nodes[], int* len)
+void routingtable_break_and_get_all_hopping_over(struct netaddr *hop, struct unreachable_node unreachable_nodes[], int *len)
 {
     *len = 0; // to be sure
 
-    for (uint8_t i = 0; i < AODVV2_MAX_ROUTING_ENTRIES; i++) {
+    for (uint8_t i = 0; i < AODVV2_MAX_ROUTING_ENTRIES; i++)
+    {
         _reset_entry_if_stale(i);
 
-        if (netaddr_cmp(&routing_table[i].nextHopAddr, hop) == 0) {
+        if (netaddr_cmp(&routing_table[i].nextHopAddr, hop) == 0)
+        {
             if (routing_table[i].state == ROUTE_STATE_ACTIVE &&
-                *len < AODVV2_MAX_UNREACHABLE_NODES) {
+                    *len < AODVV2_MAX_UNREACHABLE_NODES)
+            {
                 // when the max number of unreachable nodes is reached we're screwed.
                 // the above check is just damage control.
                 unreachable_nodes[*len].addr = routing_table[i].addr;
@@ -130,7 +141,8 @@ static void _reset_entry_if_stale(uint8_t i)
     int state;
     timex_t lastUsed, expirationTime;
 
-    if (timex_cmp(routing_table[i].expirationTime, null_time) != 0) {
+    if (timex_cmp(routing_table[i].expirationTime, null_time) != 0)
+    {
         state = routing_table[i].state;
         lastUsed = routing_table[i].lastUsed;
         expirationTime = routing_table[i].expirationTime;
@@ -143,7 +155,8 @@ static void _reset_entry_if_stale(uint8_t i)
             return;
 
         if (state == ROUTE_STATE_ACTIVE &&
-            timex_cmp(timex_sub(now, active_interval), lastUsed) == 1) {
+                timex_cmp(timex_sub(now, active_interval), lastUsed) == 1)
+        {
 
             DEBUG("\t[routing] route towards %s Idle\n", netaddr_to_string(&nbuf, &routing_table[i].addr), i);
             routing_table[i].state = ROUTE_STATE_IDLE;
@@ -164,7 +177,8 @@ static void _reset_entry_if_stale(uint8_t i)
                 timex_cmp(expirationTime, now) < 1)) {
         */
         if (state == ROUTE_STATE_IDLE &&
-                timex_cmp(expirationTime, now) < 1) {
+                timex_cmp(expirationTime, now) < 1)
+        {
             DEBUG("\t[routing] route towards %s Expired\n", netaddr_to_string(&nbuf, &routing_table[i].addr), i);
             DEBUG("\t expirationTime: %"PRIu32":%"PRIu32" , now: %"PRIu32":%"PRIu32"\n", expirationTime.seconds, expirationTime.microseconds, now.seconds, now.microseconds);
             routing_table[i].state = ROUTE_STATE_EXPIRED;
@@ -173,14 +187,15 @@ static void _reset_entry_if_stale(uint8_t i)
 
         /* After that time, old sequence number information is considered no longer
            valuable and the Expired route MUST BE expunged */
-        if (timex_cmp(timex_sub(now, lastUsed), max_seqnum_lifetime) >= 0) {
+        if (timex_cmp(timex_sub(now, lastUsed), max_seqnum_lifetime) >= 0)
+        {
             DEBUG("\t[routing] reset routing table entry for %s at %i\n", netaddr_to_string(&nbuf, &routing_table[i].addr), i);
             memset(&routing_table[i], 0, sizeof(routing_table[i]));
         }
     }
 }
 
-bool routingtable_offers_improvement(struct aodvv2_routing_entry_t* rt_entry, struct node_data* node_data)
+bool routingtable_offers_improvement(struct aodvv2_routing_entry_t *rt_entry, struct node_data *node_data)
 {
     /* Check if new info is stale */
     if (seqnum_cmp(node_data->seqnum, rt_entry->seqnum) == -1)
@@ -194,7 +209,7 @@ bool routingtable_offers_improvement(struct aodvv2_routing_entry_t* rt_entry, st
     return true;
 }
 
-void routingtable_fill_routing_entry_t_rreq(struct aodvv2_packet_data* packet_data, struct aodvv2_routing_entry_t* rt_entry, uint8_t link_cost)
+void routingtable_fill_routing_entry_t_rreq(struct aodvv2_packet_data *packet_data, struct aodvv2_routing_entry_t *rt_entry, uint8_t link_cost)
 {
     rt_entry->addr = packet_data->origNode.addr;
     rt_entry->seqnum = packet_data->origNode.seqnum;
@@ -206,7 +221,7 @@ void routingtable_fill_routing_entry_t_rreq(struct aodvv2_packet_data* packet_da
     rt_entry->state = ROUTE_STATE_ACTIVE;
 }
 
-void routingtable_fill_routing_entry_t_rrep(struct aodvv2_packet_data* packet_data, struct aodvv2_routing_entry_t* rt_entry, uint8_t link_cost)
+void routingtable_fill_routing_entry_t_rrep(struct aodvv2_packet_data *packet_data, struct aodvv2_routing_entry_t *rt_entry, uint8_t link_cost)
 {
     rt_entry->addr = packet_data->targNode.addr;
     rt_entry->seqnum = packet_data->targNode.seqnum;
@@ -221,16 +236,18 @@ void routingtable_fill_routing_entry_t_rrep(struct aodvv2_packet_data* packet_da
 void print_routingtable(void)
 {
     printf("===== BEGIN ROUTING TABLE ===================\n");
-    for(int i = 0; i < AODVV2_MAX_ROUTING_ENTRIES; i++) {
+    for (int i = 0; i < AODVV2_MAX_ROUTING_ENTRIES; i++)
+    {
         // route has been used before => non-empty entry
-        if (routing_table[i].lastUsed.seconds || routing_table[i].lastUsed.microseconds) {
+        if (routing_table[i].lastUsed.seconds || routing_table[i].lastUsed.microseconds)
+        {
             print_routingtable_entry(&routing_table[i]);
         }
     }
     printf("===== END ROUTING TABLE =====================\n");
 }
 
-void print_routingtable_entry(struct aodvv2_routing_entry_t* rt_entry)
+void print_routingtable_entry(struct aodvv2_routing_entry_t *rt_entry)
 {
     struct netaddr_str nbuf;
 

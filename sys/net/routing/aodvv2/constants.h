@@ -36,27 +36,42 @@
 /* my multicast address */
 struct netaddr na_mcast;
 
-enum msg_type {
+/* AODVv2 message types */
+enum rfc5444_msg_type
+{
     RFC5444_MSGTYPE_RREQ = 10,
     RFC5444_MSGTYPE_RREP = 11,
     RFC5444_MSGTYPE_RERR = 12,
 };
 
-enum tlv_type {
+/* AODVv2 TLV types */
+enum rfc5444_tlv_type
+{
     RFC5444_MSGTLV_ORIGSEQNUM,
     RFC5444_MSGTLV_TARGSEQNUM,
     RFC5444_MSGTLV_UNREACHABLE_NODE_SEQNUM,
     RFC5444_MSGTLV_METRIC,
 };
 
-struct node_data {
+/* TLV type array indices */
+enum tlv_index
+{
+    TLV_ORIGSEQNUM,
+    TLV_TARGSEQNUM,
+    TLV_UNREACHABLE_NODE_SEQNUM,
+    TLV_METRIC,
+};
+
+struct node_data
+{
     struct netaddr addr;
     uint8_t metric;
     uint16_t seqnum;
 };
 
 /* all data contained in a RREQ or RREP */
-struct aodvv2_packet_data {
+struct aodvv2_packet_data
+{
     uint8_t hoplimit;
     struct netaddr sender;
     uint8_t metricType;
@@ -65,7 +80,8 @@ struct aodvv2_packet_data {
     timex_t timestamp;
 };
 
-struct unreachable_node {
+struct unreachable_node
+{
     struct netaddr addr;
     uint16_t seqnum;
 };

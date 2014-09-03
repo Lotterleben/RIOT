@@ -21,7 +21,7 @@
 #define ENABLE_DEBUG (0)
 #include "debug.h"
 
-static uint16_t seqnum; 
+static uint16_t seqnum;
 
 void seqnum_init(void)
 {
@@ -29,7 +29,7 @@ void seqnum_init(void)
 }
 
 void seqnum_inc(void)
-{   
+{
     if (seqnum == 65535)
         seqnum = 1;
     else if (seqnum == 0)
