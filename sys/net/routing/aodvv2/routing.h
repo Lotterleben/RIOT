@@ -1,4 +1,4 @@
-Ï/*
+/*
  *
  * This file is subject to the terms and conditions of the GNU Lesser General
  * Public License. See the file LICENSE in the top level directory for more
@@ -23,7 +23,9 @@
 
 #include "ipv6.h"
 #include "common/netaddr.h"
+
 #include "constants.h"
+#include "seqnum.h"
 
 /*
  * A route table entry (i.e., a route) may be in one of the following states:

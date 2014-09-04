@@ -26,7 +26,7 @@ static void _reset_entry_if_stale(uint8_t i);
 static struct aodvv2_routing_entry_t routing_table[AODVV2_MAX_ROUTING_ENTRIES];
 static timex_t null_time, max_seqnum_lifetime, active_interval, max_idletime, validity_t;
 timex_t now;
-struct netaddr_str nbuf;
+static struct netaddr_str nbuf;
 
 
 void routingtable_init(void)
@@ -123,7 +123,7 @@ void routingtable_break_and_get_all_hopping_over(struct netaddr *hop, struct unr
                 unreachable_nodes[*len].seqnum = routing_table[i].seqnum;
 
                 (*len)++;
-                DEBUG("\t[routing] unreachable node found: %s\n", netaddr_to_string(&routing_table[i].nextHopAddr, &nbuf));
+                DEBUG("\t[routing] unreachable node found: %s\n", netaddr_to_string(&nbuf, &routing_table[i].nextHopAddr));
             }
             routing_table[i].state = ROUTE_STATE_BROKEN;
             DEBUG("\t[routing] number of unreachable nodes: %i\n", *len);
@@ -158,7 +158,7 @@ static void _reset_entry_if_stale(uint8_t i)
                 timex_cmp(timex_sub(now, active_interval), lastUsed) == 1)
         {
 
-            DEBUG("\t[routing] route towards %s Idle\n", netaddr_to_string(&nbuf, &routing_table[i].addr), i);
+            DEBUG("\t[routing] route towards %s Idle\n", netaddr_to_string(&nbuf, &routing_table[i].addr));
             routing_table[i].state = ROUTE_STATE_IDLE;
             routing_table[i].lastUsed = now; // mark the time entry was set to Idle
         }
@@ -179,7 +179,7 @@ static void _reset_entry_if_stale(uint8_t i)
         if (state == ROUTE_STATE_IDLE &&
                 timex_cmp(expirationTime, now) < 1)
         {
-            DEBUG("\t[routing] route towards %s Expired\n", netaddr_to_string(&nbuf, &routing_table[i].addr), i);
+            DEBUG("\t[routing] route towards %s Expired\n", netaddr_to_string(&nbuf, &routing_table[i].addr));
             DEBUG("\t expirationTime: %"PRIu32":%"PRIu32" , now: %"PRIu32":%"PRIu32"\n", expirationTime.seconds, expirationTime.microseconds, now.seconds, now.microseconds);
             routing_table[i].state = ROUTE_STATE_EXPIRED;
             routing_table[i].lastUsed = now; // mark the time entry was set to Expired

@@ -109,7 +109,7 @@ void aodv_send_rreq(struct aodvv2_packet_data *packet_data)
     };
 
     msg_t msg;
-    msg.content.ptr = mc;
+    msg.content.ptr = (char *) mc;
 
     msg_send(&msg, sender_thread, false);
 }
@@ -139,7 +139,7 @@ void aodv_send_rrep(struct aodvv2_packet_data *packet_data, struct netaddr *next
     };
 
     msg_t msg;
-    msg.content.ptr = mc;
+    msg.content.ptr = (char *) mc;
 
     msg_send(&msg, sender_thread, false);
 }
@@ -165,7 +165,7 @@ void aodv_send_rerr(struct unreachable_node unreachable_nodes[], int len, int ho
     };
 
     msg_t msg2;
-    msg2.content.ptr = mc2;
+    msg2.content.ptr = (char *) mc2;
 
     msg_send(&msg2, sender_thread, false);
 }
@@ -367,7 +367,17 @@ static ipv6_addr_t *aodv_get_next_hop(ipv6_addr_t *dest)
         if (rt_entry->state == ROUTE_STATE_IDLE)
             rt_entry->state = ROUTE_STATE_ACTIVE;
 
-        return &rt_entry->nextHopAddr;
+        /* FIXME: Currently, there is no way to do this, so I'm doing it the worst
+        possible, but safe way: I can't make sure that the current call to
+        aodv_get_next_hop() is overridden by another call to aodv_get_next_hop()
+        by a thread with higher priority, thus messing up return values if I just
+        use a static ipv6_addr_t.
+        The following malloc will never be free()'d. FIX THIS ASAP.
+        */
+        ipv6_addr_t* next_hop = (ipv6_addr_t*) malloc(sizeof(ipv6_addr_t));
+        netaddr_to_ipv6_addr_t(&rt_entry->nextHopAddr, next_hop);
+
+        return next_hop;
     }
 
     uint16_t seqnum = seqnum_get();
