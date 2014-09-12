@@ -257,20 +257,17 @@ void writer_send_rreq(struct aodvv2_packet_data *packet_data, struct netaddr *ne
         return;
 
     /* Make sure no other thread is using the writer right now */
-    if (mutex_lock(&writer_mutex) == 1)
-    {
+    mutex_lock(&writer_mutex);
+    memcpy(&_target.packet_data, packet_data, sizeof(struct aodvv2_packet_data));
+    _target.type = RFC5444_MSGTYPE_RREQ;
+    _target.packet_data.hoplimit = packet_data->hoplimit;
 
-        memcpy(&_target.packet_data, packet_data, sizeof(struct aodvv2_packet_data));
-        _target.type = RFC5444_MSGTYPE_RREQ;
-        _target.packet_data.hoplimit = packet_data->hoplimit;
+    /* set address to which the write_packet callback should send our RREQ */
+    memcpy(&_target.target_addr, next_hop, sizeof (struct netaddr));
 
-        /* set address to which the write_packet callback should send our RREQ */
-        memcpy(&_target.target_addr, next_hop, sizeof (struct netaddr));
-
-        rfc5444_writer_create_message_alltarget(&writer, RFC5444_MSGTYPE_RREQ);
-        rfc5444_writer_flush(&writer, &_target.interface, false);
-        mutex_unlock(&writer_mutex);
-    } // TODO: handle mutex_lock() = -1?
+    rfc5444_writer_create_message_alltarget(&writer, RFC5444_MSGTYPE_RREQ);
+    rfc5444_writer_flush(&writer, &_target.interface, false);
+    mutex_unlock(&writer_mutex);
 }
 
 
@@ -288,20 +285,17 @@ void writer_send_rrep(struct aodvv2_packet_data *packet_data, struct netaddr *ne
         return;
 
     /* Make sure no other thread is using the writer right now */
-    if (mutex_lock(&writer_mutex) == 1)
-    {
+    mutex_lock(&writer_mutex);
+    memcpy(&_target.packet_data, packet_data, sizeof(struct aodvv2_packet_data));
+    _target.type = RFC5444_MSGTYPE_RREP;
+    _target.packet_data.hoplimit = AODVV2_MAX_HOPCOUNT;
 
-        memcpy(&_target.packet_data, packet_data, sizeof(struct aodvv2_packet_data));
-        _target.type = RFC5444_MSGTYPE_RREP;
-        _target.packet_data.hoplimit = AODVV2_MAX_HOPCOUNT;
+    /* set address to which the write_packet callback should send our RREQ */
+    memcpy(&_target.target_addr, next_hop, sizeof (struct netaddr));
 
-        /* set address to which the write_packet callback should send our RREQ */
-        memcpy(&_target.target_addr, next_hop, sizeof (struct netaddr));
-
-        rfc5444_writer_create_message_alltarget(&writer, RFC5444_MSGTYPE_RREP);
-        rfc5444_writer_flush(&writer, &_target.interface, false);
-        mutex_unlock(&writer_mutex);
-    } // TODO: handle mutex_lock() = -1?
+    rfc5444_writer_create_message_alltarget(&writer, RFC5444_MSGTYPE_RREP);
+    rfc5444_writer_flush(&writer, &_target.interface, false);
+    mutex_unlock(&writer_mutex);
 }
 
 /**
@@ -320,21 +314,18 @@ void writer_send_rerr(struct unreachable_node unreachable_nodes[], int len, int 
     if (unreachable_nodes == NULL || next_hop == NULL)
         return;
 
-    if (mutex_lock(&writer_mutex) == 1)
-    {
+    mutex_lock(&writer_mutex);
+    _target.packet_data.hoplimit = hoplimit;
+    _target.type = RFC5444_MSGTYPE_RERR;
+    _unreachable_nodes = unreachable_nodes;
+    _num_unreachable_nodes = len;
 
-        _target.packet_data.hoplimit = hoplimit;
-        _target.type = RFC5444_MSGTYPE_RERR;
-        _unreachable_nodes = unreachable_nodes;
-        _num_unreachable_nodes = len;
+    /* set address to which the write_packet callback should send our RREQ */
+    memcpy(&_target.target_addr, next_hop, sizeof (struct netaddr));
 
-        /* set address to which the write_packet callback should send our RREQ */
-        memcpy(&_target.target_addr, next_hop, sizeof (struct netaddr));
-
-        rfc5444_writer_create_message_alltarget(&writer, RFC5444_MSGTYPE_RERR);
-        rfc5444_writer_flush(&writer, &_target.interface, false);
-        mutex_unlock(&writer_mutex);
-    } // TODO: handle mutex_lock() = -1?
+    rfc5444_writer_create_message_alltarget(&writer, RFC5444_MSGTYPE_RERR);
+    rfc5444_writer_flush(&writer, &_target.interface, false);
+    mutex_unlock(&writer_mutex);
 }
 
 void writer_cleanup(void)

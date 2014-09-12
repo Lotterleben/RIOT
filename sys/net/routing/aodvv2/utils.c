@@ -39,14 +39,12 @@ static timex_t null_time, now, _max_idletime;
 
 void clienttable_init(void)
 {
-    if (mutex_lock(&clientt_mutex) == 1)
+    mutex_lock(&clientt_mutex);
+    for (uint8_t i = 0; i < AODVV2_MAX_CLIENTS; i++)
     {
-        for (uint8_t i = 0; i < AODVV2_MAX_CLIENTS; i++)
-        {
-            memset(&client_table[i], 0, sizeof(client_table[i]));
-        }
-        mutex_unlock(&clientt_mutex);
+        memset(&client_table[i], 0, sizeof(client_table[i]));
     }
+    mutex_unlock(&clientt_mutex);
 
     DEBUG("[aodvv2] client table initialized.\n");
 }
@@ -56,37 +54,34 @@ void clienttable_add_client(struct netaddr *addr)
     if (!clienttable_is_client(addr))
     {
         /*find free spot in client table and place client address there */
-        if (mutex_lock(&clientt_mutex) == 1)
+        mutex_lock(&clientt_mutex);
+        for (uint8_t i = 0; i < AODVV2_MAX_CLIENTS; i++)
         {
-            for (uint8_t i = 0; i < AODVV2_MAX_CLIENTS; i++)
+            if (client_table[i]._type == AF_UNSPEC
+                    && client_table[i]._prefix_len == 0)
             {
-                if (client_table[i]._type == AF_UNSPEC
-                        && client_table[i]._prefix_len == 0)
-                {
-                    client_table[i] = *addr;
-                    DEBUG("[aodvv2] clienttable: added client %s\n", netaddr_to_string(&nbuf, addr));
-                    mutex_unlock(&clientt_mutex);
-                    return;
-                }
+                client_table[i] = *addr;
+                DEBUG("[aodvv2] clienttable: added client %s\n", netaddr_to_string(&nbuf, addr));
+                mutex_unlock(&clientt_mutex);
+                return;
             }
         }
+        // TODO: unlock mutex if clienttable is full? At least handle properly.
     }
 }
 
 bool clienttable_is_client(struct netaddr *addr)
 {
-    if (mutex_lock(&clientt_mutex) == 1)
+    mutex_lock(&clientt_mutex);
+    for (uint8_t i = 0; i < AODVV2_MAX_CLIENTS; i++)
     {
-        for (uint8_t i = 0; i < AODVV2_MAX_CLIENTS; i++)
+        if (!netaddr_cmp(&client_table[i], addr))
         {
-            if (!netaddr_cmp(&client_table[i], addr))
-            {
-                mutex_unlock(&clientt_mutex);
-                return true;
-            }
+            mutex_unlock(&clientt_mutex);
+            return true;
         }
-        mutex_unlock(&clientt_mutex);
     }
+    mutex_unlock(&clientt_mutex);
     return false;
 }
 
@@ -95,33 +90,29 @@ void clienttable_delete_client(struct netaddr *addr)
     if (!clienttable_is_client(addr))
         return;
 
-    if (mutex_lock(&clientt_mutex) == 1)
+    mutex_lock(&clientt_mutex);
+    for (uint8_t i = 0; i < AODVV2_MAX_CLIENTS; i++)
     {
-        for (uint8_t i = 0; i < AODVV2_MAX_CLIENTS; i++)
+        if (!netaddr_cmp(&client_table[i], addr))
         {
-            if (!netaddr_cmp(&client_table[i], addr))
-            {
-                memset(&client_table[i], 0, sizeof(client_table[i]));
-                mutex_unlock(&clientt_mutex);
-                return;
-            }
+            memset(&client_table[i], 0, sizeof(client_table[i]));
+            mutex_unlock(&clientt_mutex);
+            return;
         }
     }
 }
 
 void rreqtable_init(void)
 {
-    if (mutex_lock(&rreqt_mutex) == 1)
-    {
-        null_time = timex_set(0, 0);
-        _max_idletime = timex_set(AODVV2_MAX_IDLETIME, 0);
+    mutex_lock(&rreqt_mutex);
+    null_time = timex_set(0, 0);
+    _max_idletime = timex_set(AODVV2_MAX_IDLETIME, 0);
 
-        for (uint8_t i = 0; i < AODVV2_RREQ_BUF; i++)
-        {
-            memset(&rreq_table[i], 0, sizeof(rreq_table[i]));
-        }
-        mutex_unlock(&rreqt_mutex);
+    for (uint8_t i = 0; i < AODVV2_RREQ_BUF; i++)
+    {
+        memset(&rreq_table[i], 0, sizeof(rreq_table[i]));
     }
+    mutex_unlock(&rreqt_mutex);
     DEBUG("[aodvv2] RREQ table initialized.\n");
 }
 
@@ -131,57 +122,55 @@ bool rreqtable_is_redundant(struct aodvv2_packet_data *packet_data)
     int seqnum_comparison;
     timex_t now;
 
-    if (mutex_lock(&rreqt_mutex) == 1)
+    mutex_lock(&rreqt_mutex);
+    comparable_rreq = _get_comparable_rreq(packet_data);
+
+    /* if there is no comparable rreq stored, add one and return false */
+    if (comparable_rreq == NULL)
     {
-        comparable_rreq = _get_comparable_rreq(packet_data);
+        _add_rreq(packet_data);
+        mutex_unlock(&rreqt_mutex);
+        return false;
+    }
 
-        /* if there is no comparable rreq stored, add one and return false */
-        if (comparable_rreq == NULL)
-        {
-            _add_rreq(packet_data);
-            mutex_unlock(&rreqt_mutex);
-            return false;
-        }
+    seqnum_comparison = seqnum_cmp(packet_data->origNode.seqnum, comparable_rreq->seqnum);
 
-        seqnum_comparison = seqnum_cmp(packet_data->origNode.seqnum, comparable_rreq->seqnum);
+    /*
+     * If two RREQs have the same
+     * metric type and OrigNode and Targnode addresses, the information from
+     * the one with the older Sequence Number is not needed in the table
+     */
+    if (seqnum_comparison == -1)
+    {
+        mutex_unlock(&rreqt_mutex);
+        return true;
+    }
 
-        /*
-         * If two RREQs have the same
-         * metric type and OrigNode and Targnode addresses, the information from
-         * the one with the older Sequence Number is not needed in the table
-         */
-        if (seqnum_comparison == -1)
+    if (seqnum_comparison == 1)
+    {
+        /* Update RREQ table entry with new seqnum value */
+        comparable_rreq->seqnum = packet_data->origNode.seqnum;
+    }
+
+    /*
+     * in case they have the same Sequence Number, the one with the greater
+     * Metric value is not needed
+     */
+    if (seqnum_comparison == 0)
+    {
+        if (comparable_rreq->metric <= packet_data->origNode.metric)
         {
             mutex_unlock(&rreqt_mutex);
             return true;
         }
-
-        if (seqnum_comparison == 1)
-        {
-            /* Update RREQ table entry with new seqnum value */
-            comparable_rreq->seqnum = packet_data->origNode.seqnum;
-        }
-
-        /*
-         * in case they have the same Sequence Number, the one with the greater
-         * Metric value is not needed
-         */
-        if (seqnum_comparison == 0)
-        {
-            if (comparable_rreq->metric <= packet_data->origNode.metric)
-            {
-                mutex_unlock(&rreqt_mutex);
-                return true;
-            }
-            /* Update RREQ table entry with new metric value */
-            comparable_rreq->metric = packet_data->origNode.metric;
-        }
-
-        /* Since we've changed RREQ info, update the timestamp */
-        vtimer_now(&now);
-        comparable_rreq->timestamp = now;
-        mutex_unlock(&rreqt_mutex);
+        /* Update RREQ table entry with new metric value */
+        comparable_rreq->metric = packet_data->origNode.metric;
     }
+
+    /* Since we've changed RREQ info, update the timestamp */
+    vtimer_now(&now);
+    comparable_rreq->timestamp = now;
+    mutex_unlock(&rreqt_mutex);
 
     return false;
 }
