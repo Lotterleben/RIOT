@@ -1,0 +1,97 @@
+From 15b571f619d35cc7e3936e5e8a67ce7fd2eedb58 Mon Sep 17 00:00:00 2001
+From: Christian Mehlis <mehlis@inf.fu-berlin.de>
+Date: Thu, 13 Mar 2014 19:20:33 +0100
+Subject: [PATCH] fix makefiles...
+
+---
+ pkg/oonf_api/Makefile         | 41 +++++++++++++++++++----------------------
+ pkg/oonf_api/Makefile.include |  5 ++++-
+ pkg/oonf_api/oonf_api         |  2 +-
+ 3 files changed, 24 insertions(+), 24 deletions(-)
+
+diff --git a/pkg/oonf_api/Makefile b/pkg/oonf_api/Makefile
+index 826f84b..4e49174 100644
+--- a/pkg/oonf_api/Makefile
++++ b/pkg/oonf_api/Makefile
+@@ -1,6 +1,7 @@
+ PKG_NAME=oonf_api
+ PKG_URL=git://olsr.org/oonf_api.git
+ PKG_VERSION=v0.3.0
++PKG_DIR=$(CURDIR)/$(PKG_NAME)
+
+ ifneq ($(RIOTBOARD),)
+ include $(RIOTBOARD)/$(BOARD)/Makefile.include
+@@ -11,36 +12,32 @@ INCLUDES += -I$(RIOTBASE)/sys/include -I$(RIOTBASE)/sys/net/include \
+			-I$(RIOTBASE)/sys/posix/include -I$(RIOTBASE)/sys/posix/pnet/include
+ endif
+
+-MODULE:=$(shell basename $(CURDIR))
+-
+ .PHONY: all clean patch reset
+
+ all: patch
+-	make -C $(CURDIR)/$(PKG_NAME)
+-	make $(BINDIR)$(MODULE).a
++	make -C $(PKG_DIR)
+
+-patch: $(CURDIR)/$(PKG_NAME)/Makefile
+-	# Dependancy might be changed accordingly though we think the Makefile
+-	# will be the first thing you want to change
+-	#
+-	# Here might not happen anything besides dependancy checks
++patch: $(PKG_DIR)/Makefile
+
+-$(CURDIR)/$(PKG_NAME)/Makefile: $(CURDIR)/$(PKG_NAME)
+-	# Here you apply your patch.
+-	$(foreach patch,$(shell ls [0-9][0-9][0-9][0-9]*.patch),cd "$<" && git am "../$(patch)";)
++$(PKG_DIR)/Makefile: $(PKG_DIR)/.git/config
++	cd "$(PKG_DIR)" && git am --ignore-whitespace "$(CURDIR)"/*.patch || true
+
+-$(CURDIR)/$(PKG_NAME)/:
+-	git clone $(PKG_URL) $@ && \
+-		cd $@ && git checkout $(PKG_VERSION)
++$(PKG_DIR)/.git/config:
++	mkdir "$(PKG_DIR)"; \
++        git clone "$(PKG_URL)" "$(PKG_DIR)"; \
++		cd "$(PKG_DIR)" && git checkout -f "$(PKG_VERSION)"
+
+ clean::
+-	# Reset package to checkout state.
+-	cd $(CURDIR)/$(PKG_NAME) || true && \
++	@echo "Cleaning up libcoap package..."
++	@cd "$(PKG_DIR)" 2> /dev/null > /dev/null && \
+		git clean -x -f && \
+-		git reset --hard $(PKG_VERSION)
++		git am --abort && \
++		git reset --hard "$(PKG_VERSION)" && \
++		$(MAKE) patch || true
++
+
+-distclean::
+-	rm -rf $(CURDIR)/$(PKG_NAME)
++distclean::
++	rm -rf "$(PKG_DIR)"
+
+-$(BINDIR)$(MODULE).a: $(BINDIR)oonf_*.a
+-	mkdir -p $(BINDIR)$(MODULE); cd $(BINDIR)$(MODULE); for var in $?; do ar -x $$var; done; ar -r -c -s $(BINDIR)$(MODULE).a *.o
++Makefile.include:
++	@true
+diff --git a/pkg/oonf_api/Makefile.include b/pkg/oonf_api/Makefile.include
+index 3cf84c6..a6fb43a 100644
+--- a/pkg/oonf_api/Makefile.include
++++ b/pkg/oonf_api/Makefile.include
+@@ -1 +1,4 @@
+-INCLUDES += -I $(RIOTBASE)/pkg/oonf_api/oonf_api/src-api
++INCLUDES += -I$(RIOTBASE)/pkg/libcoap/libcoap \
++			-I$(RIOTBASE)/sys/posix/include \
++			-I$(RIOTBASE)/sys/posix/pnet/include \
++			-I$(RIOTBASE)/sys/net/include
+diff --git a/pkg/oonf_api/oonf_api b/pkg/oonf_api/oonf_api
+index 24c364c..8c1657f 160000
+--- a/pkg/oonf_api/oonf_api
++++ b/pkg/oonf_api/oonf_api
+@@ -1 +1 @@
+-Subproject commit 24c364c8c5ffca196e426155489902c1636174ca
++Subproject commit 8c1657ffea4ff747760330e03788ed633fc07d36
+--
+1.9.0
