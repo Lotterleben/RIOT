@@ -1,6 +1,7 @@
 include $(RIOTBOARD)/$(BOARD)/Makefile.dep
 
-export NATIVEINCLUDES = -I$(RIOTBOARD)/$(BOARD)/include/
+export NATIVEINCLUDES += -DNATIVE_INCLUDES
+export NATIVEINCLUDES += -I$(RIOTBOARD)/$(BOARD)/include/
 export NATIVEINCLUDES += -I$(RIOTBASE)/core/include/
 export NATIVEINCLUDES += -I$(RIOTBASE)/drivers/include/
 
@@ -24,8 +25,14 @@ export VALGRIND ?= valgrind
 export CGANNOTATE ?= cg_annotate
 export GPROF ?= gprof
 
-# flags:
-export CFLAGS += -Wall -Wextra -pedantic -m32
+# basic cflags:
+export CFLAGS += -Wall -Wextra -pedantic
+ifeq ($(shell uname -m),x86_64)
+export CFLAGS += -m32
+endif
+ifneq (,$(filter -DDEVELHELP,$(CFLAGS)))
+export CFLAGS += -fstack-protector-all
+endif
 ifeq ($(shell uname -s),FreeBSD)
 ifeq ($(shell uname -m),amd64)
 export CFLAGS += -DCOMPAT_32BIT -L/usr/lib32 -B/usr/lib32
@@ -36,7 +43,9 @@ endif
 export CXXUWFLAGS +=
 export CXXEXFLAGS +=
 
+ifeq ($(shell uname -m),x86_64)
 export LINKFLAGS += -m32
+endif
 ifeq ($(shell uname -s),FreeBSD)
 ifeq ($(shell uname -m),amd64)
 export LINKFLAGS += -DCOMPAT_32BIT -L/usr/lib32 -B/usr/lib32
@@ -48,7 +57,10 @@ endif
 
 export ASFLAGS =
 export DEBUGGER_FLAGS = $(ELF)
-term-memcheck: export VALGRIND_FLAGS ?= --track-origins=yes
+term-valgrind: export VALGRIND_FLAGS ?= \
+	--track-origins=yes \
+	--fullpath-after=$(RIOTBASE)/ \
+	--read-var-info=yes
 term-cachegrind: export CACHEGRIND_FLAGS += --tool=cachegrind
 term-gprof: export TERMPROG = GMON_OUT_PREFIX=gmon.out $(ELF)
 all-valgrind: export CFLAGS += -DHAVE_VALGRIND_H -g
@@ -82,6 +94,10 @@ ifneq (,$(filter nativenet,$(USEMODULE)))
 	export PORT ?= tap0
 else
 	export PORT =
+endif
+
+ifeq (,$(filter $(PORT),$(TERMFLAGS)))
+    export TERMFLAGS += $(PORT)
 endif
 
 all: # do not override first target

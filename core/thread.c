@@ -32,27 +32,24 @@
 #include "hwtimer.h"
 #include "sched.h"
 
-inline kernel_pid_t thread_getpid(void)
+volatile tcb_t *thread_get(kernel_pid_t pid)
 {
-    return sched_active_thread->pid;
+    if ((pid != KERNEL_PID_UNDEF) && (KERNEL_PID_FIRST <= pid) && (pid <= KERNEL_PID_LAST)) {
+        return sched_threads[pid];
+    }
+    return NULL;
 }
 
 int thread_getstatus(kernel_pid_t pid)
 {
-    if (sched_threads[pid] == NULL) {
-        return STATUS_NOT_FOUND;
-    }
-
-    return sched_threads[pid]->status;
+    volatile tcb_t *t = thread_get(pid);
+    return t ? t->status : STATUS_NOT_FOUND;
 }
 
 const char *thread_getname(kernel_pid_t pid)
 {
-    if (sched_threads[pid] == NULL) {
-        return NULL;
-    }
-
-    return sched_threads[pid]->name;
+    volatile tcb_t *t = thread_get(pid);
+    return t ? t->name : NULL;
 }
 
 void thread_sleep(void)
@@ -156,19 +153,14 @@ kernel_pid_t thread_create(char *stack, int stacksize, char priority, int flags,
         dINT();
     }
 
-    kernel_pid_t pid = 0;
-
-    while (pid < MAXTHREADS) {
-        if (sched_threads[pid] == NULL) {
-            sched_threads[pid] = cb;
-            cb->pid = pid;
+    kernel_pid_t pid = KERNEL_PID_UNDEF;
+    for (kernel_pid_t i = KERNEL_PID_FIRST; i <= KERNEL_PID_LAST; ++i) {
+        if (sched_threads[i] == NULL) {
+            pid = i;
             break;
         }
-
-        pid++;
     }
-
-    if (pid == MAXTHREADS) {
+    if (pid == KERNEL_PID_UNDEF) {
         DEBUG("thread_create(): too many threads!\n");
 
         if (!inISR()) {
@@ -178,6 +170,9 @@ kernel_pid_t thread_create(char *stack, int stacksize, char priority, int flags,
         return -EOVERFLOW;
     }
 
+    sched_threads[pid] = cb;
+
+    cb->pid = pid;
     cb->sp = thread_stack_init(function, arg, stack, stacksize);
     cb->stack_start = stack;
 
@@ -188,7 +183,6 @@ kernel_pid_t thread_create(char *stack, int stacksize, char priority, int flags,
     cb->priority = priority;
     cb->status = 0;
 
-    cb->rq_entry.data = (unsigned int) cb;
     cb->rq_entry.next = NULL;
     cb->rq_entry.prev = NULL;
 

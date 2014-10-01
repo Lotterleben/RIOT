@@ -2,9 +2,9 @@
  * Copyright (C) 2014 Hamburg University of Applied Sciences (HAW)
  * Copyright (C) 2014 Ho Chi Minh University of Technology (HCMUT)
  *
- * This file is subject to the terms and conditions of the GNU Lesser General
- * Public License. See the file LICENSE in the top level directory for more
- * details.
+ * This file is subject to the terms and conditions of the GNU Lesser
+ * General Public License v2.1. See the file LICENSE in the top level
+ * directory for more details.
  */
 
 /**
@@ -85,7 +85,6 @@ void *threadA_func(void *)
 {
     int day = 13, month = 6, year = 2014;
     int ret_day;
-    char day_of_week_table[][32] = {"Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"};
 
     printf("\n******** Hello, now you're in %s ********\n", thread_getname(thread_getpid()));
     printf("We'll test some C functions here!\n");
@@ -99,6 +98,7 @@ void *threadA_func(void *)
 
     ret_day = day_of_week(day, month, year);
     if (ret_day >= 0){
+        char day_of_week_table[][32] = {"Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"};
         printf("%s\n", day_of_week_table[ret_day]);
     }
 

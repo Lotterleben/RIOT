@@ -1,14 +1,11 @@
-/******************************************************************************
-Copyright 2010, Freie Universität Berlin (FUB).
-Copyright 2013, INRIA.
-
-These sources were developed at the Freie Universitaet Berlin, Computer Systems
-and Telematics group (http://cst.mi.fu-berlin.de).
--------------------------------------------------------------------------------
-This file is subject to the terms and conditions of the GNU Lesser
-General Public License v2.1. See the file LICENSE in the top level
-directory for more details.
-*******************************************************************************/
+/*
+ * Copyright 2010, Freie Universität Berlin (FUB).
+ * Copyright 2013, INRIA.
+ *
+ * This file is subject to the terms and conditions of the GNU Lesser
+ * General Public License v2.1. See the file LICENSE in the top level
+ * directory for more details.
+ */
 
 /**
  * @ingroup     cc430
@@ -63,11 +60,9 @@ void gpioint_init(void)
 
 bool gpioint_set(int port, uint32_t bitmask, int flags, fp_irqcb callback)
 {
-    int8_t base;
-
     if ((port >= PORTINT_MIN) && (port <= PORTINT_MAX)) {
         /* set the callback function */
-        base = bitarithm_msb(bitmask);
+        int8_t base = bitarithm_msb(bitmask);
 
         if (base >= 0) {
             cb[port - PORTINT_MIN][base] = callback;

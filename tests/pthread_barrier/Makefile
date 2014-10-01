@@ -2,20 +2,15 @@
 APPLICATION = pthread_barrier
 include ../Makefile.tests_common
 
+BOARD_BLACKLIST := arduino-mega2560
+# arduino-mega2560: unknown type name: clockid_t
+
 # exclude boards with insufficient RAM
 BOARD_INSUFFICIENT_RAM :=  stm32f0discovery
 
-## Modules to include.
+# Modules to include.
 USEMODULE += pthread
 USEMODULE += random
 USEMODULE += vtimer
-
-CFLAGS += -isystem $(RIOTBASE)/sys/posix/pthread/include
-CFLAGS += -isystem $(RIOTBASE)/sys/posix/include
-
-INCLUDES += -I$(RIOTBASE)/sys/posix/pthread/include
-INCLUDES += -I$(RIOTBASE)/sys/posix/include
-
-CFLAGS += -ggdb3 -O0
 
 include $(RIOTBASE)/Makefile.include

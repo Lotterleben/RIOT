@@ -38,6 +38,8 @@
  * @name Assign the UART interface to be used for stdio
  */
 #define STDIO               UART_0
+#define STDIO_BAUDRATE      (115200U)
+#define STDIO_RX_BUFSIZE    (64U)
 
 /**
  * @name LED pin definitions
@@ -52,11 +54,11 @@
  * @name Macros for controlling the on-board LEDs.
  * @{
  */
-#define LD3_ON              (LED_PORT->BSRR = LD3_PIN)
-#define LD3_OFF             (LED_PORT->BRR = LD3_PIN)
+#define LD3_ON              (LED_PORT->BSRRL = LD3_PIN)
+#define LD3_OFF             (LED_PORT->BSRRH = LD3_PIN)
 #define LD3_TOGGLE          (LED_PORT->ODR ^= LD3_PIN)
-#define LD4_ON              (LED_PORT->BSRR = LD4_PIN)
-#define LD4_OFF             (LED_PORT->BRR = LD4_PIN)
+#define LD4_ON              (LED_PORT->BSRRL = LD4_PIN)
+#define LD4_OFF             (LED_PORT->BSRRH = LD4_PIN)
 #define LD4_TOGGLE          (LED_PORT->ODR ^= LD4_PIN)
 
 /* for compatibility to other boards */

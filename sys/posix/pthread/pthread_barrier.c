@@ -40,6 +40,14 @@ int pthread_barrier_destroy(pthread_barrier_t *barrier)
     return 0;
 }
 
+static inline int priority_min(int a, int b)
+{
+    if (a == -1) {
+        return b;
+    }
+    return a < b ? a : b;
+}
+
 int pthread_barrier_wait(pthread_barrier_t *barrier)
 {
     /* Idea: the count is decreased by every thread that waits on the barrier.
@@ -48,13 +56,15 @@ int pthread_barrier_wait(pthread_barrier_t *barrier)
 
     mutex_lock(&barrier->mutex);
     DEBUG("%s: hit a synchronization barrier. pid=%" PRIkernel_pid"\n",
-          sched_active_thread->name, sched_active_thread->pid);
+          sched_active_thread->name, sched_active_pid);
+
+    int switch_prio = -1;
 
     if (--barrier->count > 0) {
         /* need to wait for further threads */
 
         DEBUG("%s: waiting for %u threads. pid=%" PRIkernel_pid "\n",
-              sched_active_thread->name, barrier->count, sched_active_thread->pid);
+              sched_active_thread->name, barrier->count, sched_active_pid);
 
         pthread_barrier_waiting_node_t node;
         node.pid = sched_active_pid;
@@ -80,21 +90,28 @@ int pthread_barrier_wait(pthread_barrier_t *barrier)
         /* all threads have arrived, wake everybody up */
 
         DEBUG("%s: waking every other thread up. pid=%" PRIkernel_pid "\n",
-              sched_active_thread->name, sched_active_thread->pid);
+              sched_active_thread->name, sched_active_pid);
 
         int count = 1; /* Count number of woken up threads.
                         * The first thread is the current thread. */
         pthread_barrier_waiting_node_t *next;
         for (next = barrier->next; next; next = next->next) {
             ++count;
-
             next->cont = 1;
-            sched_set_status((tcb_t *) sched_threads[next->pid], STATUS_PENDING);
+
+            tcb_t *other = (tcb_t *) sched_threads[next->pid];
+            switch_prio = priority_min(switch_prio, other->priority);
+            sched_set_status(other, STATUS_PENDING);
         }
         barrier->next = NULL;
         barrier->count = count;
     }
 
     mutex_unlock(&barrier->mutex);
+
+    if (switch_prio != -1) {
+        sched_switch(switch_prio);
+    }
+
     return 0;
 }

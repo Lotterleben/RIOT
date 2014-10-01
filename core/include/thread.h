@@ -1,9 +1,9 @@
 /*
  * Copyright (C) 2014 Freie Universität Berlin
  *
- * This file subject to the terms and conditions of the GNU Lesser General
- * Public License. See the file LICENSE in the top level directory for more
- * details.
+ * This file is subject to the terms and conditions of the GNU Lesser
+ * General Public License v2.1. See the file LICENSE in the top level
+ * directory for more details.
  */
 
 /**
@@ -79,6 +79,16 @@ kernel_pid_t thread_create(char *stack,
                   void *(*function)(void *arg),
                   void *arg,
                   const char *name);
+
+/**
+ * @brief       Retreive a thread control block by PID.
+ * @details     This is a bound-checked variant of accessing `sched_threads[pid]` directly.
+ *              If you know that the PID is valid, then don't use this function.
+ * @param[in]   pid   Thread to retreive.
+ * @return      `NULL` if the PID is invalid or there is no such thread.
+ */
+volatile tcb_t *thread_get(kernel_pid_t pid);
+
 /**
  * @brief Returns the status of a process
  *
@@ -128,7 +138,10 @@ int thread_wakeup(kernel_pid_t pid);
  *
  * @return          obviously you are not a golfer.
  */
-kernel_pid_t thread_getpid(void);
+static inline kernel_pid_t thread_getpid(void)
+{
+    return sched_active_pid;
+}
 
 #ifdef DEVELHELP
 /**

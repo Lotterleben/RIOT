@@ -23,14 +23,14 @@
 #define GETBIT(a,n) (a[n/CHAR_BIT] &  (1<<(n%CHAR_BIT)))
 #define ROUND(size) ((size + CHAR_BIT - 1) / CHAR_BIT)
 
-struct bloom_t *bloom_new(size_t size, size_t num_hashes, ...)
+bloom_t *bloom_new(size_t size, size_t num_hashes, ...)
 {
-    struct bloom_t *bloom;
+    bloom_t *bloom;
     va_list hashes;
     size_t n;
 
     /* Allocate Bloom filter container */
-    if (!(bloom = malloc(sizeof(struct bloom_t)))) {
+    if (!(bloom = malloc(sizeof(bloom_t)))) {
         return NULL;
     }
 
@@ -66,31 +66,25 @@ struct bloom_t *bloom_new(size_t size, size_t num_hashes, ...)
     return bloom;
 }
 
-void bloom_del(struct bloom_t *bloom)
+void bloom_del(bloom_t *bloom)
 {
     free(bloom->a);
     free(bloom->hash);
     free(bloom);
 }
 
-void bloom_add(struct bloom_t *bloom, const uint8_t *buf, size_t len)
+void bloom_add(bloom_t *bloom, const uint8_t *buf, size_t len)
 {
-    uint32_t hash;
-    size_t n;
-
-    for (n = 0; n < bloom->k; n++) {
-        hash = bloom->hash[n](buf, len);
+    for (size_t n = 0; n < bloom->k; n++) {
+        uint32_t hash = bloom->hash[n](buf, len);
         SETBIT(bloom->a, (hash % bloom->m));
     }
 }
 
-bool bloom_check(struct bloom_t *bloom, const uint8_t *buf, size_t len)
+bool bloom_check(bloom_t *bloom, const uint8_t *buf, size_t len)
 {
-    uint32_t hash;
-    size_t n;
-
-    for (n = 0; n < bloom->k; n++) {
-        hash = bloom->hash[n](buf, len);
+    for (size_t n = 0; n < bloom->k; n++) {
+        uint32_t hash = bloom->hash[n](buf, len);
 
         if (!(GETBIT(bloom->a, (hash % bloom->m)))) {
             return false;

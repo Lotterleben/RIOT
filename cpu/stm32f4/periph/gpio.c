@@ -14,6 +14,7 @@
  * @brief       Low-level GPIO driver implementation
  *
  * @author      Hauke Petersen <mail@haukepetersen.de>
+ * @author      Fabian Nack <nack@inf.fu-berlin.de>
  *
  * @}
  */
@@ -24,8 +25,12 @@
 #include "periph/gpio.h"
 #include "periph_conf.h"
 
+/* guard file in case no GPIO devices are defined */
+#if GPIO_NUMOF
+
 typedef struct {
-    void (*cb)(void);
+    gpio_cb_t cb;       /**< callback to call on GPIO interrupt */
+    void *arg;          /**< argument passed to the callback */
 } gpio_state_t;
 
 /**
@@ -38,12 +43,12 @@ static inline void irq_handler(gpio_t dev);
 /**
  * @brief Hold one callback function pointer for each gpio device
  */
-static gpio_state_t config[GPIO_NUMOF];
+static gpio_state_t gpio_config[GPIO_NUMOF];
 
-int gpio_init_out(gpio_t dev, gpio_pp_t pushpull)
+int gpio_init_out(gpio_t dev, gpio_pp_t pullup)
 {
-    GPIO_TypeDef *port;
-    uint32_t pin;
+    GPIO_TypeDef *port = 0;
+    uint32_t pin = 0;
 
     switch (dev) {
 #if GPIO_0_EN
@@ -130,9 +135,34 @@ int gpio_init_out(gpio_t dev, gpio_pp_t pushpull)
             pin = GPIO_11_PIN;
             break;
 #endif
-        case GPIO_UNDEFINED:
-        default:
-            return -1;
+#if GPIO_12_EN
+        case GPIO_12:
+            GPIO_12_CLKEN();
+            port = GPIO_12_PORT;
+            pin = GPIO_12_PIN;
+            break;
+#endif
+#if GPIO_13_EN
+        case GPIO_13:
+            GPIO_13_CLKEN();
+            port = GPIO_13_PORT;
+            pin = GPIO_13_PIN;
+            break;
+#endif
+#if GPIO_14_EN
+        case GPIO_14:
+            GPIO_14_CLKEN();
+            port = GPIO_14_PORT;
+            pin = GPIO_14_PIN;
+            break;
+#endif
+#if GPIO_15_EN
+        case GPIO_15:
+            GPIO_15_CLKEN();
+            port = GPIO_15_PORT;
+            pin = GPIO_15_PIN;
+            break;
+#endif
     }
 
     port->MODER &= ~(2 << (2 * pin));           /* set pin to output mode */
@@ -140,16 +170,16 @@ int gpio_init_out(gpio_t dev, gpio_pp_t pushpull)
     port->OTYPER &= ~(1 << pin);                /* set to push-pull configuration */
     port->OSPEEDR |= (3 << (2 * pin));          /* set to high speed */
     port->PUPDR &= ~(3 << (2 * pin));           /* configure push-pull resistors */
-    port->PUPDR |= (pushpull << (2 * pin));
+    port->PUPDR |= (pullup << (2 * pin));
     port->ODR &= ~(1 << pin);                   /* set pin to low signal */
 
     return 0; /* all OK */
 }
 
-int gpio_init_in(gpio_t dev, gpio_pp_t pushpull)
+int gpio_init_in(gpio_t dev, gpio_pp_t pullup)
 {
-    GPIO_TypeDef *port;
-    uint32_t pin;
+    GPIO_TypeDef *port = 0;
+    uint32_t pin = 0;
 
     switch (dev) {
 #if GPIO_0_EN
@@ -236,24 +266,49 @@ int gpio_init_in(gpio_t dev, gpio_pp_t pushpull)
             pin = GPIO_11_PIN;
             break;
 #endif
-        case GPIO_UNDEFINED:
-        default:
-            return -1;
+#if GPIO_12_EN
+        case GPIO_12:
+            GPIO_12_CLKEN();
+            port = GPIO_12_PORT;
+            pin = GPIO_12_PIN;
+            break;
+#endif
+#if GPIO_13_EN
+        case GPIO_13:
+            GPIO_13_CLKEN();
+            port = GPIO_13_PORT;
+            pin = GPIO_13_PIN;
+            break;
+#endif
+#if GPIO_14_EN
+        case GPIO_14:
+            GPIO_14_CLKEN();
+            port = GPIO_14_PORT;
+            pin = GPIO_14_PIN;
+            break;
+#endif
+#if GPIO_15_EN
+        case GPIO_15:
+            GPIO_15_CLKEN();
+            port = GPIO_15_PORT;
+            pin = GPIO_15_PIN;
+            break;
+#endif
     }
 
     port->MODER &= ~(3 << (2 * pin));           /* configure pin as input */
     port->PUPDR &= ~(3 << (2 * pin));           /* configure push-pull resistors */
-    port->PUPDR |= (pushpull << (2 * pin));
+    port->PUPDR |= (pullup << (2 * pin));
 
     return 0; /* everything alright here */
 }
 
-int gpio_init_int(gpio_t dev, gpio_pp_t pushpull, gpio_flank_t flank, void (*cb)(void))
+int gpio_init_int(gpio_t dev, gpio_pp_t pullup, gpio_flank_t flank, gpio_cb_t cb, void *arg)
 {
     int res;
-    uint32_t pin;
+    uint32_t pin = 0;
 
-    res = gpio_init_in(dev, pushpull);
+    res = gpio_init_in(dev, pullup);
     if (res < 0) {
         return res;
     }
@@ -358,13 +413,43 @@ int gpio_init_int(gpio_t dev, gpio_pp_t pushpull, gpio_flank_t flank, void (*cb)
             NVIC_EnableIRQ(GPIO_11_IRQ);
             break;
 #endif
-        case GPIO_UNDEFINED:
-        default:
-            return -1;
+#if GPIO_12_EN
+        case GPIO_12:
+            pin = GPIO_12_PIN;
+            GPIO_12_EXTI_CFG();
+            NVIC_SetPriority(GPIO_12_IRQ, GPIO_IRQ_PRIO);
+            NVIC_EnableIRQ(GPIO_12_IRQ);
+            break;
+#endif
+#if GPIO_13_EN
+        case GPIO_13:
+            pin = GPIO_13_PIN;
+            GPIO_13_EXTI_CFG();
+            NVIC_SetPriority(GPIO_13_IRQ, GPIO_IRQ_PRIO);
+            NVIC_EnableIRQ(GPIO_13_IRQ);
+            break;
+#endif
+#if GPIO_14_EN
+        case GPIO_14:
+            pin = GPIO_14_PIN;
+            GPIO_14_EXTI_CFG();
+            NVIC_SetPriority(GPIO_14_IRQ, GPIO_IRQ_PRIO);
+            NVIC_EnableIRQ(GPIO_14_IRQ);
+            break;
+#endif
+#if GPIO_15_EN
+        case GPIO_15:
+            pin = GPIO_15_PIN;
+            GPIO_15_EXTI_CFG();
+            NVIC_SetPriority(GPIO_15_IRQ, GPIO_IRQ_PRIO);
+            NVIC_EnableIRQ(GPIO_15_IRQ);
+            break;
+#endif
     }
 
     /* set callback */
-    config[dev].cb = cb;
+    gpio_config[dev].cb = cb;
+    gpio_config[dev].arg = arg;
 
     /* configure the active edges */
     switch (flank) {
@@ -382,16 +467,190 @@ int gpio_init_int(gpio_t dev, gpio_pp_t pushpull, gpio_flank_t flank, void (*cb)
             break;
     }
 
+    /* clear any pending requests */
+    EXTI->PR = (1 << pin);
     /* enable interrupt for EXTI line */
     EXTI->IMR |= (1 << pin);
 
     return 0;
 }
 
+void gpio_irq_enable(gpio_t dev)
+{
+    switch (dev) {
+#if GPIO_0_EN
+        case GPIO_0:
+            EXTI->IMR |= (1 << GPIO_0_PIN);
+            break;
+#endif
+#if GPIO_1_EN
+        case GPIO_1:
+            EXTI->IMR |= (1 << GPIO_1_PIN);
+            break;
+#endif
+#if GPIO_2_EN
+        case GPIO_2:
+            EXTI->IMR |= (1 << GPIO_2_PIN);
+            break;
+#endif
+#if GPIO_3_EN
+        case GPIO_3:
+            EXTI->IMR |= (1 << GPIO_3_PIN);
+            break;
+#endif
+#if GPIO_4_EN
+        case GPIO_4:
+            EXTI->IMR |= (1 << GPIO_4_PIN);
+            break;
+#endif
+#if GPIO_5_EN
+        case GPIO_5:
+            EXTI->IMR |= (1 << GPIO_5_PIN);
+            break;
+#endif
+#if GPIO_6_EN
+        case GPIO_6:
+            EXTI->IMR |= (1 << GPIO_6_PIN);
+            break;
+#endif
+#if GPIO_7_EN
+        case GPIO_7:
+            EXTI->IMR |= (1 << GPIO_7_PIN);
+            break;
+#endif
+#if GPIO_8_EN
+        case GPIO_8:
+            EXTI->IMR |= (1 << GPIO_8_PIN);
+            break;
+#endif
+#if GPIO_9_EN
+        case GPIO_9:
+            EXTI->IMR |= (1 << GPIO_9_PIN);
+            break;
+#endif
+#if GPIO_10_EN
+        case GPIO_10:
+            EXTI->IMR |= (1 << GPIO_10_PIN);
+            break;
+#endif
+#if GPIO_11_EN
+        case GPIO_11:
+            EXTI->IMR |= (1 << GPIO_11_PIN);
+            break;
+#endif
+#if GPIO_12_EN
+        case GPIO_12:
+            EXTI->IMR |= (1 << GPIO_12_PIN);
+            break;
+#endif
+#if GPIO_13_EN
+        case GPIO_13:
+            EXTI->IMR |= (1 << GPIO_13_PIN);
+            break;
+#endif
+#if GPIO_14_EN
+        case GPIO_14:
+            EXTI->IMR |= (1 << GPIO_14_PIN);
+            break;
+#endif
+#if GPIO_15_EN
+        case GPIO_15:
+            EXTI->IMR |= (1 << GPIO_15_PIN);
+            break;
+#endif
+    }
+}
+
+void gpio_irq_disable(gpio_t dev)
+{
+    switch (dev) {
+#if GPIO_0_EN
+        case GPIO_0:
+            EXTI->IMR &= ~(1 << GPIO_0_PIN);
+            break;
+#endif
+#if GPIO_1_EN
+        case GPIO_1:
+            EXTI->IMR &= ~(1 << GPIO_1_PIN);
+            break;
+#endif
+#if GPIO_2_EN
+        case GPIO_2:
+            EXTI->IMR &= ~(1 << GPIO_2_PIN);
+            break;
+#endif
+#if GPIO_3_EN
+        case GPIO_3:
+            EXTI->IMR &= ~(1 << GPIO_3_PIN);
+            break;
+#endif
+#if GPIO_4_EN
+        case GPIO_4:
+            EXTI->IMR &= ~(1 << GPIO_4_PIN);
+            break;
+#endif
+#if GPIO_5_EN
+        case GPIO_5:
+            EXTI->IMR &= ~(1 << GPIO_5_PIN);
+            break;
+#endif
+#if GPIO_6_EN
+        case GPIO_6:
+            EXTI->IMR &= ~(1 << GPIO_6_PIN);
+            break;
+#endif
+#if GPIO_7_EN
+        case GPIO_7:
+            EXTI->IMR &= ~(1 << GPIO_7_PIN);
+            break;
+#endif
+#if GPIO_8_EN
+        case GPIO_8:
+            EXTI->IMR &= ~(1 << GPIO_8_PIN);
+            break;
+#endif
+#if GPIO_9_EN
+        case GPIO_9:
+            EXTI->IMR &= ~(1 << GPIO_9_PIN);
+            break;
+#endif
+#if GPIO_10_EN
+        case GPIO_10:
+            EXTI->IMR &= ~(1 << GPIO_10_PIN);
+            break;
+#endif
+#if GPIO_11_EN
+        case GPIO_11:
+            EXTI->IMR &= ~(1 << GPIO_11_PIN);
+            break;
+#endif
+#if GPIO_12_EN
+        case GPIO_12:
+            EXTI->IMR &= ~(1 << GPIO_12_PIN);
+            break;
+#endif
+#if GPIO_13_EN
+        case GPIO_13:
+            EXTI->IMR &= ~(1 << GPIO_13_PIN);
+            break;
+#endif
+#if GPIO_14_EN
+        case GPIO_14:
+            EXTI->IMR &= ~(1 << GPIO_14_PIN);
+            break;
+#endif
+#if GPIO_15_EN
+        case GPIO_15:
+            EXTI->IMR &= ~(1 << GPIO_15_PIN);
+            break;
+#endif
+    }
+}
+
 int gpio_read(gpio_t dev)
 {
-    GPIO_TypeDef *port;
-    uint32_t pin;
+    GPIO_TypeDef *port = 0;
+    uint32_t pin = 0;
 
     switch (dev) {
 #if GPIO_0_EN
@@ -466,9 +725,30 @@ int gpio_read(gpio_t dev)
             pin = GPIO_11_PIN;
             break;
 #endif
-        case GPIO_UNDEFINED:
-        default:
-            return -1;
+#if GPIO_12_EN
+        case GPIO_12:
+            port = GPIO_12_PORT;
+            pin = GPIO_12_PIN;
+            break;
+#endif
+#if GPIO_13_EN
+        case GPIO_13:
+            port = GPIO_13_PORT;
+            pin = GPIO_13_PIN;
+            break;
+#endif
+#if GPIO_14_EN
+        case GPIO_14:
+            port = GPIO_14_PORT;
+            pin = GPIO_14_PIN;
+            break;
+#endif
+#if GPIO_15_EN
+        case GPIO_15:
+            port = GPIO_15_PORT;
+            pin = GPIO_15_PIN;
+            break;
+#endif
     }
 
     if (port->MODER & (3 << (pin * 2))) {       /* if configured as output */
@@ -478,7 +758,7 @@ int gpio_read(gpio_t dev)
     }
 }
 
-int gpio_set(gpio_t dev)
+void gpio_set(gpio_t dev)
 {
     switch (dev) {
 #if GPIO_0_EN
@@ -539,16 +819,32 @@ int gpio_set(gpio_t dev)
 #if GPIO_11_EN
         case GPIO_11:
             GPIO_11_PORT->ODR |= (1 << GPIO_11_PIN);
-#endif
             break;
-        case GPIO_UNDEFINED:
-        default:
-            return -1;
+#endif
+#if GPIO_12_EN
+        case GPIO_12:
+            GPIO_12_PORT->ODR |= (1 << GPIO_12_PIN);
+            break;
+#endif
+#if GPIO_13_EN
+        case GPIO_13:
+            GPIO_13_PORT->ODR |= (1 << GPIO_13_PIN);
+            break;
+#endif
+#if GPIO_14_EN
+        case GPIO_14:
+            GPIO_14_PORT->ODR |= (1 << GPIO_14_PIN);
+            break;
+#endif
+#if GPIO_15_EN
+        case GPIO_15:
+            GPIO_15_PORT->ODR |= (1 << GPIO_15_PIN);
+            break;
+#endif
     }
-    return 0;
 }
 
-int gpio_clear(gpio_t dev)
+void gpio_clear(gpio_t dev)
 {
     switch (dev) {
 #if GPIO_0_EN
@@ -611,34 +907,50 @@ int gpio_clear(gpio_t dev)
             GPIO_11_PORT->ODR &= ~(1 << GPIO_11_PIN);
             break;
 #endif
-        case GPIO_UNDEFINED:
-        default:
-            return -1;
+#if GPIO_12_EN
+        case GPIO_12:
+            GPIO_12_PORT->ODR &= ~(1 << GPIO_12_PIN);
+            break;
+#endif
+#if GPIO_13_EN
+        case GPIO_13:
+            GPIO_13_PORT->ODR &= ~(1 << GPIO_13_PIN);
+            break;
+#endif
+#if GPIO_14_EN
+        case GPIO_14:
+            GPIO_14_PORT->ODR &= ~(1 << GPIO_14_PIN);
+            break;
+#endif
+#if GPIO_15_EN
+        case GPIO_15:
+            GPIO_15_PORT->ODR &= ~(1 << GPIO_15_PIN);
+            break;
+#endif
     }
-    return 0;
 }
 
-int gpio_toggle(gpio_t dev)
+void gpio_toggle(gpio_t dev)
 {
     if (gpio_read(dev)) {
-        return gpio_clear(dev);
+        gpio_clear(dev);
     } else {
-        return gpio_set(dev);
+        gpio_set(dev);
     }
 }
 
-int gpio_write(gpio_t dev, int value)
+void gpio_write(gpio_t dev, int value)
 {
     if (value) {
-        return gpio_set(dev);
+        gpio_set(dev);
     } else {
-        return gpio_clear(dev);
+        gpio_clear(dev);
     }
 }
 
 static inline void irq_handler(gpio_t dev)
 {
-    config[dev].cb();
+    gpio_config[dev].cb(gpio_config[dev].arg);
     if (sched_context_switch_request) {
         thread_yield();
     }
@@ -756,3 +1068,5 @@ void isr_exti15_10(void)
     }
     ISR_EXIT();
 }
+
+#endif /* GPIO_NUMOF */

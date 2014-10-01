@@ -18,6 +18,10 @@
 #include <string.h>
 #include <stdint.h>
 
+#if defined(MCU_ATMEGA2560)
+#include <sys/types.h>
+#endif
+
 #include "kernel.h"
 
 #include "inet_pton.h"
@@ -83,6 +87,9 @@ static int inet_pton4(const char *src, unsigned char *dst)
     return (1);
 }
 
+static const char XDIGITS_L[] = "0123456789abcdef";
+static const char XDIGITS_U[] = "0123456789ABCDEF";
+
 /* int
  * inet_pton6(src, dst)
  *  convert presentation level address to network order binary form.
@@ -98,10 +105,8 @@ static int inet_pton4(const char *src, unsigned char *dst)
  */
 static int inet_pton6(const char *src, unsigned char *dst)
 {
-    static const char xdigits_l[] = "0123456789abcdef",
-                                    xdigits_u[] = "0123456789ABCDEF";
     unsigned char tmp[IN6ADDRSZ], *tp, *endp, *colonp;
-    const char *xdigits, *curtok;
+    const char *curtok;
     int ch, saw_xdigit;
     unsigned int val;
 
@@ -110,10 +115,11 @@ static int inet_pton6(const char *src, unsigned char *dst)
     colonp = NULL;
 
     /* Leading :: requires some special handling. */
-    if (*src == ':')
+    if (*src == ':') {
         if (*++src != ':') {
             return (0);
         }
+    }
 
     curtok = src;
     saw_xdigit = 0;
@@ -121,9 +127,10 @@ static int inet_pton6(const char *src, unsigned char *dst)
 
     while ((ch = *src++) != '\0') {
         const char *pch;
+        const char *xdigits;
 
-        if ((pch = strchr((xdigits = xdigits_l), ch)) == NULL) {
-            pch = strchr((xdigits = xdigits_u), ch);
+        if ((pch = strchr((xdigits = XDIGITS_L), ch)) == NULL) {
+            pch = strchr((xdigits = XDIGITS_U), ch);
         }
 
         if (pch != NULL) {

@@ -528,7 +528,9 @@ ccnl_face_remove(struct ccnl_relay_s *ccnl, struct ccnl_face_s *f)
         f->outq = tmp;
     }
 
+#if ENABLE_DEBUG
     ccnl_face_print_stat(f);
+#endif
 
     f2 = f->next;
     DBL_LINKED_LIST_REMOVE(ccnl->faces, f);
@@ -536,6 +538,7 @@ ccnl_face_remove(struct ccnl_relay_s *ccnl, struct ccnl_face_s *f)
     return f2;
 }
 
+#if ENABLE_DEBUG
 void ccnl_face_print_stat(struct ccnl_face_s *f)
 {
     DEBUGMSG(1, "ccnl_face_print_stat: faceid=%d ifndx=%d\n", f->faceid, f->ifndx);
@@ -551,6 +554,7 @@ void ccnl_face_print_stat(struct ccnl_face_s *f)
 
     DEBUGMSG(1, "  STAT content  received=%d\n", f->stat.received_content);
 }
+#endif
 
 void ccnl_interface_cleanup(struct ccnl_if_s *i)
 {
@@ -640,17 +644,19 @@ ccnl_face_dequeue(struct ccnl_relay_s *ccnl, struct ccnl_face_s *f)
 
 void ccnl_face_CTS_done(void *ptr, int cnt, int len)
 {
+    (void) ptr;
+    (void) cnt;
+    (void) len;
     DEBUGMSG(99, "ccnl_face_CTS_done face=%p cnt=%d len=%d\n", ptr, cnt, len);
 }
 
 void ccnl_face_CTS(struct ccnl_relay_s *ccnl, struct ccnl_face_s *f)
 {
-    struct ccnl_buf_s *buf;
     DEBUGMSG(99, "ccnl_face_CTS face=%p sched=%p\n", (void *) f,
              (void *) f->sched);
 
     if (!f->frag || f->frag->protocol == CCNL_FRAG_NONE) {
-        buf = ccnl_face_dequeue(ccnl, f);
+        struct ccnl_buf_s *buf = ccnl_face_dequeue(ccnl, f);
 
         if (buf)
             ccnl_interface_enqueue(ccnl_face_CTS_done, f, ccnl,

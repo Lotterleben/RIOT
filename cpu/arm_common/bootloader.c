@@ -1,15 +1,10 @@
-/******************************************************************************
+/*
  * Copyright 2008-2009, Freie Universitaet Berlin (FUB). All rights reserved.
- * These sources were developed at the Freie Universitaet Berlin, Computer Systems
- * and Telematics group (http://cst.mi.fu-berlin.de).
-
- * This file is part of RIOT.
  *
  * This file is subject to the terms and conditions of the GNU Lesser
  * General Public License v2.1. See the file LICENSE in the top level
  * directory for more details.
- *
-*******************************************************************************/
+ */
 
 /**
  * @ingroup     arm_common
@@ -91,6 +86,7 @@ void abtorigin(const char *vector, u_long *lnk_ptr1)
 /*-----------------------------------------------------------------------------------*/
 void UNDEF_Routine(void)
 {
+    /* cppcheck-suppress variableScope */
     register u_long    *lnk_ptr;
     __asm__ __volatile__("sub %0, lr, #8" : "=r"(lnk_ptr));     // get aborting instruction
 
@@ -104,6 +100,7 @@ void UNDEF_Routine(void)
 /*-----------------------------------------------------------------------------------*/
 void PABT_Routine(void)
 {
+    /* cppcheck-suppress variableScope */
     register u_long    *lnk_ptr;
     __asm__ __volatile__("sub %0, lr, #8" : "=r"(lnk_ptr));     // get aborting instruction
 
@@ -117,6 +114,7 @@ void PABT_Routine(void)
 /*-----------------------------------------------------------------------------------*/
 void DABT_Routine(void)
 {
+    /* cppcheck-suppress variableScope */
     register u_long    *lnk_ptr;
     __asm__ __volatile__("sub %0, lr, #8" : "=r"(lnk_ptr));     // get aborting instruction
 

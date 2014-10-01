@@ -19,10 +19,12 @@ else ifeq ($(OUTPUT),COMPILER)
 endif
 
 ifeq (, $(filter tests-%, $(MAKECMDGOALS)))
-    UNIT_TESTS := $(shell find -mindepth 1 -maxdepth 1 -type d -name 'tests-*' -printf '%f ')
+    UNIT_TESTS := $(foreach d,$(wildcard tests-*/Makefile),$(shell dirname $(d)))
 else
     UNIT_TESTS := $(filter tests-%, $(MAKECMDGOALS))
 endif
+
+DISABLE_MODULE += auto_init
 
 # Pull in `Makefile.include`s from the test suites:
 -include $(UNIT_TESTS:%=$(RIOTBASE)/tests/unittests/%/Makefile.include)
@@ -32,7 +34,14 @@ BASELIBS += $(UNIT_TESTS:%=$(BINDIR)%.a)
 
 include $(RIOTBASE)/Makefile.include
 
-$(UNIT_TESTS): all
+.PHONY: FORCE $(UNIT_TESTS)
+
+FORCE:
+	touch $(CURDIR)/main.c
+
+all: FORCE
+
+$(UNIT_TESTS): FORCE all
 
 charCOMMA := ,
 

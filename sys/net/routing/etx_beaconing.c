@@ -143,7 +143,7 @@ void etx_init_beaconing(ipv6_addr_t *address)
 {
     own_address = address;
     //set code
-    puts("ETX BEACON INIT");
+    DEBUGF("ETX BEACON INIT");
     etx_send_buf[0] = ETX_PKT_OPTVAL;
 
     etx_beacon_pid = thread_create(etx_beacon_buf, ETX_BEACON_STACKSIZE,
@@ -159,7 +159,7 @@ void etx_init_beaconing(ipv6_addr_t *address)
                                   etx_clock, NULL, "etx_clock");
     //register at transceiver
     transceiver_register(TRANSCEIVER_CC1100, etx_radio_pid);
-    puts("...[DONE]");
+    DEBUG("...[DONE]\n");
 }
 
 static void *etx_beacon(void *arg)
@@ -173,13 +173,12 @@ static void *etx_beacon(void *arg)
      * and modifies the time to wait accordingly.
      */
     etx_probe_t *packet = etx_get_send_buf();
-    uint8_t p_length = 0;
 
     while (true) {
         thread_sleep();
         mutex_lock(&etx_mutex);
         //Build etx packet
-        p_length = 0;
+        uint8_t p_length = 0;
 
         for (uint8_t i = 0; i < ETX_BEST_CANDIDATES; i++) {
             if (candidates[i].used != 0) {
@@ -357,8 +356,8 @@ void etx_handle_beacon(ipv6_addr_t *candidate_address)
         candidate = etx_add_candidate(candidate_address);
 
         if (candidate == NULL) {
-            puts("[ERROR] Candidate could not get added");
-            puts("Increase the constant ETX_MAX_CANDIDATE_NEIHGBORS");
+            DEBUGF("[ERROR] Candidate could not get added\n");
+            DEBUG("Increase the constant ETX_MAX_CANDIDATE_NEIHGBORS\n");
             return;
         }
     }
@@ -430,7 +429,7 @@ static void *etx_radio(void *arg)
             p->processing--;
         }
         else if (m.type == ENOBUFFER) {
-            puts("Transceiver buffer full");
+            DEBUGF("Transceiver buffer full\n");
         }
         else {
             //packet is not for me, whatever

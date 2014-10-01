@@ -73,7 +73,7 @@ void __assert(const char *file, int line, const char *failedexpr)
     __assert_func(file, line, "?", failedexpr);
 }
 /*-----------------------------------------------------------------------------------*/
-caddr_t _sbrk_r(struct _reent *r, size_t incr)
+caddr_t _sbrk_r(struct _reent *r, ptrdiff_t incr)
 {
     if(incr < 0)
     {
@@ -221,7 +221,7 @@ void _exit(int n)
 /*---------------------------------------------------------------------------*/
 pid_t _getpid(void)
 {
-    return sched_active_thread->pid;
+    return sched_active_pid;
 }
 /*---------------------------------------------------------------------------*/
 int _kill_r(struct _reent *r, int pid, int sig)

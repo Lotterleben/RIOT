@@ -6,14 +6,31 @@
  * directory for more details.
  */
 
+/**
+ * @ingroup     drivers_at86rf231
+ * @{
+ *
+ * @file
+ * @brief       RX related functionality for the AT86RF231 device driver
+ *
+ * @author      Alaeddine Weslati <alaeddine.weslati@inria.fr>
+ * @author      Thomas Eichinger <thomas.eichinger@fu-berlin.de>
+ *
+ * @}
+ */
+
 #include "at86rf231.h"
-#include "at86rf231_arch.h"
 #include "at86rf231_spi.h"
+#include "vtimer.h"
+
+#define ENABLE_DEBUG (0)
+#include "debug.h"
 
 static void at86rf231_xmit(uint8_t *data, radio_packet_length_t length);
+
 static void at86rf231_gen_pkt(uint8_t *buf, at86rf231_packet_t *packet);
 
-static uint8_t sequenz_nr;
+static uint8_t sequence_nr;
 
 int16_t at86rf231_send(at86rf231_packet_t *packet)
 {
@@ -43,9 +60,9 @@ int16_t at86rf231_send(at86rf231_packet_t *packet)
     }
 
     packet->frame.src_pan_id = at86rf231_get_pan();
-    packet->frame.seq_nr = sequenz_nr;
+    packet->frame.seq_nr = sequence_nr;
 
-    sequenz_nr += 1;
+    sequence_nr += 1;
 
     // calculate size of the frame (payload + FCS) */
     packet->length = ieee802154_frame_get_hdr_len(&packet->frame) +
@@ -87,11 +104,17 @@ static void at86rf231_xmit(uint8_t *data, radio_packet_length_t length)
     }
     while ((status & AT86RF231_TRX_STATUS_MASK__TRX_STATUS) != AT86RF231_TRX_STATUS__PLL_ON);
 
+    /* radio driver state: sending */
+    /* will be freed in at86rf231_rx_irq when TRX_END interrupt occurs */
+    driver_state = AT_DRIVER_STATE_SENDING;
+
     // copy the packet to the radio FIFO
     at86rf231_write_fifo(data, length);
+    DEBUG("Wrote to FIFO\n");
 
     // Start TX
     at86rf231_reg_write(AT86RF231_REG__TRX_STATE, AT86RF231_TRX_STATE__TX_START);
+    DEBUG("Started TX\n");
 }
 
 /**

@@ -74,8 +74,9 @@ class SerCmd(cmd.Cmd):
     port.
     """
 
-    def __init__(self, port=None, baudrate=None, tcp_serial=None,
-                 confdir=None, conffile=None, host=None, run_name=None):
+    def __init__(self, port=None, baudrate=None, toggle=None, tcp_serial=None,
+                 confdir=None, conffile=None, host=None, run_name=None, 
+                 log_dir_name=None):
         """Constructor.
 
         Args:
@@ -93,17 +94,22 @@ class SerCmd(cmd.Cmd):
         cmd.Cmd.__init__(self)
         self.port = port
         self.baudrate = baudrate
+        self.toggle = toggle
         self.tcp_serial = tcp_serial
         self.configdir = confdir
         self.configfile = conffile
         self.host = host
         self.run_name = run_name
+        self.log_dir_name = log_dir_name
 
         if not self.host:
             self.host = defaulthostname
 
         if not self.run_name:
             self.run_name = defaultrunname
+
+        if not self.log_dir_name:
+            self.log_dir_name = self.hostname
 
         if not os.path.exists(self.configdir):
             os.makedirs(self.configdir)
@@ -126,14 +132,13 @@ class SerCmd(cmd.Cmd):
             pass
 
         ### create Logging object
-        my_millis = "{:.4f}".format(time.time())
-        date_str = '{}.{}'.format(time.strftime('%Y%m%d-%H:%M:%S'),
-                                  my_millis[-4:])
+        my_millis = "%.4f" % (time.time())
+        date_str = '%s.%s' % (time.strftime('%Y%m%d-%H:%M:%S'), my_millis[-4:])
         self.startup = date_str
         # create formatter
         formatter = logging.Formatter(self.fmt_str)
 
-        directory = self.configdir + os.path.sep + self.host
+        directory = self.configdir + os.path.sep + self.log_dir_name
         if not os.path.exists(directory):
             os.makedirs(directory)
         logging.basicConfig(filename = directory + os.path.sep +
@@ -234,7 +239,7 @@ class SerCmd(cmd.Cmd):
         """Auto completion for date string.
         """
         date = time.strftime("%Y-%m-%d %H:%M:%S")
-        return ["{}".format(date)]
+        return ["%s" % (date)]
 
     def do_PYTERM_reset(self, line):
         """Pyterm command: Send a reset to the node.
@@ -249,8 +254,12 @@ class SerCmd(cmd.Cmd):
         # save history file
         readline.write_history_file()
         # shut down twisted if running
-        if reactor.running:
-            reactor.callFromThread(reactor.stop)
+        try:
+            if reactor.running:
+                reactor.callFromThread(reactor.stop)
+        except NameError:
+            pass
+
         if self.tcp_serial:
             self.ser.close()
         return True
@@ -317,8 +326,7 @@ class SerCmd(cmd.Cmd):
         """
         if line.endswith("list"):
             for alias in self.aliases:
-                self.logger.info("{} = {}".format(alias,
-                                 self.aliases[alias]))
+                self.logger.info("%s = %s" % (alias, self.aliases[alias]))
             return
         if not line.count("="):
             sys.stderr.write("Usage: /alias <ALIAS> = <CMD>\n")
@@ -405,10 +413,24 @@ class SerCmd(cmd.Cmd):
             sys.stderr.write("JSON regex with ID %s not found" % line)
 
     def do_PYTERM_init(self, line):
-        """Pyterm command: Add an startup command. (Only useful in
+        """Pyterm command: Add a startup command. (Only useful in
         addition with /save).
         """
         self.init_cmd.append(line.strip())
+
+    def do_PYTERM_timer(self, line):
+        """Pyterm command: Scheduler a timer."""
+        line = line.strip()
+        argv = line.partition(' ')
+        if (len(argv[2]) == 0):
+            sys.stderr.write("Usage: /timer <interval> <command>\n")
+            return
+
+        interval = int(argv[0])
+        cmd = argv[2]
+        self.logger.info("Schedule %s to fire after %i seconds" % (cmd, interval))
+        t = threading.Timer(interval, self.timer_handler, (cmd,))
+        t.start()
 
     def load_config(self):
         """Internal function to laod configuration from file.
@@ -446,6 +468,16 @@ class SerCmd(cmd.Cmd):
                 for opt in self.config.options(sec):
                     if opt not in self.__dict__:
                         self.__dict__[opt] = self.config.get(sec, opt)
+
+    def timer_handler(self, line):
+        """Handles a scheduled timer event.
+
+        Args:
+            line (str): the command line to be executed, when the timer
+                        fires.
+        """
+        self.logger.debug("Firing timer with %s" % line)
+        self.onecmd(self.precmd(line + '\n'))
 
     def process_line(self, line):
         """Processes a valid line from node that should be printed and
@@ -520,8 +552,9 @@ class SerCmd(cmd.Cmd):
     def serial_connect(self):
         self.ser = serial.Serial(port=self.port, dsrdtr=0, rtscts=0)
         self.ser.baudrate = self.baudrate
-        self.ser.setDTR(0)
-        self.ser.setRTS(0)
+        if self.toggle:
+            self.ser.setDTR(0)
+            self.ser.setRTS(0)
 
     def reader(self):
         """Serial or TCP reader.
@@ -553,21 +586,33 @@ class SerCmd(cmd.Cmd):
             #sys.stdout.flush()
 
 class PytermProt(Protocol):
+    def __init__(self, factory):
+        self.factory = factory
+        
+    def connectionMade(self):
+        print("writing to transport")
+        self.transport.write("hostname: %s\n" % (self.factory.shell.host))
+    
     def dataReceived(self, data):
         sys.stdout.write(data)
+        if(data.strip() == "/exit"):
+            reactor.callLater(2, self.factory.shell.do_PYTERM_exit, data)
+        else:
+            self.factory.shell.ser.write(data + "\n")               
 
     def sendMessage(self, msg):
         self.transport.writeSomeData("%d#%s\n" % (len(msg), msg))
 
 class PytermClientFactory(ReconnectingClientFactory):
 
-    def __init__(self):
+    def __init__(self, shell = None):
         self.myproto = None
+        self.shell = shell
 
     def buildProtocol(self, addr):
         print('Connected.')
         self.resetDelay()
-        self.myproto = PytermProt()
+        self.myproto = PytermProt(self)
         return self.myproto
 
     def clientConnectionLost(self, connector, reason):
@@ -612,6 +657,10 @@ if __name__ == "__main__":
             help="Specifies baudrate for the serial port, default is %s"
                  % defaultbaud,
             default=defaultbaud)
+    parser.add_argument("-tg", "--toggle",
+            action="store_true",
+            help="toggles the DTR and RTS pin of the serial line when "
+                 "connecting, default is not toggling the pins")
     parser.add_argument('-d', '--directory',
             help="Specify the Pyterm directory, default is %s"
                  % defaultdir,
@@ -629,14 +678,19 @@ if __name__ == "__main__":
             help="Hostname of this maschine")
     parser.add_argument("-rn", "--run-name",
             help="Run name, used for logfile")
+    parser.add_argument("-ln", "--log-dir-name",
+            help="Log directory name (default is hostname e.g. %s/<hostname>)"
+                 %defaultdir,
+                 default=defaultdir)
     args = parser.parse_args()
 
-    myshell = SerCmd(args.port, args.baudrate, args.tcp_serial,
-                     args.directory, args.config, args.host, args.run_name)
+    myshell = SerCmd(args.port, args.baudrate, args.toggle, args.tcp_serial,
+                     args.directory, args.config, args.host, args.run_name,
+                     args.log_dir_name)
     myshell.prompt = ''
 
     if args.server and args.tcp_port:
-        myfactory = PytermClientFactory()
+        myfactory = PytermClientFactory(myshell)
         reactor.connectTCP(args.server, args.tcp_port, myfactory)
         myshell.factory = myfactory
         reactor.callInThread(myshell.cmdloop, "Welcome to pyterm!\n"

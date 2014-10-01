@@ -30,7 +30,6 @@
 #define CLOCK_PLL_MUL       (CLOCK_CORECLOCK / CLOCK_HSE)
 /** @} */
 
-
 /**
  * @name Timer configuration
  * @{
@@ -59,7 +58,6 @@
 #define TIMER_1_IRQCHAN
 #define TIMER_1_IRQ_PRIO
 /** @} */
-
 
 /**
  * @name UART configuration
@@ -97,7 +95,6 @@
 #define UART_1_AF           1
 /** @} */
 
-
 /**
  * @name ADC configuration
  * @{
@@ -133,114 +130,43 @@
 #define ADC_0_CH5_PIN       5
 /** @} */
 
-
-/**
- * @name PWM configuration
- * @{
- */
-#define PWM_NUMOF           (0U)                                                        /* TODO */
-#define PWM_0_EN            0
-#define PWM_1_EN            0
-
-/* PWM 0 device configuration */
-#define PWM_0_DEV
-#define PWM_0_CHANNELS
-/* PWM 0 pin configuration */
-#define PWM_0_PORT
-#define PWM_0_PINS
-#define PWM_0_PORT_CLKEN()
-#define PWM_0_CH1_AFCFG()
-#define PWM_0_CH2_AFCFG()
-#define PWM_0_CH3_AFCFG()
-#define PWM_0_CH4_AFCFG()
-
-/* PWM 1 device configuration */
-#define PWM_1_DEV
-#define PWM_1_CHANNELS
-/* PWM 1 pin configuration */
-#define PWM_1_PORT
-#define PWM_1_PINS
-#define PWM_1_PORT_CLKEN()
-#define PWM_1_CH1_AFCFG()
-#define PWM_1_CH2_AFCFG()
-#define PWM_1_CH3_AFCFG()
-#define PWM_1_CH4_AFCFG()
-/** @} */
-
-
 /**
  * @name SPI configuration
  * @{
  */
-#define SPI_NUMOF           (0U)                                                        /* TODO */
-#define SPI_0_EN            0
-#define SPI_1_EN            0
+#define SPI_NUMOF           (2U)
+#define SPI_0_EN            1
+#define SPI_1_EN            1
+#define SPI_IRQ_PRIO        1
 
 /* SPI 0 device config */
-#define SPI_0_DEV
-#define SPI_0_CLKEN()
+#define SPI_0_DEV           SPI1
+#define SPI_0_CLKEN()       (RCC->APB2ENR |= RCC_APB2ENR_SPI1EN)
+#define SPI_0_CLKDIS()      (RCC->APB2ENR &= ~(RCC_APB2ENR_SPI1EN))
 #define SPI_0_IRQ           SPI1_IRQn
-#define SPI_0_IRQ_HANDLER
-#define SPI_0_IRQ_PRIO      1
+#define SPI_0_ISR           isr_spi1
 /* SPI 1 pin configuration */
-#define SPI_0_PORT
-#define SPI_0_PINS
-#define SPI_1_PORT_CLKEN()
-#define SPI_1_SCK_AFCFG()
-#define SPI_1_MISO_AFCFG()
-#define SPI_1_MOSI_AFCFG()
+#define SPI_0_PORT          GPIOA
+#define SPI_0_PORT_CLKEN()  (RCC->AHBENR |= RCC_AHBENR_GPIOAEN)
+#define SPI_0_PIN_SCK       5
+#define SPI_0_PIN_MISO      6
+#define SPI_0_PIN_MOSI      7
+#define SPI_0_PIN_AF        0
 
 /* SPI 1 device config */
 #define SPI_1_DEV           SPI2
-#define SPI_1_CLKEN()
+#define SPI_1_CLKEN()       (RCC->APB1ENR |= RCC_APB1ENR_SPI2EN)
+#define SPI_1_CLKDIS()      (RCC->APB1ENR &= ~(RCC_APB1ENR_SPI2EN))
 #define SPI_1_IRQ           SPI2_IRQn
-#define SPI_1_IRQ_HANDLER
-#define SPI_1_IRQ_PRIO      1
+#define SPI_1_ISR           isr_spi2
 /* SPI 1 pin configuration */
-#define SPI_1_PORT
-#define SPI_1_PINS
-#define SPI_1_PORT_CLKEN()
-#define SPI_1_SCK_AFCFG()
-#define SPI_1_MISO_AFCFG()
-#define SPI_1_MOSI_AFCFG()
+#define SPI_1_PORT          GPIOB
+#define SPI_1_PORT_CLKEN()  (RCC->AHBENR |= RCC_AHBENR_GPIOBEN)
+#define SPI_1_PIN_SCK       13
+#define SPI_1_PIN_MISO      14
+#define SPI_1_PIN_MOSI      15
+#define SPI_1_PIN_AF        0
 /** @} */
-
-
-/**
- * @name I2C configuration
- * @{
- */
-#define I2C_NUMOF           (0U)                                                        /* TODO */
-#define I2C_0_EN            0
-#define I2C_0_EN            0
-
-/* SPI 0 device configuration */
-#define I2C_0_DEV           I2C1
-#define I2C_0_CLKEN()
-#define I2C_0_ISR           isr_i2c1
-#define I2C_0_IRQ           I2C1_IRQn
-#define I2C_0_IRQ_PRIO      1
-/* SPI 0 pin configuration */
-#define I2C_0_PORT
-#define I2C_0_PINS
-#define I2C_0_PORT_CLKEN()
-#define I2C_0_SCL_AFCFG()
-#define I2C_0_SDA_AFCFG()
-
-/* SPI 1 device configuration */
-#define I2C_1_DEV           I2C2
-#define I2C_1_CLKEN()
-#define I2C_1_ISR           isr_i2c2
-#define I2C_1_IRQ           I2C2_IRQn
-#define I2C_1_IRQ_PRIO      1
-/* SPI 1 pin configuration */
-#define I2C_1_PORT
-#define I2C_1_PINS
-#define I2C_1_PORT_CLKEN()
-#define I2C_1_SCL_AFCFG()
-#define I2C_1_SDA_AFCFG()
-/** @} */
-
 
 /**
  * @name GPIO configuration

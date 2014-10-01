@@ -1,9 +1,9 @@
 /*
  * Copyright (C) 2013 Freie Universität Berlin
  *
- * This file subject to the terms and conditions of the GNU Lesser General
- * Public License. See the file LICENSE in the top level directory for more
- * details.
+ * This file is subject to the terms and conditions of the GNU Lesser
+ * General Public License v2.1. See the file LICENSE in the top level
+ * directory for more details.
  */
 
 /**
@@ -27,7 +27,7 @@
 #include <sys/socket.h>
 #include <arpa/inet.h>
 #include "ipv6.h"
-#include "destiny/socket.h"
+#include "socket_base/socket.h"
 
 /**
  * IPv4 socket address type.

@@ -1,13 +1,10 @@
-/******************************************************************************
-Copyright (C) 2013, Freie Universitaet Berlin (FUB). All rights reserved.
-
-These sources were developed at the Freie Universitaet Berlin, Computer Systems
-and Telematics group (http://cst.mi.fu-berlin.de).
--------------------------------------------------------------------------------
-This file is subject to the terms and conditions of the GNU Lesser
-General Public License v2.1. See the file LICENSE in the top level
-directory for more details.
-*******************************************************************************/
+/*
+ * Copyright (C) 2013, Freie Universitaet Berlin (FUB). All rights reserved.
+ *
+ * This file is subject to the terms and conditions of the GNU Lesser
+ * General Public License v2.1. See the file LICENSE in the top level
+ * directory for more details.
+ */
 
 /**
  * @ingroup     lpc2387
@@ -71,9 +68,6 @@ void cpu_clock_scale(uint32_t source, uint32_t target, uint32_t *prescale)
 
 bool install_irq(int IntNumber, void (*HandlerAddr)(void), int Priority)
 {
-    int *vect_addr;
-    int *vect_cntl;
-
     VICIntEnClr = 1 << IntNumber;   /* Disable Interrupt */
 
     if (IntNumber >= VIC_SIZE) {
@@ -81,8 +75,8 @@ bool install_irq(int IntNumber, void (*HandlerAddr)(void), int Priority)
     }
     else {
         /* find first un-assigned VIC address for the handler */
-        vect_addr = (int *)(VIC_BASE_ADDR + VECT_ADDR_INDEX + IntNumber * 4);
-        vect_cntl = (int *)(VIC_BASE_ADDR + VECT_CNTL_INDEX + IntNumber * 4);
+        int *vect_addr = (int *)(VIC_BASE_ADDR + VECT_ADDR_INDEX + IntNumber * 4);
+        int *vect_cntl = (int *)(VIC_BASE_ADDR + VECT_CNTL_INDEX + IntNumber * 4);
         *vect_addr = (int)HandlerAddr;  /* set interrupt vector */
         *vect_cntl = Priority;
         VICIntEnable = 1 << IntNumber;  /* Enable Interrupt */

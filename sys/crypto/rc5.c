@@ -63,8 +63,9 @@ int rc5_encrypt(cipher_context_t *context, uint8_t *block,
 {
     register uint32_t l;
     register uint32_t r;
-    register uint32_t *s = ((rc5_context_t *) context->context)->skey;
-    uint8_t i, tmp;
+    rc5_context_t *rc5_context = (rc5_context_t *) context->context;
+    register uint32_t *s = rc5_context->skey;
+    uint8_t i;
     c2l(block, l);
     block += 4;
     c2l(block, r);
@@ -73,7 +74,7 @@ int rc5_encrypt(cipher_context_t *context, uint8_t *block,
 
     for (i = RC5_ROUNDS; i > 0; i--) {
         l ^= r;
-        tmp = r;
+        uint8_t tmp = r;
         tmp &= 0x1f;
         rotl32(l, tmp);
         l += *s++;
@@ -95,9 +96,9 @@ int rc5_decrypt(cipher_context_t *context, uint8_t *cipherBlock,
 {
     register uint32_t l;
     register uint32_t r;
-    register uint32_t *s = ((rc5_context_t *) context->context)->skey +
-                           (2 * RC5_ROUNDS) + 1;
-    uint8_t i, tmp;
+    rc5_context_t *rc5_context = (rc5_context_t *) context->context;
+    register uint32_t *s = rc5_context->skey + (2 * RC5_ROUNDS) + 1;
+    uint8_t i;
 
     c2l(cipherBlock, l);
     cipherBlock += 4;
@@ -105,7 +106,7 @@ int rc5_decrypt(cipher_context_t *context, uint8_t *cipherBlock,
 
     for (i = RC5_ROUNDS; i > 0; i--) {
         r -= *s--;
-        tmp = l;
+        uint8_t tmp = l;
         tmp &= 0x1f;
         rotr32(r, tmp);
         r ^= l;
@@ -127,11 +128,12 @@ int rc5_decrypt(cipher_context_t *context, uint8_t *cipherBlock,
 int rc5_setup_key(cipher_context_t *context, uint8_t *key, uint8_t keysize)
 {
     (void)keysize;
-    uint32_t *L, l, A, B, *S, k;
-    uint8_t ii, jj, m;
+    uint32_t *L, l, A, B, *S;
+    uint8_t ii, jj;
     int8_t i;
     uint8_t tmp[8];
-    S = ((rc5_context_t *)context->context)->skey;
+    rc5_context_t *rc5_context = (rc5_context_t *) context->context;
+    S = rc5_context->skey;
 
     //dumpBuffer ("RC5M:setupKey K", (uint8_t *)key, 8);
     c2l(key, l);
@@ -154,21 +156,21 @@ int rc5_setup_key(cipher_context_t *context, uint8_t *key, uint8_t keysize)
     //dumpBuffer ("RC5M: setupKey S", (uint8_t *)S, 2 * (RC5_ROUNDS +1) * 4);
     ii = jj = 0;
     A = B = 0;
-    S = ((rc5_context_t *)context->context)->skey;
+    S = rc5_context->skey;
 
     for (i = 3 * (2 * RC5_ROUNDS + 2) - 1; i >= 0; i--) {
-        k = (*S + A + B)&RC5_32_MASK;
+        uint32_t k = (*S + A + B)&RC5_32_MASK;
         rotl32((k), (3));
         A = *S = k;
         S++;
-        m = ((char)(A + B)) & 0x1f;
+        uint8_t m = ((char)(A + B)) & 0x1f;
         k = (*L + A + B)&RC5_32_MASK;
         rotl32((k), (m));
         B = *L = k;
 
         if (++ii >= 2 * RC5_ROUNDS + 2) {
             ii = 0;
-            S = ((rc5_context_t *)context->context)->skey;
+            S = rc5_context->skey;
         }
 
         jj ^= 4;

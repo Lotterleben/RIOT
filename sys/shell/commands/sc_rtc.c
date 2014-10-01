@@ -32,20 +32,20 @@ static void _gettime_handler(void)
 
 static void _settime_handler(char **argv)
 {
-    struct tm now;
-    short i1, i2, i3;
-    int res;
-
     do {
-        res = sscanf(argv[1], "%hd-%hd-%hd", &i1, &i2, &i3);
+        short i1, i2, i3;
+
+        int res = sscanf(argv[1], "%6hd-%6hd-%6hd", &i1, &i2, &i3);
         if (res != 3) {
             break;
         }
+
+        struct tm now;
         now.tm_year = i1 - 1900;
         now.tm_mon = i2 - 1;
         now.tm_mday = i3;
 
-        res = sscanf(argv[2], "%hd:%hd:%hd", &i1, &i2, &i3);
+        res = sscanf(argv[2], "%6hd:%6hd:%6hd", &i1, &i2, &i3);
         if (res != 3) {
             break;
         }

@@ -84,7 +84,7 @@ void _exit(int n)
  *
  * @return [description]
  */
-caddr_t _sbrk_r(struct _reent *r, size_t incr)
+caddr_t _sbrk_r(struct _reent *r, ptrdiff_t incr)
 {
     unsigned int state = disableIRQ();
     caddr_t res = heap_top;
@@ -100,7 +100,7 @@ caddr_t _sbrk_r(struct _reent *r, size_t incr)
  */
 pid_t _getpid(void)
 {
-    return (pid_t) sched_active_thread->pid;
+    return (pid_t) sched_active_pid;
 }
 
 /**

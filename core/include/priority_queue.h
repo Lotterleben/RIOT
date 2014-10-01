@@ -1,9 +1,9 @@
 /*
  * Copyright (C) 2013, 2014 Freie Universität Berlin
  *
- * This file subject to the terms and conditions of the GNU Lesser General
- * Public License. See the file LICENSE in the top level directory for more
- * details.
+ * This file is subject to the terms and conditions of the GNU Lesser
+ * General Public License v2.1. See the file LICENSE in the top level
+ * directory for more details.
  */
 
 /**
@@ -27,8 +27,8 @@
  */
 typedef struct priority_queue_node_t {
     struct priority_queue_node_t *next; /**< next queue node */
-    unsigned int data;                  /**< queue node data */
     uint32_t priority;                  /**< queue node priority */
+    unsigned int data;                  /**< queue node data */
 } priority_queue_node_t;
 
 /**

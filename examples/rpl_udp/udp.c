@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013 INRIA
+ * Copyright (C) 2013, 2014 INRIA
  *
  * This file is subject to the terms and conditions of the GNU Lesser
  * General Public License v2.1. See the file LICENSE in the top level
@@ -26,11 +26,11 @@
 
 #include "thread.h"
 
-#include "destiny/socket.h"
+#include "socket_base/socket.h"
 
 #include "net_help.h"
 
-#include "demo.h"
+#include "rpl_udp.h"
 
 #define UDP_BUFFER_SIZE     (128)
 #define SERVER_PORT     (0xFF01)
@@ -61,9 +61,8 @@ static void *init_udp_server(void *arg)
 
     sockaddr6_t sa;
     char buffer_main[UDP_BUFFER_SIZE];
-    int32_t recsize;
     uint32_t fromlen;
-    int sock = destiny_socket(PF_INET6, SOCK_DGRAM, IPPROTO_UDP);
+    int sock = socket_base_socket(PF_INET6, SOCK_DGRAM, IPPROTO_UDP);
 
     memset(&sa, 0, sizeof(sa));
 
@@ -72,14 +71,14 @@ static void *init_udp_server(void *arg)
 
     fromlen = sizeof(sa);
 
-    if (-1 == destiny_socket_bind(sock, &sa, sizeof(sa))) {
+    if (-1 == socket_base_bind(sock, &sa, sizeof(sa))) {
         printf("Error bind failed!\n");
-        destiny_socket_close(sock);
+        socket_base_close(sock);
+        return NULL;
     }
 
     while (1) {
-        recsize = destiny_socket_recvfrom(sock, (void *)buffer_main, UDP_BUFFER_SIZE, 0,
-                                          &sa, &fromlen);
+        int32_t recsize = socket_base_recvfrom(sock, (void *)buffer_main, UDP_BUFFER_SIZE, 0, &sa, &fromlen);
 
         if (recsize < 0) {
             printf("ERROR: recsize < 0!\n");
@@ -88,7 +87,7 @@ static void *init_udp_server(void *arg)
         printf("UDP packet received, payload: %s\n", buffer_main);
     }
 
-    destiny_socket_close(sock);
+    socket_base_close(sock);
 
     return NULL;
 }
@@ -113,7 +112,7 @@ void udp_send(int argc, char **argv)
     strncpy(text, argv[2], sizeof(text));
     text[sizeof(text) - 1] = 0;
 
-    sock = destiny_socket(PF_INET6, SOCK_DGRAM, IPPROTO_UDP);
+    sock = socket_base_socket(PF_INET6, SOCK_DGRAM, IPPROTO_UDP);
 
     if (-1 == sock) {
         printf("Error Creating Socket!");
@@ -122,13 +121,18 @@ void udp_send(int argc, char **argv)
 
     memset(&sa, 0, sizeof(sa));
 
-    ipv6_addr_init(&ipaddr, 0xabcd, 0x0, 0x0, 0x0, 0x3612, 0x00ff, 0xfe00, (uint16_t)address);
+    if (address) {
+        ipv6_addr_init(&ipaddr, 0xabcd, 0x0, 0x0, 0x0, 0x0, 0x00ff, 0xfe00, (uint16_t)address);
+    }
+    else {
+        ipv6_addr_set_all_nodes_addr(&ipaddr);
+    }
 
     sa.sin6_family = AF_INET;
     memcpy(&sa.sin6_addr, &ipaddr, 16);
     sa.sin6_port = HTONS(SERVER_PORT);
 
-    bytes_sent = destiny_socket_sendto(sock, (char *)text,
+    bytes_sent = socket_base_sendto(sock, (char *)text,
                                        strlen(text) + 1, 0, &sa,
                                        sizeof(sa));
 
@@ -141,5 +145,5 @@ void udp_send(int argc, char **argv)
                                             &ipaddr));
     }
 
-    destiny_socket_close(sock);
+    socket_base_close(sock);
 }

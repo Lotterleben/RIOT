@@ -1,9 +1,9 @@
 /*
  * Copyright (C) 2013  INRIA.
  *
- * This file is subject to the terms and conditions of the GNU Lesser General
- * Public License. See the file LICENSE in the top level directory for more
- * details.
+ * This file is subject to the terms and conditions of the GNU Lesser
+ * General Public License v2.1. See the file LICENSE in the top level
+ * directory for more details.
  */
 
 /**
@@ -32,10 +32,10 @@ struct posix_iop_t {
     char *buffer;
 };
 
-int posix_open(kernel_pid_t pid, int flags);
-int posix_close(kernel_pid_t pid);
-int posix_read(kernel_pid_t pid, char *buffer, int bufsize);
-int posix_write(kernel_pid_t pid, char *buffer, int bufsize);
+int posix_open(int pid, int flags);
+int posix_close(int pid);
+int posix_read(int pid, char *buffer, int bufsize);
+int posix_write(int pid, char *buffer, int bufsize);
 
 /** @} */
 #endif /* __READ_H */
