@@ -170,7 +170,6 @@ void aodv_send_rerr(struct unreachable_node unreachable_nodes[], int len, int ho
     msg_send(&msg2, sender_thread, false);
 }
 
-
 /*
  * init the multicast address all RREQ and RERRS are sent to
  * and the local address (source address) of this node
@@ -326,7 +325,7 @@ static ipv6_addr_t *aodv_get_next_hop(ipv6_addr_t *dest)
     {
 
         // Case 2: Broken Link (detected by lower layer)
-        if ((/*!ndp_nc_entry || */ // not sure if this is a dirty or correct fix
+        if ((/*!ndp_nc_entry || */ //TODO: not sure if this is a dirty or correct fix
                     ndp_nc_entry->state == NDP_NCE_STATUS_INCOMPLETE ||
                     ndp_nc_entry->state == NDP_NCE_STATUS_PROBE) &&
                 (rt_entry != NULL && rt_entry->state != ROUTE_STATE_BROKEN))
@@ -367,12 +366,12 @@ static ipv6_addr_t *aodv_get_next_hop(ipv6_addr_t *dest)
         if (rt_entry->state == ROUTE_STATE_IDLE)
             rt_entry->state = ROUTE_STATE_ACTIVE;
 
-        /* FIXME: Currently, there is no way to do this, so I'm doing it the worst
+        /* Currently, there is no way to do this, so I'm doing it the worst
         possible, but safe way: I can't make sure that the current call to
         aodv_get_next_hop() is overridden by another call to aodv_get_next_hop()
         by a thread with higher priority, thus messing up return values if I just
         use a static ipv6_addr_t.
-        The following malloc will never be free()'d. FIX THIS ASAP.
+        The following malloc will never be free()'d. TODO: FIX THIS ASAP.
         */
         ipv6_addr_t* next_hop = (ipv6_addr_t*) malloc(sizeof(ipv6_addr_t));
         netaddr_to_ipv6_addr_t(&rt_entry->nextHopAddr, next_hop);
@@ -404,8 +403,6 @@ static ipv6_addr_t *aodv_get_next_hop(ipv6_addr_t *dest)
 
     return NULL;
 }
-
-
 
 /**
  * Handle the output of the RFC5444 packet creation process. This callback is
