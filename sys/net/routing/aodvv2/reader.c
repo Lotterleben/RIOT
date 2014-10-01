@@ -316,6 +316,29 @@ static enum rfc5444_result _cb_rreq_end_callback(
 
     if (!rt_entry || (rt_entry->metricType != packet_data.metricType))
     {
+
+        /* CAUTION SUPER HACKY FIX FIXME ASAP
+        problem: sometimes we get broadcasted RREQs from 2 hop neighbors and then
+        AODVv2 gets super confused when they're not in the routing table and starts a
+        Route discovery to find them and all hell breaks loose. let's see if we can fix
+        this (horribly).
+
+        (another fix would be to stop bouncing the RREP back to the sender and asking
+        the routing table for the next hop (or just send towards TargNode and let the network stack figure out the rest?))
+        TODO evaluate that
+        */
+
+        ipv6_addr_t sender_tmp;
+        netaddr_to_ipv6_addr_t(&packet_data.sender, &sender_tmp);
+        ndp_neighbor_cache_t *ndp_nc_entry = ndp_neighbor_cache_search(&sender_tmp);
+
+        if (ndp_nc_entry == NULL)
+        {
+            DEBUG("OH NOES! No bidirectional link to sender. Dropping packet.\n");
+            return RFC5444_DROP_PACKET;
+        }
+        // HACKY FIX ENDS HERE
+
         VDEBUG("\tCreating new Routing Table entry...\n");
 
         struct aodvv2_routing_entry_t *tmp_rt_entry = (struct aodvv2_routing_entry_t *)malloc(sizeof(struct aodvv2_routing_entry_t));
@@ -350,29 +373,7 @@ static enum rfc5444_result _cb_rreq_end_callback(
     {
         DEBUG("[aodvv2] TargNode is in client list, sending RREP\n");
 
-        /* CAUTION SUPER HACKY FIX FIXME ASAP
-        problem: sometimes we get broadcasted RREQs from 2 hop neighbors and then
-        AODVv2 gets super confused when they're not in the routing table and starts a
-        Route discovery to find them and all hell breaks loose. let's see if we can fix
-        this (horribly).
-
-        (another fix would be to stop bouncing the RREP back to the sender and asking
-        the routing table for the next hop (or just send towards TargNode and let the network stack figure out the rest?))
-        TODO evaluate that
-        */
-
-        ipv6_addr_t sender_tmp;
-        netaddr_to_ipv6_addr_t(&packet_data.sender, &sender_tmp);
-        ndp_neighbor_cache_t *ndp_nc_entry = ndp_neighbor_cache_search(&sender_tmp);
-
-        if (ndp_nc_entry == NULL)
-        {
-            DEBUG ("OH NOES! Couldn't find sender");
-            return RFC5444_DROP_PACKET;
-        }
-        // HACKY FIX ENDS HERE
-
-        // make sure to start with a clean metric value
+        /* make sure to start with a clean metric value */
         packet_data.targNode.metric = 0;
         aodv_send_rrep(&packet_data, &packet_data.sender);
     }
@@ -525,6 +526,27 @@ static enum rfc5444_result _cb_rrep_end_callback(
 
     if (!rt_entry || (rt_entry->metricType != packet_data.metricType))
     {
+        /* CAUTION SUPER HACKY FIX FIXME ASAP
+        problem: sometimes we get broadcasted RREQs from 2 hop neighbors and then
+        AODVv2 gets super confused when they're not in the routing table and starts a
+        Route discovery to find them and all hell breaks loose. let's see if we can fix
+        this (horribly).
+
+        (another fix would be to stop bouncing the RREP back to the sender and asking
+        the routing table for the next hop (or just send towards TargNode and let the network stack figure out the rest?))
+        TODO evaluate that
+        */
+
+        ipv6_addr_t sender_tmp;
+        netaddr_to_ipv6_addr_t(&packet_data.sender, &sender_tmp);
+        ndp_neighbor_cache_t *ndp_nc_entry = ndp_neighbor_cache_search(&sender_tmp);
+
+        if (ndp_nc_entry == NULL)
+        {
+            DEBUG("OH NOES! No bidirectional link to sender. Dropping packet.\n");
+            return RFC5444_DROP_PACKET;
+        }
+        // HACKY FIX ENDS HERE
         VDEBUG("\tCreating new Routing Table entry...\n");
 
         struct aodvv2_routing_entry_t *tmp_rt_entry = (struct aodvv2_routing_entry_t *)malloc(sizeof(struct aodvv2_routing_entry_t));
