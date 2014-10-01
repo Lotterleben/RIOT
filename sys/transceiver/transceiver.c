@@ -434,6 +434,7 @@ static void receive_packet(uint16_t type, uint8_t pos)
         /* inform upper layers of lost packet */
         m.type = ENOBUFFER;
         m.content.value = t;
+        DEBUG("transceiver: buffer size exceeded, dropping packet\n");
     }
     /* copy packet and handle it */
     else {
@@ -505,6 +506,11 @@ static void receive_packet(uint16_t type, uint8_t pos)
             if (msg_send(&m, reg[i].pid, false) && (m.type != ENOBUFFER)) {
                 transceiver_buffer[transceiver_buffer_pos].processing++;
             }
+#ifdef DEBUG
+            else {
+                DEBUG("transceiver: failed to notify upper layer.\n");
+            }
+#endif
         }
 
         i++;
