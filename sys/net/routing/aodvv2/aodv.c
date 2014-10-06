@@ -325,9 +325,8 @@ static ipv6_addr_t *aodv_get_next_hop(ipv6_addr_t *dest)
     {
 
         // Case 2: Broken Link (detected by lower layer)
-        if ((/*!ndp_nc_entry || */ //TODO: not sure if this is a dirty or correct fix
-                    ndp_nc_entry->state == NDP_NCE_STATUS_INCOMPLETE ||
-                    ndp_nc_entry->state == NDP_NCE_STATUS_PROBE) &&
+        if (( ndp_nc_entry->state == NDP_NCE_STATUS_INCOMPLETE ||
+                ndp_nc_entry->state == NDP_NCE_STATUS_PROBE) &&
                 (rt_entry != NULL && rt_entry->state != ROUTE_STATE_BROKEN))
         {
 
@@ -373,7 +372,7 @@ static ipv6_addr_t *aodv_get_next_hop(ipv6_addr_t *dest)
         use a static ipv6_addr_t.
         The following malloc will never be free()'d. TODO: FIX THIS ASAP.
         */
-        ipv6_addr_t* next_hop = (ipv6_addr_t*) malloc(sizeof(ipv6_addr_t));
+        ipv6_addr_t *next_hop = (ipv6_addr_t *) malloc(sizeof(ipv6_addr_t));
         netaddr_to_ipv6_addr_t(&rt_entry->nextHopAddr, next_hop);
 
         return next_hop;

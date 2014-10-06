@@ -66,7 +66,8 @@ void clienttable_add_client(struct netaddr *addr)
                 return;
             }
         }
-        // TODO: unlock mutex if clienttable is full? At least handle properly.
+        DEBUG("[aodvv2] Error: Client could not be added: Client table is full.\n");
+        mutex_unlock(&clientt_mutex);
     }
 }
 
@@ -211,7 +212,6 @@ static void _add_rreq(struct aodvv2_packet_data *packet_data)
             if (!rreq_table[i].timestamp.seconds
                     && !rreq_table[i].timestamp.microseconds)
             {
-                /* TODO: sanity check? */
                 rreq_table[i].origNode = packet_data->origNode.addr;
                 rreq_table[i].targNode = packet_data->targNode.addr;
                 rreq_table[i].metricType = packet_data->metricType;

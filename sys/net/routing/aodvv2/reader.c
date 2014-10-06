@@ -175,7 +175,6 @@ static enum rfc5444_result _cb_rreq_blocktlv_messagetlvs_okay(struct rfc5444_rea
         DEBUG("\tERROR: Hoplimit is 0.\n");
         return RFC5444_DROP_PACKET;
     }
-    //DEBUG("[aodvv2] %s()\n\t i can has hop limit: %d\n",__func__ , cont->hoplimit);
     packet_data.hoplimit--;
     return RFC5444_OKAY;
 }
@@ -324,7 +323,8 @@ static enum rfc5444_result _cb_rreq_end_callback(
         this (horribly).
 
         (another fix would be to stop bouncing the RREP back to the sender and asking
-        the routing table for the next hop (or just send towards TargNode and let the network stack figure out the rest?))
+        the routing table for the next hop (or just send towards TargNode and let the
+        network stack figure out the rest?))
         TODO evaluate that
         */
 
@@ -512,7 +512,6 @@ static enum rfc5444_result _cb_rrep_end_callback(
         DEBUG("\tMetric Limit reached. Dropping packet.\n");
         return RFC5444_DROP_PACKET;
     }
-    // TODO: warte mal; das verhindert doch auch, dass RREPs zu "besseren" routen versendet werden?
 
     _update_metric(packet_data.metricType, &packet_data.targNode.metric);
     vtimer_now(&now);
@@ -570,8 +569,6 @@ static enum rfc5444_result _cb_rrep_end_callback(
         VDEBUG("\tUpdating Routing Table entry...\n");
         routingtable_fill_routing_entry_t_rrep(&packet_data, rt_entry, link_cost);
     }
-
-    //print_routingtable();
 
     /* If HandlingRtr is RREQ_Gen then the RREP satisfies RREQ_Gen's
     earlier RREQ, and RREP processing is completed.  Any packets
@@ -637,7 +634,7 @@ static enum rfc5444_result _cb_rerr_blocktlv_addresstlvs_okay(struct rfc5444_rea
     if (num_unreachable_nodes == AODVV2_MAX_UNREACHABLE_NODES)
         return RFC5444_OKAY;
 
-    // gather packet data (TODO: will this fail if there's no seqnum?)
+    /* gather packet data */
     packet_data.origNode.addr = cont->addr;
 
     /* handle this unreachable node's SeqNum TLV */
@@ -648,14 +645,11 @@ static enum rfc5444_result _cb_rerr_blocktlv_addresstlvs_okay(struct rfc5444_rea
         packet_data.origNode.seqnum = *tlv->single_value;
     }
 
-    //print_routingtable();
-
     /* Check if there is an entry for unreachable node in our routing table */
     unreachable_entry = routingtable_get_entry(&packet_data.origNode.addr, packet_data.metricType);
     if (unreachable_entry)
     {
         VDEBUG("\t found possibly unreachable entry:\n");
-        //print_routingtable_entry(unreachable_entry);
         VDEBUG("\n\n\t sender: %s\n", netaddr_to_string(&nbuf, &packet_data.sender));
         VDEBUG("\t tlv: %i\n", *tlv->single_value);
         VDEBUG("\t seqnum entry: %i, sender: %i\n", unreachable_entry->seqnum, packet_data.origNode.seqnum);
@@ -671,7 +665,6 @@ static enum rfc5444_result _cb_rerr_blocktlv_addresstlvs_okay(struct rfc5444_rea
             unreachable_nodes[num_unreachable_nodes].seqnum = packet_data.origNode.seqnum;
             num_unreachable_nodes++;
         }
-        // DEBUG here: warum sind possibly unreachables nie wirklich unreachable?
     }
     return RFC5444_OKAY;
 }

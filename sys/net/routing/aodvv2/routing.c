@@ -62,7 +62,6 @@ void routingtable_add_entry(struct aodvv2_routing_entry_t *entry)
         {
             if (routing_table[i].addr._type == AF_UNSPEC)
             {
-                /* TODO: sanity check? */
                 memcpy(&routing_table[i], entry, sizeof(struct aodvv2_routing_entry_t));
                 return;
             }
