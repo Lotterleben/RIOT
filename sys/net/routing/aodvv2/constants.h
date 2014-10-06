@@ -27,7 +27,7 @@
 #define AODVV2_ACTIVE_INTERVAL 5         // seconds
 #define AODVV2_MAX_IDLETIME 250          // seconds
 #define AODVV2_MAX_SEQNUM_LIFETIME 300   // seconds
-#define AODVV2_RIOT_PREFIXLEN 128        // TODO: find better name
+#define AODVV2_RIOT_PREFIXLEN 128
 #define AODVV2_MAX_UNREACHABLE_NODES 15  // TODO: choose value (wisely)
 
 /* RFC5498 */
