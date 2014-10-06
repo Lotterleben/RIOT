@@ -21,8 +21,8 @@
 #include <sixlowpan/ip.h>
 #include "sixlowpan.h"
 #include "kernel.h"
-#include "destiny.h"
-#include "destiny/socket.h"
+#include "udp.h"
+#include "socket_base/socket.h"
 #include "transceiver.h"
 #include "net_help.h"
 #include "mutex.h"

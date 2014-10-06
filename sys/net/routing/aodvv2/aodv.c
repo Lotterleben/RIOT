@@ -198,7 +198,7 @@ static void _init_addresses(void)
 /* init socket communication for sender */
 static void _init_sock_snd(void)
 {
-    _sock_snd = destiny_socket(PF_INET6, SOCK_DGRAM, IPPROTO_UDP);
+    _sock_snd = socket_base_socket(PF_INET6, SOCK_DGRAM, IPPROTO_UDP);
 
     if (-1 == _sock_snd)
     {
@@ -261,18 +261,18 @@ static void _aodv_receiver_thread(void)
                            .sin6_port = HTONS(MANET_PORT)
                          };
 
-    int sock_rcv = destiny_socket(PF_INET6, SOCK_DGRAM, IPPROTO_UDP);
+    int sock_rcv = socket_base_socket(PF_INET6, SOCK_DGRAM, IPPROTO_UDP);
 
-    if (-1 == destiny_socket_bind(sock_rcv, &sa_rcv, sizeof(sa_rcv)))
+    if (-1 == socket_base_bind(sock_rcv, &sa_rcv, sizeof(sa_rcv)))
     {
         DEBUG("Error: bind to receive socket failed!\n");
-        destiny_socket_close(sock_rcv);
+        socket_base_close(sock_rcv);
     }
 
     DEBUG("[aodvv2] ready to receive data\n");
     for (;;)
     {
-        rcv_size = destiny_socket_recvfrom(sock_rcv, (void *)buf_rcv, UDP_BUFFER_SIZE, 0,
+        rcv_size = socket_base_recvfrom(sock_rcv, (void *)buf_rcv, UDP_BUFFER_SIZE, 0,
                                            &sa_rcv, &fromlen);
 
         if (rcv_size < 0)
@@ -293,7 +293,7 @@ static void _aodv_receiver_thread(void)
         }
     }
 
-    destiny_socket_close(sock_rcv);
+    socket_base_close(sock_rcv);
 }
 
 static ipv6_addr_t *aodv_get_next_hop(ipv6_addr_t *dest)
@@ -437,7 +437,7 @@ static void _write_packet(struct rfc5444_writer *wr __attribute__ ((unused)),
         rreqtable_is_redundant(&wt->packet_data);
     }
 
-    int bytes_sent = destiny_socket_sendto(_sock_snd, buffer, length,
+    int bytes_sent = socket_base_sendto(_sock_snd, buffer, length,
                                            0, &sa_wp, sizeof sa_wp);
 
     DEBUG("[aodvv2] %d bytes sent.\n", bytes_sent);

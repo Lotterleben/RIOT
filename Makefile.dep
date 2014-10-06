@@ -51,9 +51,6 @@ ifneq (,$(filter aodvv2,$(USEMODULE)))
     ifeq (,$(filter vtimer,$(USEMODULE)))
         USEMODULE += vtimer
     endif
-    ifeq (,$(filter destiny,$(USEMODULE)))
-        USEMODULE += destiny
-    endif
     ifeq (,$(filter sixlowpan,$(USEMODULE)))
         USEMODULE += sixlowpan
     endif
