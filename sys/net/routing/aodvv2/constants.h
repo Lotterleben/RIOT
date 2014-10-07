@@ -21,7 +21,7 @@
 #ifndef CONSTANTS_H_
 #define CONSTANTS_H_
 
-#define AODVV2_MAX_HOPCOUNT 20
+#define AODVV2_MAX_HOPCOUNT 250          /* as specified in the AODVv2 draft, section 14.2.*/
 #define AODVV2_MAX_ROUTING_ENTRIES 255
 #define AODVV2_DEFAULT_METRIC_TYPE 3
 #define AODVV2_ACTIVE_INTERVAL 5         /* seconds */
