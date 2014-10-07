@@ -103,14 +103,14 @@ void aodv_send_rreq(struct aodvv2_packet_data *packet_data)
     *rd = (struct rreq_rrep_data)
     {
         .next_hop = &na_mcast,
-         .packet_data = pd,
+        .packet_data = pd,
     };
 
     struct msg_container *mc = malloc(sizeof(struct msg_container));
     *mc = (struct msg_container)
     {
         .type = RFC5444_MSGTYPE_RREQ,
-         .data = rd
+        .data = rd
     };
 
     msg_t msg;
@@ -133,14 +133,14 @@ void aodv_send_rrep(struct aodvv2_packet_data *packet_data, struct netaddr *next
     *rd = (struct rreq_rrep_data)
     {
         .next_hop = nh,
-         .packet_data = pd,
+        .packet_data = pd,
     };
 
     struct msg_container *mc = malloc(sizeof(struct msg_container));
     *mc = (struct msg_container)
     {
         .type = RFC5444_MSGTYPE_RREP,
-         .data = rd
+        .data = rd
     };
 
     msg_t msg;
@@ -157,16 +157,16 @@ void aodv_send_rerr(struct unreachable_node unreachable_nodes[], int len, int ho
     *rerrd = (struct rerr_data)
     {
         .unreachable_nodes = unreachable_nodes,
-         .len = len,
-          .hoplimit = AODVV2_MAX_HOPCOUNT,
-           .next_hop = next_hop
+        .len = len,
+        .hoplimit = AODVV2_MAX_HOPCOUNT,
+        .next_hop = next_hop
     };
 
     struct msg_container *mc2 = malloc(sizeof(struct msg_container));
     *mc2 = (struct msg_container)
     {
         .type = RFC5444_MSGTYPE_RERR,
-         .data = rerrd
+        .data = rerrd
     };
 
     msg_t msg2;
@@ -280,7 +280,7 @@ static void _aodv_receiver_thread(void)
     for (;;)
     {
         rcv_size = socket_base_recvfrom(sock_rcv, (void *)buf_rcv, UDP_BUFFER_SIZE, 0,
-                                           &sa_rcv, &fromlen);
+                                        &sa_rcv, &fromlen);
 
         if (rcv_size < 0)
         {
@@ -391,12 +391,12 @@ static ipv6_addr_t *aodv_get_next_hop(ipv6_addr_t *dest)
     struct aodvv2_packet_data rreq_data = (struct aodvv2_packet_data)
     {
         .hoplimit = AODVV2_MAX_HOPCOUNT,
-         .metricType = _metric_type,
-          .origNode = (struct node_data)
+        .metricType = _metric_type,
+        .origNode = (struct node_data)
         {
             .addr = na_local,
-             .metric = 0,
-              .seqnum = seqnum,
+            .metric = 0,
+            .seqnum = seqnum,
         },
         .targNode = (struct node_data)
         {
@@ -445,7 +445,7 @@ static void _write_packet(struct rfc5444_writer *wr __attribute__ ((unused)),
     }
 
     int bytes_sent = socket_base_sendto(_sock_snd, buffer, length,
-                                           0, &sa_wp, sizeof sa_wp);
+                                        0, &sa_wp, sizeof sa_wp);
 
     DEBUG("[aodvv2] %d bytes sent.\n", bytes_sent);
 }
