@@ -105,7 +105,7 @@ void routingtable_delete_entry(struct netaddr *addr, uint8_t metricType)
 
 void routingtable_break_and_get_all_hopping_over(struct netaddr *hop, struct unreachable_node unreachable_nodes[], int *len)
 {
-    *len = 0; // to be sure
+    *len = 0; /* to be sure */
 
     for (uint8_t i = 0; i < AODVV2_MAX_ROUTING_ENTRIES; i++)
     {
@@ -116,8 +116,8 @@ void routingtable_break_and_get_all_hopping_over(struct netaddr *hop, struct unr
             if (routing_table[i].state == ROUTE_STATE_ACTIVE &&
                     *len < AODVV2_MAX_UNREACHABLE_NODES)
             {
-                // when the max number of unreachable nodes is reached we're screwed.
-                // the above check is just damage control.
+                /* when the max number of unreachable nodes is reached we're screwed.
+                   the above check is just damage control. */
                 unreachable_nodes[*len].addr = routing_table[i].addr;
                 unreachable_nodes[*len].seqnum = routing_table[i].seqnum;
 
@@ -148,7 +148,7 @@ static void _reset_entry_if_stale(uint8_t i)
         /* an Active route is considered to remain active as long as it is used at least once
            during every ACTIVE_INTERVAL. When a route is no longer Active, it becomes an Idle route. */
 
-        // if the node is younger than the active interval, don't bother
+        /* if the node is younger than the active interval, don't bother */
         if (timex_cmp(now, active_interval) < 0)
             return;
 
@@ -158,14 +158,14 @@ static void _reset_entry_if_stale(uint8_t i)
 
             DEBUG("\t[routing] route towards %s Idle\n", netaddr_to_string(&nbuf, &routing_table[i].addr));
             routing_table[i].state = ROUTE_STATE_IDLE;
-            routing_table[i].lastUsed = now; // mark the time entry was set to Idle
+            routing_table[i].lastUsed = now; /* mark the time entry was set to Idle */
         }
 
         /* After an idle route remains Idle for MAX_IDLETIME, it becomes an Expired route.
            A route MUST be considered Expired if Current_Time >= Route.ExpirationTime
         */
 
-        // if the node is younger than the expiration time, don't bother
+        /* if the node is younger than the expiration time, don't bother */
         if (timex_cmp(now, expirationTime) < 0)
             return;
 
@@ -175,7 +175,7 @@ static void _reset_entry_if_stale(uint8_t i)
             DEBUG("\t[routing] route towards %s Expired\n", netaddr_to_string(&nbuf, &routing_table[i].addr));
             DEBUG("\t expirationTime: %"PRIu32":%"PRIu32" , now: %"PRIu32":%"PRIu32"\n", expirationTime.seconds, expirationTime.microseconds, now.seconds, now.microseconds);
             routing_table[i].state = ROUTE_STATE_EXPIRED;
-            routing_table[i].lastUsed = now; // mark the time entry was set to Expired
+            routing_table[i].lastUsed = now; /* mark the time entry was set to Expired */
         }
 
         /* After that time, old sequence number information is considered no longer
@@ -231,7 +231,7 @@ void print_routingtable(void)
     printf("===== BEGIN ROUTING TABLE ===================\n");
     for (int i = 0; i < AODVV2_MAX_ROUTING_ENTRIES; i++)
     {
-        // route has been used before => non-empty entry
+        /* route has been used before => non-empty entry */
         if (routing_table[i].lastUsed.seconds || routing_table[i].lastUsed.microseconds)
         {
             print_routingtable_entry(&routing_table[i]);

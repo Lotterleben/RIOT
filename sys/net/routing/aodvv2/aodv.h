@@ -43,7 +43,7 @@ struct rreq_rrep_data
 
 struct rerr_data
 {
-    struct unreachable_node *unreachable_nodes; // Beware, this is the start of an array.
+    struct unreachable_node *unreachable_nodes; /* Beware, this is the start of an array. */
     int len;
     int hoplimit;
     struct netaddr *next_hop;

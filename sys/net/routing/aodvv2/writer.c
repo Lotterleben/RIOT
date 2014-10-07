@@ -135,7 +135,7 @@ _cb_rreq_addAddresses(struct rfc5444_writer *wr)
                                &_target.packet_data.targNode.addr, true);
 
     /* add SeqNum TLV and metric TLV to origNode */
-    // TODO: allow_dup true or false?
+    /* TODO: allow_dup true or false? */
     rfc5444_writer_add_addrtlv(wr, origNode_addr, &_rreq_addrtlvs[RFC5444_MSGTLV_ORIGSEQNUM],
                                &_target.packet_data.origNode.seqnum,
                                sizeof(_target.packet_data.origNode.seqnum), false);
@@ -169,7 +169,7 @@ _cb_rrep_addAddresses(struct rfc5444_writer *wr)
     targNode_addr = rfc5444_writer_add_address(wr, _rrep_message_content_provider.creator, &_target.packet_data.targNode.addr, true);
 
     /* add OrigNode and TargNode SeqNum TLVs */
-    // TODO: allow_dup true or false?
+    /* TODO: allow_dup true or false? */
     rfc5444_writer_add_addrtlv(wr, origNode_addr, &_rrep_addrtlvs[RFC5444_MSGTLV_ORIGSEQNUM], &origNode_seqnum, sizeof(origNode_seqnum), false);
     rfc5444_writer_add_addrtlv(wr, targNode_addr, &_rrep_addrtlvs[RFC5444_MSGTLV_TARGSEQNUM], &targNode_seqnum, sizeof(targNode_seqnum), false);
 
@@ -193,7 +193,7 @@ _cb_rerr_addAddresses(struct rfc5444_writer *wr)
                                &_unreachable_nodes[i].addr, true);
 
         /* add SeqNum TLV to unreachableNode */
-        // TODO: allow_dup true or false?
+        /* TODO: allow_dup true or false? */
         rfc5444_writer_add_addrtlv(wr, unreachableNode_addr, &_rerr_addrtlvs[RFC5444_MSGTLV_UNREACHABLE_NODE_SEQNUM],
                                    &_unreachable_nodes[i].seqnum,
                                    sizeof(_unreachable_nodes[i].seqnum), false);

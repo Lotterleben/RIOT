@@ -21,7 +21,7 @@
 #define ENABLE_DEBUG (1)
 #include "debug.h"
 
-#define UDP_BUFFER_SIZE     (128) // with respect to IEEE 802.15.4's MTU
+#define UDP_BUFFER_SIZE     (128) /* with respect to IEEE 802.15.4's MTU */
 #define RCV_MSG_Q_SIZE      (64)
 
 static void _init_addresses(void);
@@ -45,7 +45,7 @@ static int _sock_snd;
 static struct autobuf _hexbuf;
 static sockaddr6_t sa_wp;
 static ipv6_addr_t _v6_addr_local, _v6_addr_mcast, _v6_addr_loopback;
-static struct netaddr na_local; // the same as _v6_addr_local, but to save us constant calls to ipv6_addr_t_to_netaddr()...
+static struct netaddr na_local; /* the same as _v6_addr_local, but to save us constant calls to ipv6_addr_t_to_netaddr()... */
 static struct writer_target *wt;
 static struct netaddr_str nbuf;
 
@@ -324,7 +324,7 @@ static ipv6_addr_t *aodv_get_next_hop(ipv6_addr_t *dest)
     if (ndp_nc_entry != NULL)
     {
 
-        // Case 2: Broken Link (detected by lower layer)
+        /* Case 2: Broken Link (detected by lower layer) */
         if (( ndp_nc_entry->state == NDP_NCE_STATUS_INCOMPLETE ||
                 ndp_nc_entry->state == NDP_NCE_STATUS_PROBE) &&
                 (rt_entry != NULL && rt_entry->state != ROUTE_STATE_BROKEN))
@@ -347,7 +347,7 @@ static ipv6_addr_t *aodv_get_next_hop(ipv6_addr_t *dest)
 
     if (rt_entry)
     {
-        // Case 1: Undeliverable Packet
+        /* Case 1: Undeliverable Packet */
         if (rt_entry->state == ROUTE_STATE_BROKEN ||
                 rt_entry->state == ROUTE_STATE_EXPIRED )
         {

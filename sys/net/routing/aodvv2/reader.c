@@ -337,7 +337,7 @@ static enum rfc5444_result _cb_rreq_end_callback(
             DEBUG("OH NOES! No bidirectional link to sender. Dropping packet.\n");
             return RFC5444_DROP_PACKET;
         }
-        // HACKY FIX ENDS HERE
+        /* HACKY FIX ENDS HERE */
 
         VDEBUG("\tCreating new Routing Table entry...\n");
 
@@ -545,7 +545,7 @@ static enum rfc5444_result _cb_rrep_end_callback(
             DEBUG("OH NOES! No bidirectional link to sender. Dropping packet.\n");
             return RFC5444_DROP_PACKET;
         }
-        // HACKY FIX ENDS HERE
+        /* HACKY FIX ENDS HERE */
         VDEBUG("\tCreating new Routing Table entry...\n");
 
         struct aodvv2_routing_entry_t *tmp_rt_entry = (struct aodvv2_routing_entry_t *)malloc(sizeof(struct aodvv2_routing_entry_t));
@@ -727,7 +727,7 @@ int reader_handle_packet(void *buffer, size_t length, struct netaddr *sender)
     return rfc5444_reader_handle_packet(&reader, buffer, length);
 }
 
-//============= HELPER FUNCTIONS ===============================================
+/*============= HELPER FUNCTIONS =============================================*/
 
 /*
  * Cost(L): Get Cost of a Link regarding the specified metric.
