@@ -169,11 +169,6 @@ static void _reset_entry_if_stale(uint8_t i)
         if (timex_cmp(now, expirationTime) < 0)
             return;
 
-        /*
-        if (state == ROUTE_STATE_IDLE &&
-                (timex_cmp(timex_sub(now, max_idletime), lastUsed) == 1  ||
-                timex_cmp(expirationTime, now) < 1)) {
-        */
         if (state == ROUTE_STATE_IDLE &&
                 timex_cmp(expirationTime, now) < 1)
         {
