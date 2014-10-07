@@ -33,8 +33,10 @@ static void _write_packet(struct rfc5444_writer *wr __attribute__ ((unused)),
                           struct rfc5444_writer_target *iface __attribute__((unused)),
                           void *buffer, size_t length);
 
+#ifdef DEBUG
 char addr_str[IPV6_MAX_ADDR_STR_LEN];
 char addr_str2[IPV6_MAX_ADDR_STR_LEN];
+#endif
 
 char aodv_rcv_stack_buf[KERNEL_CONF_STACKSIZE_MAIN];
 char aodv_snd_stack_buf[KERNEL_CONF_STACKSIZE_MAIN];
@@ -47,7 +49,10 @@ static sockaddr6_t sa_wp;
 static ipv6_addr_t _v6_addr_local, _v6_addr_mcast, _v6_addr_loopback;
 static struct netaddr na_local; /* the same as _v6_addr_local, but to save us constant calls to ipv6_addr_t_to_netaddr()... */
 static struct writer_target *wt;
+
+#ifdef DEBUG
 static struct netaddr_str nbuf;
+#endif
 
 void aodv_init(void)
 {
@@ -252,7 +257,9 @@ static void _aodv_receiver_thread(void)
     uint32_t fromlen;
     int32_t rcv_size;
     char buf_rcv[UDP_BUFFER_SIZE];
+#ifdef DEBUG
     char addr_str_rec[IPV6_MAX_ADDR_STR_LEN];
+#endif
     msg_t msg_q[RCV_MSG_Q_SIZE];
 
     msg_init_queue(msg_q, RCV_MSG_Q_SIZE);
