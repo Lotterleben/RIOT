@@ -335,10 +335,10 @@ static ipv6_addr_t *aodv_get_next_hop(ipv6_addr_t *dest)
             return NULL;
         }
 
-        printf("[aodvv2][ndp] found NC entry. Returning dest addr.\n");
+        DEBUG("[aodvv2][ndp] found NC entry. Returning dest addr.\n");
         return dest;
     }
-    printf("\t[ndp] no entry for addr %s found\n", ipv6_addr_to_str(addr_str, IPV6_MAX_ADDR_STR_LEN, dest));
+    DEBUG("\t[ndp] no entry for addr %s found\n", ipv6_addr_to_str(addr_str, IPV6_MAX_ADDR_STR_LEN, dest));
 
     if (rt_entry) {
         /* Case 1: Undeliverable Packet */
