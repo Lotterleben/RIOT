@@ -30,12 +30,15 @@ void seqnum_init(void)
 
 void seqnum_inc(void)
 {
-    if (seqnum == 65535)
+    if (seqnum == 65535) {
         seqnum = 1;
-    else if (seqnum == 0)
+    }
+    else if (seqnum == 0) {
         DEBUG("ERROR: SeqNum shouldn't be 0! \n"); /* TODO handle properly */
-    else
+    }
+    else {
         seqnum++;
+    }
 }
 
 uint16_t seqnum_get(void)
@@ -46,9 +49,11 @@ uint16_t seqnum_get(void)
 int seqnum_cmp(uint16_t s1, uint16_t s2)
 {
     uint16_t diff = s1 - s2;
-    if (diff == 0)
+    if (diff == 0) {
         return 0;
-    if ((0 < diff) && (diff < 32768))
+    }
+    if ((0 < diff) && (diff < 32768)) {
         return 1;
+    }
     return -1;
 }
