@@ -186,12 +186,10 @@ _cb_rerr_addAddresses(struct rfc5444_writer *wr)
 {
     DEBUG("[aodvv2] %s()\n", __func__);
 
-    struct rfc5444_writer_address *unreachableNode_addr;
-
     for (int i = 0; i < _num_unreachable_nodes; i++)
     {
         /* add unreachableNode addresses (has no address tlv); is mandatory address */
-        unreachableNode_addr = rfc5444_writer_add_address(wr, _rerr_message_content_provider.creator,
+        struct rfc5444_writer_address *unreachableNode_addr = rfc5444_writer_add_address(wr, _rerr_message_content_provider.creator,
                                &_unreachable_nodes[i].addr, true);
 
         /* add SeqNum TLV to unreachableNode */
