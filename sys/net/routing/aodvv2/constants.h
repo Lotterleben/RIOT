@@ -24,11 +24,11 @@
 #define AODVV2_MAX_HOPCOUNT 20
 #define AODVV2_MAX_ROUTING_ENTRIES 255
 #define AODVV2_DEFAULT_METRIC_TYPE 3
-#define AODVV2_ACTIVE_INTERVAL 5         // seconds
-#define AODVV2_MAX_IDLETIME 250          // seconds
-#define AODVV2_MAX_SEQNUM_LIFETIME 300   // seconds
+#define AODVV2_ACTIVE_INTERVAL 5         /* seconds */
+#define AODVV2_MAX_IDLETIME 250          /* seconds */
+#define AODVV2_MAX_SEQNUM_LIFETIME 300   /* seconds */
 #define AODVV2_RIOT_PREFIXLEN 128
-#define AODVV2_MAX_UNREACHABLE_NODES 15  // TODO: choose value (wisely)
+#define AODVV2_MAX_UNREACHABLE_NODES 15  /* TODO: choose value (wisely) */
 
 /* RFC5498 */
 #define MANET_PORT  269
