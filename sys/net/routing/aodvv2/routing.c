@@ -118,7 +118,7 @@ void routingtable_break_and_get_all_hopping_over(struct netaddr *hop, struct unr
                     *len < AODVV2_MAX_UNREACHABLE_NODES)
             {
                 /* when the max number of unreachable nodes is reached we're screwed.
-                   the above check is just damage control. */
+                 * the above check is just damage control. */
                 unreachable_nodes[*len].addr = routing_table[i].addr;
                 unreachable_nodes[*len].seqnum = routing_table[i].seqnum;
 
@@ -147,7 +147,7 @@ static void _reset_entry_if_stale(uint8_t i)
         expirationTime = routing_table[i].expirationTime;
 
         /* an Active route is considered to remain active as long as it is used at least once
-           during every ACTIVE_INTERVAL. When a route is no longer Active, it becomes an Idle route. */
+         * during every ACTIVE_INTERVAL. When a route is no longer Active, it becomes an Idle route. */
 
         /* if the node is younger than the active interval, don't bother */
         if (timex_cmp(now, active_interval) < 0)
@@ -180,7 +180,7 @@ static void _reset_entry_if_stale(uint8_t i)
         }
 
         /* After that time, old sequence number information is considered no longer
-           valuable and the Expired route MUST BE expunged */
+         * valuable and the Expired route MUST BE expunged */
         if (timex_cmp(timex_sub(now, lastUsed), max_seqnum_lifetime) >= 0)
         {
             DEBUG("\t[routing] reset routing table entry for %s at %i\n", netaddr_to_string(&nbuf, &routing_table[i].addr), i);
