@@ -87,8 +87,9 @@ void aodv_init(void)
 
 void aodv_set_metric_type(int metric_type)
 {
-    if (metric_type != AODVV2_DEFAULT_METRIC_TYPE)
+    if (metric_type != AODVV2_DEFAULT_METRIC_TYPE) {
         return;
+    }
     _metric_type = metric_type;
 }
 
@@ -205,8 +206,7 @@ static void _init_sock_snd(void)
 {
     _sock_snd = socket_base_socket(PF_INET6, SOCK_DGRAM, IPPROTO_UDP);
 
-    if (-1 == _sock_snd)
-    {
+    if (-1 == _sock_snd) {
         DEBUG("[aodvv2] Error Creating Socket!");
         return;
     }
@@ -220,30 +220,25 @@ static void _aodv_sender_thread(void)
     msg_init_queue(msgq, sizeof msgq);
     DEBUG("[aodvv2] _aodv_sender_thread initialized.\n");
 
-    while (true)
-    {
+    while (true) {
         DEBUG("[aodvv2] %s()\n", __func__);
         msg_t msg;
         msg_receive(&msg);
         struct msg_container *mc = (struct msg_container *) msg.content.ptr;
 
-        if (mc->type == RFC5444_MSGTYPE_RREQ)
-        {
+        if (mc->type == RFC5444_MSGTYPE_RREQ) {
             struct rreq_rrep_data *rreq_data = (struct rreq_rrep_data *) mc->data;
             writer_send_rreq(rreq_data->packet_data, rreq_data->next_hop);
         }
-        else if (mc->type == RFC5444_MSGTYPE_RREP)
-        {
+        else if (mc->type == RFC5444_MSGTYPE_RREP) {
             struct rreq_rrep_data *rrep_data = (struct rreq_rrep_data *) mc->data;
             writer_send_rrep(rrep_data->packet_data, rrep_data->next_hop);
         }
-        else if (mc->type == RFC5444_MSGTYPE_RERR)
-        {
+        else if (mc->type == RFC5444_MSGTYPE_RERR) {
             struct rerr_data *rerr_data = (struct rerr_data *) mc->data;
             writer_send_rerr(rerr_data->unreachable_nodes, rerr_data->len, rerr_data->hoplimit, rerr_data->next_hop);
         }
-        else
-        {
+        else {
             DEBUG("ERROR: Couldn't identify Message");
         }
         _deep_free_msg_container(mc);
@@ -270,20 +265,17 @@ static void _aodv_receiver_thread(void)
 
     int sock_rcv = socket_base_socket(PF_INET6, SOCK_DGRAM, IPPROTO_UDP);
 
-    if (-1 == socket_base_bind(sock_rcv, &sa_rcv, sizeof(sa_rcv)))
-    {
+    if (-1 == socket_base_bind(sock_rcv, &sa_rcv, sizeof(sa_rcv))) {
         DEBUG("Error: bind to receive socket failed!\n");
         socket_base_close(sock_rcv);
     }
 
     DEBUG("[aodvv2] ready to receive data\n");
-    for (;;)
-    {
+    for (;;) {
         rcv_size = socket_base_recvfrom(sock_rcv, (void *)buf_rcv, UDP_BUFFER_SIZE, 0,
                                         &sa_rcv, &fromlen);
 
-        if (rcv_size < 0)
-        {
+        if (rcv_size < 0) {
             DEBUG("[aodvv2] ERROR receiving data!\n");
         }
 
@@ -293,8 +285,7 @@ static void _aodv_receiver_thread(void)
         ipv6_addr_t_to_netaddr(&sa_rcv.sin6_addr, &_sender);
 
         /* For some reason we sometimes get passed our own packets. drop them. */
-        if (!netaddr_cmp(&_sender, &na_local) == 0)
-        {
+        if (!netaddr_cmp(&_sender, &na_local) == 0) {
             DEBUG("[aodvv2] received our own packet, dropping it.\n");
             reader_handle_packet((void *) buf_rcv, rcv_size, &_sender);
         }
@@ -314,8 +305,7 @@ static ipv6_addr_t *aodv_get_next_hop(ipv6_addr_t *dest)
     int len;
 
     /* currently, the network stack sometimes asks us for the next hop towards our own IP... */
-    if (memcmp(dest, &_v6_addr_local, sizeof(ipv6_addr_t)) == 0)
-    {
+    if (memcmp(dest, &_v6_addr_local, sizeof(ipv6_addr_t)) == 0) {
         DEBUG("[aodvv2] That's me, returning loopback\n");
         return &_v6_addr_loopback;
     }
@@ -328,14 +318,12 @@ static ipv6_addr_t *aodv_get_next_hop(ipv6_addr_t *dest)
     ndp_neighbor_cache_t *ndp_nc_entry = ndp_neighbor_cache_search(dest);
     struct aodvv2_routing_entry_t *rt_entry = routingtable_get_entry(&_tmp_dest, _metric_type);
 
-    if (ndp_nc_entry != NULL)
-    {
+    if (ndp_nc_entry != NULL) {
 
         /* Case 2: Broken Link (detected by lower layer) */
         if (( ndp_nc_entry->state == NDP_NCE_STATUS_INCOMPLETE ||
                 ndp_nc_entry->state == NDP_NCE_STATUS_PROBE) &&
-                (rt_entry != NULL && rt_entry->state != ROUTE_STATE_BROKEN))
-        {
+                (rt_entry != NULL && rt_entry->state != ROUTE_STATE_BROKEN)) {
 
             DEBUG("\tNeighbor Cache entry found, but invalid (state: %i). Sending RERR.\n", ndp_nc_entry->state);
 
@@ -352,12 +340,10 @@ static ipv6_addr_t *aodv_get_next_hop(ipv6_addr_t *dest)
     }
     printf("\t[ndp] no entry for addr %s found\n", ipv6_addr_to_str(addr_str, IPV6_MAX_ADDR_STR_LEN, dest));
 
-    if (rt_entry)
-    {
+    if (rt_entry) {
         /* Case 1: Undeliverable Packet */
         if (rt_entry->state == ROUTE_STATE_BROKEN ||
-                rt_entry->state == ROUTE_STATE_EXPIRED )
-        {
+                rt_entry->state == ROUTE_STATE_EXPIRED ) {
             DEBUG("\tRouting table entry found, but invalid (state %i). Sending RERR.\n", rt_entry->state);
             unreachable_nodes[0].addr = _tmp_dest;
             unreachable_nodes[0].seqnum = rt_entry->seqnum;
@@ -369,8 +355,9 @@ static ipv6_addr_t *aodv_get_next_hop(ipv6_addr_t *dest)
 
         vtimer_now(&now);
         rt_entry->lastUsed = now;
-        if (rt_entry->state == ROUTE_STATE_IDLE)
+        if (rt_entry->state == ROUTE_STATE_IDLE) {
             rt_entry->state = ROUTE_STATE_ACTIVE;
+        }
 
         /* Currently, there is no way to do this, so I'm doing it the worst
          * possible, but safe way: I can't make sure that the current call to
@@ -438,8 +425,7 @@ static void _write_packet(struct rfc5444_writer *wr __attribute__ ((unused)),
 
     /* When originating a RREQ, add it to our RREQ table/update its predecessor */
     if (wt->type == RFC5444_MSGTYPE_RREQ &&
-            netaddr_cmp(&wt->packet_data.origNode.addr, &na_local) == 0)
-    {
+            netaddr_cmp(&wt->packet_data.origNode.addr, &na_local) == 0) {
         DEBUG("[aodvv2] originating RREQ with SeqNum %d towards %s; updating RREQ table...\n", wt->packet_data.origNode.seqnum, netaddr_to_string(&nbuf, &wt->packet_data.targNode.addr));
         rreqtable_is_redundant(&wt->packet_data);
     }
@@ -454,18 +440,18 @@ static void _write_packet(struct rfc5444_writer *wr __attribute__ ((unused)),
 static void _deep_free_msg_container(struct msg_container *mc)
 {
     int type = mc->type;
-    if ((type == RFC5444_MSGTYPE_RREQ) || (type == RFC5444_MSGTYPE_RREP))
-    {
+    if ((type == RFC5444_MSGTYPE_RREQ) || (type == RFC5444_MSGTYPE_RREP)) {
         struct rreq_rrep_data *rreq_rrep_data = (struct rreq_rrep_data *) mc->data;
         free(rreq_rrep_data->packet_data);
-        if (netaddr_cmp(rreq_rrep_data->next_hop, &na_mcast) != 0)
+        if (netaddr_cmp(rreq_rrep_data->next_hop, &na_mcast) != 0) {
             free(rreq_rrep_data->next_hop);
+        }
     }
-    else if (type == RFC5444_MSGTYPE_RERR)
-    {
+    else if (type == RFC5444_MSGTYPE_RERR) {
         struct rerr_data *rerr_data = (struct rerr_data *) mc->data;
-        if (netaddr_cmp(rerr_data->next_hop, &na_mcast) != 0)
+        if (netaddr_cmp(rerr_data->next_hop, &na_mcast) != 0) {
             free(rerr_data->next_hop);
+        }
     }
     free(mc->data);
     free(mc);

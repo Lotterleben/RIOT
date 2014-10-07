@@ -186,8 +186,7 @@ _cb_rerr_addAddresses(struct rfc5444_writer *wr)
 {
     DEBUG("[aodvv2] %s()\n", __func__);
 
-    for (int i = 0; i < _num_unreachable_nodes; i++)
-    {
+    for (int i = 0; i < _num_unreachable_nodes; i++) {
         /* add unreachableNode addresses (has no address tlv); is mandatory address */
         struct rfc5444_writer_address *unreachableNode_addr = rfc5444_writer_add_address(wr, _rerr_message_content_provider.creator,
                                &_unreachable_nodes[i].addr, true);
@@ -251,8 +250,9 @@ void writer_send_rreq(struct aodvv2_packet_data *packet_data, struct netaddr *ne
 {
     DEBUG("[aodvv2] %s()\n", __func__);
 
-    if (packet_data == NULL || next_hop == NULL)
+    if (packet_data == NULL || next_hop == NULL) {
         return;
+    }
 
     /* Make sure no other thread is using the writer right now */
     mutex_lock(&writer_mutex);
@@ -279,8 +279,9 @@ void writer_send_rrep(struct aodvv2_packet_data *packet_data, struct netaddr *ne
 {
     DEBUG("[aodvv2] %s()\n", __func__);
 
-    if (packet_data == NULL || next_hop == NULL)
+    if (packet_data == NULL || next_hop == NULL) {
         return;
+    }
 
     /* Make sure no other thread is using the writer right now */
     mutex_lock(&writer_mutex);
@@ -309,8 +310,9 @@ void writer_send_rerr(struct unreachable_node unreachable_nodes[], int len, int 
 {
     DEBUG("[aodvv2] %s()\n", __func__);
 
-    if (unreachable_nodes == NULL || next_hop == NULL)
+    if (unreachable_nodes == NULL || next_hop == NULL) {
         return;
+    }
 
     mutex_lock(&writer_mutex);
     _target.packet_data.hoplimit = hoplimit;
