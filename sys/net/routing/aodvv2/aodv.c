@@ -18,7 +18,7 @@
 #include "aodv.h"
 #include "aodvv2/aodvv2.h"
 
-#define ENABLE_DEBUG (1)
+#define ENABLE_DEBUG (0)
 #include "debug.h"
 
 #define UDP_BUFFER_SIZE     (128) /* with respect to IEEE 802.15.4's MTU */

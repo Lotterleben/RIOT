@@ -17,7 +17,7 @@
 
 #include "routing.h"
 
-#define ENABLE_DEBUG (1)
+#define ENABLE_DEBUG (0)
 #include "debug.h"
 
 /* helper functions */

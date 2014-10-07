@@ -21,10 +21,10 @@
 
 #include "reader.h"
 
-#define ENABLE_DEBUG (1)
+#define ENABLE_DEBUG (0)
 #include "debug.h"
 
-#define VERBOSE_DEBUG (1)
+#define VERBOSE_DEBUG (0)
 #if VERBOSE_DEBUG
 #define VDEBUG(...) printf(__VA_ARGS__)
 #undef VERBOSE_DEBUG
