@@ -271,7 +271,7 @@ static void _aodv_receiver_thread(void)
     }
 
     DEBUG("[aodvv2] ready to receive data\n");
-    for (;;) {
+    while (true) {
         rcv_size = socket_base_recvfrom(sock_rcv, (void *)buf_rcv, UDP_BUFFER_SIZE, 0,
                                         &sa_rcv, &fromlen);
 
