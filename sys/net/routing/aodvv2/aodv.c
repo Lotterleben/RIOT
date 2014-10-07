@@ -190,7 +190,7 @@ static void _init_addresses(void)
     DEBUG("[aodvv2] my src address is:       %s\n", ipv6_addr_to_str(addr_str, IPV6_MAX_ADDR_STR_LEN, &_v6_addr_local));
 
     /* store src & multicast address as netaddr as well for easy interaction
-    with oonf based stuff */
+     * with oonf based stuff */
     ipv6_addr_t_to_netaddr(&_v6_addr_local, &na_local);
     ipv6_addr_t_to_netaddr(&_v6_addr_mcast, &na_mcast);
     ipv6_addr_init(&_v6_addr_loopback, 0, 0, 0, 0, 0, 0, 0, 1);
@@ -213,7 +213,7 @@ static void _init_sock_snd(void)
 }
 
 /* Build RREQs, RREPs and RERRs from the information contained in the thread's
-   message queue and send them */
+ * message queue and send them */
 static void _aodv_sender_thread(void)
 {
     msg_t msgq[RCV_MSG_Q_SIZE];
@@ -321,9 +321,9 @@ static ipv6_addr_t *aodv_get_next_hop(ipv6_addr_t *dest)
     }
 
     /*
-       TODO use ndp_neighbor_get_ll_address() as soon as it's available.
-       note: delete check for active/stale/delayed entries, get_ll_address
-       does that for us then
+     * TODO use ndp_neighbor_get_ll_address() as soon as it's available.
+     * note: delete check for active/stale/delayed entries, get_ll_address
+     * does that for us then
     */
     ndp_neighbor_cache_t *ndp_nc_entry = ndp_neighbor_cache_search(dest);
     struct aodvv2_routing_entry_t *rt_entry = routingtable_get_entry(&_tmp_dest, _metric_type);
@@ -340,7 +340,7 @@ static ipv6_addr_t *aodv_get_next_hop(ipv6_addr_t *dest)
             DEBUG("\tNeighbor Cache entry found, but invalid (state: %i). Sending RERR.\n", ndp_nc_entry->state);
 
             /* mark all routes (active, idle, expired) that use next_hop as broken
-            and add all *Active* routes to the list of unreachable nodes */
+             * and add all *Active* routes to the list of unreachable nodes */
             routingtable_break_and_get_all_hopping_over(&_tmp_dest, unreachable_nodes, &len);
 
             aodv_send_rerr(unreachable_nodes, len, AODVV2_MAX_HOPCOUNT, &na_mcast);
@@ -373,11 +373,11 @@ static ipv6_addr_t *aodv_get_next_hop(ipv6_addr_t *dest)
             rt_entry->state = ROUTE_STATE_ACTIVE;
 
         /* Currently, there is no way to do this, so I'm doing it the worst
-        possible, but safe way: I can't make sure that the current call to
-        aodv_get_next_hop() is overridden by another call to aodv_get_next_hop()
-        by a thread with higher priority, thus messing up return values if I just
-        use a static ipv6_addr_t.
-        The following malloc will never be free()'d. TODO: FIX THIS ASAP.
+         * possible, but safe way: I can't make sure that the current call to
+         * aodv_get_next_hop() is overridden by another call to aodv_get_next_hop()
+         * by a thread with higher priority, thus messing up return values if I just
+         * use a static ipv6_addr_t.
+         * The following malloc will never be free()'d. TODO: FIX THIS ASAP.
         */
         ipv6_addr_t *next_hop = (ipv6_addr_t *) malloc(sizeof(ipv6_addr_t));
         netaddr_to_ipv6_addr_t(&rt_entry->nextHopAddr, next_hop);
@@ -424,7 +424,7 @@ static void _write_packet(struct rfc5444_writer *wr __attribute__ ((unused)),
 {
     DEBUG("[aodvv2] %s()\n", __func__);
     /* generate hexdump and human readable representation of packet
-       and print to console */
+     * and print to console */
     abuf_hexdump(&_hexbuf, "\t", buffer, length);
     rfc5444_print_direct(&_hexbuf, buffer, length);
     DEBUG("%s", abuf_getptr(&_hexbuf));

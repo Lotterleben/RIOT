@@ -593,7 +593,7 @@ static enum rfc5444_result _cb_rrep_end_callback(
     }
 
     /* If HandlingRtr is not RREQ_Gen then the outgoing RREP is sent to the
-    Route.NextHopAddress for the RREP.AddrBlk[OrigNodeNdx]. */
+     * Route.NextHopAddress for the RREP.AddrBlk[OrigNodeNdx]. */
     else
     {
         DEBUG("[aodvv2] Not my RREP, passing it on to the next hop\n");
@@ -707,7 +707,7 @@ void reader_init(void)
     rfc5444_reader_init(&reader);
 
     /* register message consumers. We have no message TLVs, so we can leave the
-     rfc5444_reader_tlvblock_consumer_entry empty */
+     * rfc5444_reader_tlvblock_consumer_entry empty */
     rfc5444_reader_add_message_consumer(&reader, &_rreq_consumer,
                                         NULL, 0);
     rfc5444_reader_add_message_consumer(&reader, &_rrep_consumer,
