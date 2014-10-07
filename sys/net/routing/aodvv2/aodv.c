@@ -424,8 +424,7 @@ static void _write_packet(struct rfc5444_writer *wr __attribute__ ((unused)),
     netaddr_to_ipv6_addr_t(&wt->target_addr, &sa_wp.sin6_addr);
 
     /* When originating a RREQ, add it to our RREQ table/update its predecessor */
-    if (wt->type == RFC5444_MSGTYPE_RREQ &&
-            netaddr_cmp(&wt->packet_data.origNode.addr, &na_local) == 0) {
+    if (wt->type == RFC5444_MSGTYPE_RREQ && netaddr_cmp(&wt->packet_data.origNode.addr, &na_local) == 0) {
         DEBUG("[aodvv2] originating RREQ with SeqNum %d towards %s; updating RREQ table...\n", wt->packet_data.origNode.seqnum, netaddr_to_string(&nbuf, &wt->packet_data.targNode.addr));
         rreqtable_is_redundant(&wt->packet_data);
     }
