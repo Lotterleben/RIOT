@@ -137,12 +137,11 @@ void routingtable_break_and_get_all_hopping_over(struct netaddr *hop, struct unr
 static void _reset_entry_if_stale(uint8_t i)
 {
     vtimer_now(&now);
-    int state;
     timex_t lastUsed, expirationTime;
 
     if (timex_cmp(routing_table[i].expirationTime, null_time) != 0)
     {
-        state = routing_table[i].state;
+        int state = routing_table[i].state;
         lastUsed = routing_table[i].lastUsed;
         expirationTime = routing_table[i].expirationTime;
 
