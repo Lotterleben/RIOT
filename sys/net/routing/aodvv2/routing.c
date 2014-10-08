@@ -74,8 +74,8 @@ struct aodvv2_routing_entry_t *routingtable_get_entry(struct netaddr *addr, uint
     for (uint8_t i = 0; i < AODVV2_MAX_ROUTING_ENTRIES; i++) {
         _reset_entry_if_stale(i);
 
-        if (!netaddr_cmp(&routing_table[i].addr, addr)
-            && routing_table[i].metricType == metricType) {
+        if ((!netaddr_cmp(&routing_table[i].addr, addr)) &&
+            (routing_table[i].metricType == metricType)) {
             DEBUG("[routing] found entry for %s :", netaddr_to_string(&nbuf, addr));
 #ifdef DEBUG
             print_routingtable_entry(&routing_table[i]);
@@ -91,8 +91,8 @@ void routingtable_delete_entry(struct netaddr *addr, uint8_t metricType)
     for (uint8_t i = 0; i < AODVV2_MAX_ROUTING_ENTRIES; i++) {
         _reset_entry_if_stale(i);
 
-        if (!netaddr_cmp(&routing_table[i].addr, addr)
-                && routing_table[i].metricType == metricType) {
+        if ((!netaddr_cmp(&routing_table[i].addr, addr)) &&
+            (routing_table[i].metricType == metricType)) {
             memset(&routing_table[i], 0, sizeof(routing_table[i]));
             return;
         }
@@ -145,8 +145,8 @@ static void _reset_entry_if_stale(uint8_t i)
             return;
         }
 
-        if (state == ROUTE_STATE_ACTIVE &&
-                timex_cmp(timex_sub(now, active_interval), lastUsed) == 1){
+        if ((state == ROUTE_STATE_ACTIVE) &&
+            (timex_cmp(timex_sub(now, active_interval), lastUsed) == 1)) {
             DEBUG("\t[routing] route towards %s Idle\n", netaddr_to_string(&nbuf, &routing_table[i].addr));
             routing_table[i].state = ROUTE_STATE_IDLE;
             routing_table[i].lastUsed = now; /* mark the time entry was set to Idle */
@@ -161,8 +161,8 @@ static void _reset_entry_if_stale(uint8_t i)
             return;
         }
 
-        if (state == ROUTE_STATE_IDLE &&
-                timex_cmp(expirationTime, now) < 1) {
+        if ((state == ROUTE_STATE_IDLE) &&
+            (timex_cmp(expirationTime, now) < 1)) {
             DEBUG("\t[routing] route towards %s Expired\n", netaddr_to_string(&nbuf, &routing_table[i].addr));
             DEBUG("\t expirationTime: %"PRIu32":%"PRIu32" , now: %"PRIu32":%"PRIu32"\n", expirationTime.seconds, expirationTime.microseconds, now.seconds, now.microseconds);
             routing_table[i].state = ROUTE_STATE_EXPIRED;

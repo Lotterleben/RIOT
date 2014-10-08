@@ -57,8 +57,8 @@ void clienttable_add_client(struct netaddr *addr)
         /*find free spot in client table and place client address there */
         mutex_lock(&clientt_mutex);
         for (uint8_t i = 0; i < AODVV2_MAX_CLIENTS; i++) {
-            if (client_table[i]._type == AF_UNSPEC
-                    && client_table[i]._prefix_len == 0) {
+            if ((client_table[i]._type == AF_UNSPEC) &&
+                (client_table[i]._prefix_len == 0)) {
                 client_table[i] = *addr;
                 DEBUG("[aodvv2] clienttable: added client %s\n", netaddr_to_string(&nbuf, addr));
                 mutex_unlock(&clientt_mutex);
@@ -178,9 +178,9 @@ static struct aodvv2_rreq_entry *_get_comparable_rreq(struct aodvv2_packet_data 
     for (uint8_t i = 0; i < AODVV2_RREQ_BUF; i++) {
         _reset_entry_if_stale(i);
 
-        if (!netaddr_cmp(&rreq_table[i].origNode, &packet_data->origNode.addr)
-                && !netaddr_cmp(&rreq_table[i].targNode, &packet_data->targNode.addr)
-                && rreq_table[i].metricType == packet_data->metricType) {
+        if (!netaddr_cmp(&rreq_table[i].origNode, &packet_data->origNode.addr) &&
+            !netaddr_cmp(&rreq_table[i].targNode, &packet_data->targNode.addr) &&
+            (rreq_table[i].metricType == packet_data->metricType)) {
             return &rreq_table[i];
         }
     }
@@ -195,8 +195,8 @@ static void _add_rreq(struct aodvv2_packet_data *packet_data)
         /*find empty rreq and fill it with packet_data */
 
         for (uint8_t i = 0; i < AODVV2_RREQ_BUF; i++) {
-            if (!rreq_table[i].timestamp.seconds
-                    && !rreq_table[i].timestamp.microseconds) {
+            if (!rreq_table[i].timestamp.seconds &&
+                !rreq_table[i].timestamp.microseconds) {
                 rreq_table[i].origNode = packet_data->origNode.addr;
                 rreq_table[i].targNode = packet_data->targNode.addr;
                 rreq_table[i].metricType = packet_data->metricType;
