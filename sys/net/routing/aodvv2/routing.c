@@ -137,7 +137,7 @@ static void _reset_entry_if_stale(uint8_t i)
         lastUsed = routing_table[i].lastUsed;
         expirationTime = routing_table[i].expirationTime;
 
-        /* an Active route is considered to remain active as long as it is used at least once
+        /* an Active route is considered to remain Active as long as it is used at least once
          * during every ACTIVE_INTERVAL. When a route is no longer Active, it becomes an Idle route. */
 
         /* if the node is younger than the active interval, don't bother */
