@@ -36,7 +36,9 @@
 /* my multicast address */
 struct netaddr na_mcast;
 
-/* AODVv2 message types */
+/**
+ * @brief   AODVv2 message types
+ */
 enum rfc5444_msg_type
 {
     RFC5444_MSGTYPE_RREQ = 10,
@@ -44,7 +46,9 @@ enum rfc5444_msg_type
     RFC5444_MSGTYPE_RERR = 12,
 };
 
-/* AODVv2 TLV types */
+/**
+ * @brief   AODVv2 TLV types
+ */
 enum rfc5444_tlv_type
 {
     RFC5444_MSGTLV_ORIGSEQNUM,
@@ -53,7 +57,9 @@ enum rfc5444_tlv_type
     RFC5444_MSGTLV_METRIC,
 };
 
-/* TLV type array indices */
+/**
+ * @brief   TLV type array indices
+ */
 enum tlv_index
 {
     TLV_ORIGSEQNUM,
@@ -62,6 +68,10 @@ enum tlv_index
     TLV_METRIC,
 };
 
+/**
+ * @brief   Data about an OrigNode or TargNode, typically embedded in an
+ *          aodvv2_packet_data struct.
+ */
 struct node_data
 {
     struct netaddr addr;
@@ -69,7 +79,9 @@ struct node_data
     uint16_t seqnum;
 };
 
-/* all data contained in a RREQ or RREP */
+/**
+ * @brief   all data contained in a RREQ or RREP.
+ */
 struct aodvv2_packet_data
 {
     uint8_t hoplimit;
@@ -80,6 +92,9 @@ struct aodvv2_packet_data
     timex_t timestamp;
 };
 
+/**
+ * @brief   Address and sequence number an unreachable node to be embedded in a RERR.
+ */
 struct unreachable_node
 {
     struct netaddr addr;

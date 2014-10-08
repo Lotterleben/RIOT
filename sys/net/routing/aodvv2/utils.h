@@ -30,6 +30,9 @@
 #define AODVV2_RREQ_BUF 128     /* should be enough for now... */
 #define AODVV2_RREQ_WAIT_TIME 2 /* seconds */
 
+/**
+ * @brief   RREQ Table entry
+ */
 struct aodvv2_rreq_entry
 {
     struct netaddr origNode;
