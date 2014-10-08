@@ -62,3 +62,6 @@ endif
 ifneq (,$(filter oneway_malloc,$(USEMODULE)))
     USEMODULE_INCLUDES += $(RIOTBASE)/sys/oneway-malloc/include
 endif
+ifneq (,$(filter aodvv2,$(USEMODULE)))
+    USEMODULE_INCLUDES += $(RIOTBASE)/sys/net/include
+endif
