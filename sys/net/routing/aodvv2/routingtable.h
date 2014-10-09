@@ -28,7 +28,7 @@
 #include "constants.h"
 #include "seqnum.h"
 
-/*
+/**
  * A route table entry (i.e., a route) may be in one of the following states:
  */
 enum aodvv2_routing_states
@@ -45,14 +45,14 @@ enum aodvv2_routing_states
  */
 struct aodvv2_routing_entry_t
 {
-    struct netaddr addr;
-    uint8_t seqnum;
-    struct netaddr nextHopAddr;
-    timex_t lastUsed;
-    timex_t expirationTime;
-    uint8_t metricType;
-    uint8_t metric;
-    uint8_t state; /* see aodvv2_routing_states */
+    struct netaddr addr;                /**< IP address of this route's destination */
+    uint8_t seqnum;                     /**< The Sequence Number obtained from the last packet that updated the entry */
+    struct netaddr nextHopAddr;         /**< IP address of the the next hop towards the destination */
+    timex_t lastUsed;                   /**< IP address of this route's destination */
+    timex_t expirationTime;             /**< Time at which this route expires */
+    uint8_t metricType;                 /**< Metric type of this route */
+    uint8_t metric;                     /**< Metric value of this route*/
+    uint8_t state;                      /**< State of this route (i.e. one of aodvv2_routing_states) */
 };
 
 /**

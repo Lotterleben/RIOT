@@ -33,16 +33,17 @@
 #define AODVV2_RREQ_WAIT_TIME 2 /* seconds */
 
 /**
- * @brief   RREQ Table entry
+ * @brief   RREQ Table entry which stores all information about a RREQ that was received
+ *          in order to avoid duplicates.
  */
 struct aodvv2_rreq_entry
 {
-    struct netaddr origNode;
-    struct netaddr targNode;
-    uint8_t metricType;
-    uint8_t metric;
-    uint16_t seqnum;
-    timex_t timestamp;
+    struct netaddr origNode;            /**< Node which originated the RREQ*/
+    struct netaddr targNode;            /**< Target (destination) of the RREQ */
+    uint8_t metricType;                 /**< Metric type of the RREQ */
+    uint8_t metric;                     /**< Metric of the RREQ */
+    uint16_t seqnum;                    /**< Sequence number of the RREQ */
+    timex_t timestamp;                  /**< Last time this entry was updated */
 };
 
 /**
