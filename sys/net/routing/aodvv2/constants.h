@@ -17,6 +17,8 @@
  * @author      Lotte Steenbrink <lotte.steenbrink@fu-berlin.de>
  */
 
+#include "aodvv2/types.h"
+
 #include "common/netaddr.h"
 #include "rfc5444/rfc5444_print.h"
 
@@ -29,7 +31,6 @@
 enum aodvv2_constants {
     AODVV2_MAX_HOPCOUNT = 250,          /* as specified in the AODVv2 draft, section 14.2.*/
     AODVV2_MAX_ROUTING_ENTRIES = 255,
-    AODVV2_DEFAULT_METRIC_TYPE = 3,
     AODVV2_ACTIVE_INTERVAL = 5,         /* seconds */
     AODVV2_MAX_IDLETIME = 250,          /* seconds */
     AODVV2_MAX_SEQNUM_LIFETIME = 300,   /* seconds */
@@ -90,7 +91,7 @@ struct aodvv2_packet_data
 {
     uint8_t hoplimit;                           /**< Hop limit */
     struct netaddr sender;                      /**< IP address of the neighboring router which sent the RREQ/RREP*/
-    uint8_t metricType;                         /**< Metric type */
+    aodvv2_metric_t metricType;                 /**< Metric type */
     struct node_data origNode;                  /**< Data about the originating node */
     struct node_data targNode;                  /**< Data about the originating node */
     timex_t timestamp;                          /**< point at which the packet was (roughly) received. Note that this

@@ -20,7 +20,7 @@
 #include "aodv.h"
 #include "aodvv2/aodvv2.h"
 
-#define ENABLE_DEBUG (1)
+#define ENABLE_DEBUG (0)
 #include "debug.h"
 
 #define UDP_BUFFER_SIZE     (128) /* with respect to IEEE 802.15.4's MTU */
@@ -42,7 +42,7 @@ char addr_str[IPV6_MAX_ADDR_STR_LEN];
 char aodv_rcv_stack_buf[KERNEL_CONF_STACKSIZE_MAIN];
 char aodv_snd_stack_buf[KERNEL_CONF_STACKSIZE_MAIN];
 
-static int _metric_type;
+static aodvv2_metric_t _metric_type;
 static int sender_thread;
 static int _sock_snd;
 static struct autobuf _hexbuf;
@@ -86,7 +86,7 @@ void aodv_init(void)
 
 }
 
-void aodv_set_metric_type(int metric_type)
+void aodv_set_metric_type(aodvv2_metric_t metric_type)
 {
     if (metric_type != AODVV2_DEFAULT_METRIC_TYPE) {
         return;

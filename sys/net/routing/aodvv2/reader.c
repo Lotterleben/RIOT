@@ -56,9 +56,9 @@ static enum rfc5444_result _cb_rerr_end_callback(
     struct rfc5444_reader_tlvblock_context *cont, bool dropped);
 
 /* helper functions */
-static uint8_t _get_link_cost(uint8_t metricType, struct aodvv2_packet_data *data);
-static uint8_t _get_max_metric(uint8_t metricType);
-static void _update_metric(uint8_t metricType, uint8_t *metric);
+static uint8_t _get_link_cost(aodvv2_metric_t metricType, struct aodvv2_packet_data *data);
+static uint8_t _get_max_metric(aodvv2_metric_t metricType);
+static void _update_metric(aodvv2_metric_t metricType, uint8_t *metric);
 
 /* This is where we store data gathered from packets */
 static struct aodvv2_packet_data packet_data;
@@ -702,7 +702,7 @@ int reader_handle_packet(void *buffer, size_t length, struct netaddr *sender)
  * (currently only AODVV2_DEFAULT_METRIC_TYPE (HopCt) implemented)
  * returns cost if metric is known, NULL otherwise
  */
-static uint8_t _get_link_cost(uint8_t metricType, struct aodvv2_packet_data *packet_data)
+static uint8_t _get_link_cost(aodvv2_metric_t metricType, struct aodvv2_packet_data *packet_data)
 {
     if (metricType == AODVV2_DEFAULT_METRIC_TYPE) {
         return 1;
@@ -714,7 +714,7 @@ static uint8_t _get_link_cost(uint8_t metricType, struct aodvv2_packet_data *pac
  * MAX_METRIC[MetricType]:
  * returns maximum value of the given metric if metric is known, NULL otherwise.
  */
-static uint8_t _get_max_metric(uint8_t metricType)
+static uint8_t _get_max_metric(aodvv2_metric_t metricType)
 {
     if (metricType == AODVV2_DEFAULT_METRIC_TYPE) {
         return AODVV2_MAX_HOPCOUNT;
@@ -726,7 +726,7 @@ static uint8_t _get_max_metric(uint8_t metricType)
  * Calculate a metric's new value according to the specified MetricType
  * (currently only implemented for AODVV2_DEFAULT_METRIC_TYPE (HopCt))
  */
-static void _update_metric(uint8_t metricType, uint8_t *metric)
+static void _update_metric(aodvv2_metric_t metricType, uint8_t *metric)
 {
     if (metricType == AODVV2_DEFAULT_METRIC_TYPE){
         *metric = *metric + 1;

@@ -25,6 +25,7 @@
 
 #include "common/netaddr.h"
 
+#include "aodvv2/types.h"
 #include "constants.h"
 #include "seqnum.h"
 
@@ -40,7 +41,7 @@ struct aodvv2_rreq_entry
 {
     struct netaddr origNode;            /**< Node which originated the RREQ*/
     struct netaddr targNode;            /**< Target (destination) of the RREQ */
-    uint8_t metricType;                 /**< Metric type of the RREQ */
+    aodvv2_metric_t metricType;         /**< Metric type of the RREQ */
     uint8_t metric;                     /**< Metric of the RREQ */
     uint16_t seqnum;                    /**< Sequence number of the RREQ */
     timex_t timestamp;                  /**< Last time this entry was updated */
