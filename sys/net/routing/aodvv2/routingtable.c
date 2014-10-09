@@ -17,7 +17,7 @@
  * @author      Lotte Steenbrink <lotte.steenbrink@fu-berlin.de>
  */
 
-#include "routing.h"
+#include "routingtable.h"
 
 #define ENABLE_DEBUG (0)
 #include "debug.h"

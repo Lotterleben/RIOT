@@ -29,7 +29,7 @@
 #include "mutex.h"
 
 #include "utils.h"
-#include "routing.h"
+#include "routingtable.h"
 #include "constants.h"
 #include "seqnum.h"
 #include "aodv.h"
