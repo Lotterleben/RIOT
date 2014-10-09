@@ -46,7 +46,7 @@ void routingtable_init(void)
     DEBUG("[aodvv2] routing table initialized.\n");
 }
 
-struct netaddr *routingtable_get_next_hop(struct netaddr *dest, uint8_t metricType)
+struct netaddr *routingtable_get_next_hop(struct netaddr *dest, aodvv2_metric_t metricType)
 {
     struct aodvv2_routing_entry_t *entry = routingtable_get_entry(dest, metricType);
     if (!entry) {
@@ -69,7 +69,7 @@ void routingtable_add_entry(struct aodvv2_routing_entry_t *entry)
     }
 }
 
-struct aodvv2_routing_entry_t *routingtable_get_entry(struct netaddr *addr, uint8_t metricType)
+struct aodvv2_routing_entry_t *routingtable_get_entry(struct netaddr *addr, aodvv2_metric_t metricType)
 {
     for (uint8_t i = 0; i < AODVV2_MAX_ROUTING_ENTRIES; i++) {
         _reset_entry_if_stale(i);
@@ -86,7 +86,7 @@ struct aodvv2_routing_entry_t *routingtable_get_entry(struct netaddr *addr, uint
     return NULL;
 }
 
-void routingtable_delete_entry(struct netaddr *addr, uint8_t metricType)
+void routingtable_delete_entry(struct netaddr *addr, aodvv2_metric_t metricType)
 {
     for (uint8_t i = 0; i < AODVV2_MAX_ROUTING_ENTRIES; i++) {
         _reset_entry_if_stale(i);

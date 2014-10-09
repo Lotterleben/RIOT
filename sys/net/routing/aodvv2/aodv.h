@@ -29,6 +29,7 @@
 #include "net_help.h"
 #include "mutex.h"
 
+#include "aodvv2/types.h"
 #include "constants.h"
 #include "seqnum.h"
 #include "routingtable.h"
@@ -84,7 +85,7 @@ struct msg_container
  *
  * @param[in] metric_type       type of new metric
  */
-void aodv_set_metric_type(int metric_type);
+void aodv_set_metric_type(aodvv2_metric_t metric_type);
 
 /**
  * @brief   When set as ipv6_iface_routing_provider, this function is called by

@@ -25,6 +25,7 @@
 #include "ipv6.h"
 #include "common/netaddr.h"
 
+#include "aodvv2/types.h"
 #include "constants.h"
 #include "seqnum.h"
 
@@ -50,7 +51,7 @@ struct aodvv2_routing_entry_t
     struct netaddr nextHopAddr;         /**< IP address of the the next hop towards the destination */
     timex_t lastUsed;                   /**< IP address of this route's destination */
     timex_t expirationTime;             /**< Time at which this route expires */
-    uint8_t metricType;                 /**< Metric type of this route */
+    aodvv2_metric_t metricType;         /**< Metric type of this route */
     uint8_t metric;                     /**< Metric value of this route*/
     uint8_t state;                      /**< State of this route (i.e. one of aodvv2_routing_states) */
 };
@@ -68,7 +69,7 @@ void routingtable_init(void);
  * @param[in] metricType  Metric Type of the desired route
  * @return                next hop towards dest if it exists, NULL otherwise
  */
-struct netaddr *routingtable_get_next_hop(struct netaddr *dest, uint8_t metricType);
+struct netaddr *routingtable_get_next_hop(struct netaddr *dest, aodvv2_metric_t metricType);
 
 /**
  * @brief     Add new entry to routing table, if there is no other entry
@@ -87,7 +88,7 @@ void routingtable_add_entry(struct aodvv2_routing_entry_t *entry);
  * @param[in] metricType    Metric Type of the desired route
  * @return                  Routing table entry if it exists, NULL otherwise
  */
-struct aodvv2_routing_entry_t *routingtable_get_entry(struct netaddr *addr, uint8_t metricType);
+struct aodvv2_routing_entry_t *routingtable_get_entry(struct netaddr *addr, aodvv2_metric_t metricType);
 
 /**
  * @brief     Delete routing table entry towards addr with metric type MetricType,
@@ -96,7 +97,7 @@ struct aodvv2_routing_entry_t *routingtable_get_entry(struct netaddr *addr, uint
  * @param[in] addr          The address towards which the route should point
  * @param[in] metricType    Metric Type of the desired route
  */
-void routingtable_delete_entry(struct netaddr *addr, uint8_t metricType);
+void routingtable_delete_entry(struct netaddr *addr, aodvv2_metric_t metricType);
 
 /**
  * Find all routing table entries that use hop as their nextHopAddress, mark them
