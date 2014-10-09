@@ -23,20 +23,19 @@
 #ifndef CONSTANTS_H_
 #define CONSTANTS_H_
 
-#define AODVV2_MAX_HOPCOUNT 250          /* as specified in the AODVv2 draft, section 14.2.*/
-#define AODVV2_MAX_ROUTING_ENTRIES 255
-#define AODVV2_DEFAULT_METRIC_TYPE 3
-#define AODVV2_ACTIVE_INTERVAL 5         /* seconds */
-#define AODVV2_MAX_IDLETIME 250          /* seconds */
-#define AODVV2_MAX_SEQNUM_LIFETIME 300   /* seconds */
-#define AODVV2_RIOT_PREFIXLEN 128
-#define AODVV2_MAX_UNREACHABLE_NODES 15  /* TODO: choose value (wisely) */
-
 /* RFC5498 */
 #define MANET_PORT  269
 
-/* my multicast address */
-struct netaddr na_mcast;
+enum aodvv2_constants {
+    AODVV2_MAX_HOPCOUNT = 250,          /* as specified in the AODVv2 draft, section 14.2.*/
+    AODVV2_MAX_ROUTING_ENTRIES = 255,
+    AODVV2_DEFAULT_METRIC_TYPE = 3,
+    AODVV2_ACTIVE_INTERVAL = 5,         /* seconds */
+    AODVV2_MAX_IDLETIME = 250,          /* seconds */
+    AODVV2_MAX_SEQNUM_LIFETIME = 300,   /* seconds */
+    AODVV2_RIOT_PREFIXLEN = 128,
+    AODVV2_MAX_UNREACHABLE_NODES = 15,  /* TODO: choose value (wisely) */
+};
 
 /**
  * @brief   AODVv2 message types
@@ -69,6 +68,9 @@ enum tlv_index
     TLV_UNREACHABLE_NODE_SEQNUM,
     TLV_METRIC,
 };
+
+/* my multicast address */
+struct netaddr na_mcast;
 
 /**
  * @brief   Data about an OrigNode or TargNode, typically embedded in an
