@@ -37,7 +37,6 @@ static void _write_packet(struct rfc5444_writer *wr __attribute__ ((unused)),
 
 #ifdef DEBUG
 char addr_str[IPV6_MAX_ADDR_STR_LEN];
-char addr_str2[IPV6_MAX_ADDR_STR_LEN];
 #endif
 
 char aodv_rcv_stack_buf[KERNEL_CONF_STACKSIZE_MAIN];
@@ -298,7 +297,8 @@ static void _aodv_receiver_thread(void)
 
 static ipv6_addr_t *aodv_get_next_hop(ipv6_addr_t *dest)
 {
-    DEBUG("[aodvv2] aodv_get_next_hop() %s: getting next hop for %s\n", ipv6_addr_to_str(addr_str, IPV6_MAX_ADDR_STR_LEN, &_v6_addr_local), ipv6_addr_to_str(addr_str2, IPV6_MAX_ADDR_STR_LEN, dest));
+    DEBUG("[aodvv2] aodv_get_next_hop() %s:", ipv6_addr_to_str(addr_str, IPV6_MAX_ADDR_STR_LEN, &_v6_addr_local));
+    DEBUG(" getting next hop for %s\n", ipv6_addr_to_str(addr_str, IPV6_MAX_ADDR_STR_LEN, dest));
 
     struct netaddr _tmp_dest;
     ipv6_addr_t_to_netaddr(dest, &_tmp_dest);
