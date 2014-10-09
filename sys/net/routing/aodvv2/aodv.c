@@ -20,7 +20,7 @@
 #include "aodv.h"
 #include "aodvv2/aodvv2.h"
 
-#define ENABLE_DEBUG (0)
+#define ENABLE_DEBUG (1)
 #include "debug.h"
 
 #define UDP_BUFFER_SIZE     (128) /* with respect to IEEE 802.15.4's MTU */
@@ -253,9 +253,6 @@ static void _aodv_receiver_thread(void)
     uint32_t fromlen;
     int32_t rcv_size;
     char buf_rcv[UDP_BUFFER_SIZE];
-#ifdef DEBUG
-    char addr_str_rec[IPV6_MAX_ADDR_STR_LEN];
-#endif
     msg_t msg_q[RCV_MSG_Q_SIZE];
 
     msg_init_queue(msg_q, RCV_MSG_Q_SIZE);
@@ -280,7 +277,8 @@ static void _aodv_receiver_thread(void)
             DEBUG("[aodvv2] ERROR receiving data!\n");
         }
 
-        DEBUG("[aodvv2] _aodv_receiver_thread() %s: UDP packet received from %s\n", ipv6_addr_to_str(addr_str, IPV6_MAX_ADDR_STR_LEN, &_v6_addr_local), ipv6_addr_to_str(addr_str_rec, IPV6_MAX_ADDR_STR_LEN, &sa_rcv.sin6_addr));
+        DEBUG("[aodvv2] _aodv_receiver_thread() %s:", ipv6_addr_to_str(addr_str, IPV6_MAX_ADDR_STR_LEN, &_v6_addr_local));
+        DEBUG(" UDP packet received from %s\n", ipv6_addr_to_str(addr_str, IPV6_MAX_ADDR_STR_LEN, &sa_rcv.sin6_addr));
 
         struct netaddr _sender;
         ipv6_addr_t_to_netaddr(&sa_rcv.sin6_addr, &_sender);
