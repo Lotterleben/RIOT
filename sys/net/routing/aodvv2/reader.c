@@ -227,7 +227,7 @@ static enum rfc5444_result _cb_rreq_blocktlv_addresstlvs_okay(struct rfc5444_rea
     }
 
     /* handle Metric TLV */
-    // cppcheck-suppress arrayIndexOutOfBounds
+    /* cppcheck-suppress arrayIndexOutOfBounds */
     tlv = _rreq_rrep_address_consumer_entries[RFC5444_MSGTLV_METRIC].tlv;
     if (!tlv && is_origNode_addr) {
         DEBUG("\tERROR: Missing or unknown metric TLV.\n");
@@ -435,7 +435,7 @@ static enum rfc5444_result _cb_rrep_blocktlv_addresstlvs_okay(struct rfc5444_rea
     }
 
     /* handle Metric TLV */
-    // cppcheck-suppress arrayIndexOutOfBounds
+    /* cppcheck-suppress arrayIndexOutOfBounds */
     tlv = _rreq_rrep_address_consumer_entries[RFC5444_MSGTLV_METRIC].tlv;
     if (!tlv && is_targNode_addr) {
         DEBUG("\tERROR: Missing or unknown metric TLV.\n");
@@ -610,7 +610,7 @@ static enum rfc5444_result _cb_rerr_blocktlv_addresstlvs_okay(struct rfc5444_rea
     packet_data.origNode.addr = cont->addr;
 
     /* handle this unreachable node's SeqNum TLV */
-    // cppcheck-suppress arrayIndexOutOfBounds
+    /* cppcheck-suppress arrayIndexOutOfBounds */
     tlv = _rerr_address_consumer_entries[RFC5444_MSGTLV_UNREACHABLE_NODE_SEQNUM].tlv;
     if (tlv) {
         VDEBUG("\ttlv RFC5444_MSGTLV_UNREACHABLE_NODE_SEQNUM: %d\n", *tlv->single_value);
