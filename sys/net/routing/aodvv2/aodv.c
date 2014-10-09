@@ -209,7 +209,7 @@ static void _init_sock_snd(void)
     _sock_snd = socket_base_socket(PF_INET6, SOCK_DGRAM, IPPROTO_UDP);
 
     if (-1 == _sock_snd) {
-        DEBUG("[aodvv2] Error Creating Socket!");
+        DEBUG("[aodvv2] Error Creating Socket!\n");
         return;
     }
 }
@@ -241,7 +241,7 @@ static void _aodv_sender_thread(void)
             writer_send_rerr(rerr_data->unreachable_nodes, rerr_data->len, rerr_data->hoplimit, rerr_data->next_hop);
         }
         else {
-            DEBUG("ERROR: Couldn't identify Message");
+            DEBUG("ERROR: Couldn't identify Message\n");
         }
         _deep_free_msg_container(mc);
     }
