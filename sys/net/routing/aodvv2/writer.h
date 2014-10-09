@@ -42,10 +42,10 @@
  */
 struct writer_target
 {
-    struct rfc5444_writer_target interface;
-    struct netaddr target_addr;
-    struct aodvv2_packet_data packet_data;
-    int type;
+    struct rfc5444_writer_target interface;     /**< Interface for generating rfc5444 packets */
+    struct netaddr target_addr;                 /**< Address to which the packet should be sent */
+    struct aodvv2_packet_data packet_data;      /**< Payload of the AODVv2 Message */
+    int type;                                   /**< Type of the AODVv2 Message (i.e. rfc5444_msg_type) */
 };
 
 typedef void (*write_packet_func_ptr)(

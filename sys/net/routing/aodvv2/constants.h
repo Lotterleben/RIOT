@@ -78,9 +78,9 @@ struct netaddr na_mcast;
  */
 struct node_data
 {
-    struct netaddr addr;
-    uint8_t metric;
-    uint16_t seqnum;
+    struct netaddr addr;                        /**< IP address of the node */
+    uint8_t metric;                             /**< Metric value */
+    uint16_t seqnum;                            /**< Sequence Number */
 };
 
 /**
@@ -88,21 +88,22 @@ struct node_data
  */
 struct aodvv2_packet_data
 {
-    uint8_t hoplimit;
-    struct netaddr sender;
-    uint8_t metricType;
-    struct node_data origNode;
-    struct node_data targNode;
-    timex_t timestamp;
+    uint8_t hoplimit;                           /**< Hop limit */
+    struct netaddr sender;                      /**< IP address of the neighboring router which sent the RREQ/RREP*/
+    uint8_t metricType;                         /**< Metric type */
+    struct node_data origNode;                  /**< Data about the originating node */
+    struct node_data targNode;                  /**< Data about the originating node */
+    timex_t timestamp;                          /**< point at which the packet was (roughly) received. Note that this
+                                                     timestamp will be set after the packet has been successfully parsed. */
 };
 
 /**
- * @brief   Address and sequence number an unreachable node to be embedded in a RERR.
+ * @brief   Data about an unreachable node to be embedded in a RERR.
  */
 struct unreachable_node
 {
-    struct netaddr addr;
-    uint16_t seqnum;
+    struct netaddr addr;                        /**< IP address */
+    uint16_t seqnum;                            /**< Sequence Number */
 };
 
 #endif /* CONSTANTS_H_ */

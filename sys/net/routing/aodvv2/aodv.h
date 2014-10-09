@@ -45,8 +45,8 @@
  */
 struct rreq_rrep_data
 {
-    struct aodvv2_packet_data *packet_data;
-    struct netaddr *next_hop;
+    struct aodvv2_packet_data *packet_data;     /**< Data for the RREQ or RREP */
+    struct netaddr *next_hop;                   /**< Next hop to which the RREQ or RREP should be sent */
 };
 
 /**
@@ -57,10 +57,10 @@ struct rreq_rrep_data
  */
 struct rerr_data
 {
-    struct unreachable_node *unreachable_nodes; /* Beware, this is the start of an array. */
-    int len;
-    int hoplimit;
-    struct netaddr *next_hop;
+    struct unreachable_node *unreachable_nodes; /**< All unreachable nodes. Beware, this is the start of an array */
+    int len;                                    /**< Length of the unreachable_nodes array */
+    int hoplimit;                               /**< hoplimit for the RERR */
+    struct netaddr *next_hop;                   /**< Next hop to which the RERR should be sent */
 };
 
 
@@ -74,8 +74,8 @@ struct rerr_data
  */
 struct msg_container
 {
-    int type;
-    void *data;
+    int type;                                   /**< Message type (i.e. one of rfc5444_msg_type) */
+    void *data;                                 /**< Pointer to the message data (i.e. a rreq_rrep_data or rerr_data struct) */
 };
 
 /**
