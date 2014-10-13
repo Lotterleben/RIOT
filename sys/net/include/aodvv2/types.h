@@ -26,6 +26,8 @@ typedef enum {
     HOP_COUNT = 3,              /**< see RFC6551*/
 } aodvv2_metric_t;
 
+typedef uint16_t aodvv2_seqnum_t;
+
 #define AODVV2_DEFAULT_METRIC_TYPE HOP_COUNT
 
 #endif /* AODVV2_TYPES_H */

@@ -372,7 +372,7 @@ static ipv6_addr_t *aodv_get_next_hop(ipv6_addr_t *dest)
         return next_hop;
     }
 
-    uint16_t seqnum = seqnum_get();
+    aodvv2_seqnum_t seqnum = seqnum_get();
     seqnum_inc();
 
     struct aodvv2_packet_data rreq_data = (struct aodvv2_packet_data)
