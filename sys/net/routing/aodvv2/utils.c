@@ -43,7 +43,7 @@ static timex_t null_time, now, _max_idletime;
 void clienttable_init(void)
 {
     mutex_lock(&clientt_mutex);
-    for (uint8_t i = 0; i < AODVV2_MAX_CLIENTS; i++) {
+    for (unsigned i = 0; i < AODVV2_MAX_CLIENTS; i++) {
         memset(&client_table[i], 0, sizeof(client_table[i]));
     }
     mutex_unlock(&clientt_mutex);
@@ -56,7 +56,7 @@ void clienttable_add_client(struct netaddr *addr)
     if (!clienttable_is_client(addr)) {
         /*find free spot in client table and place client address there */
         mutex_lock(&clientt_mutex);
-        for (uint8_t i = 0; i < AODVV2_MAX_CLIENTS; i++) {
+        for (unsigned i = 0; i < AODVV2_MAX_CLIENTS; i++) {
             if ((client_table[i]._type == AF_UNSPEC) &&
                 (client_table[i]._prefix_len == 0)) {
                 client_table[i] = *addr;
@@ -73,7 +73,7 @@ void clienttable_add_client(struct netaddr *addr)
 bool clienttable_is_client(struct netaddr *addr)
 {
     mutex_lock(&clientt_mutex);
-    for (uint8_t i = 0; i < AODVV2_MAX_CLIENTS; i++) {
+    for (unsigned i = 0; i < AODVV2_MAX_CLIENTS; i++) {
         if (!netaddr_cmp(&client_table[i], addr)) {
             mutex_unlock(&clientt_mutex);
             return true;
@@ -90,7 +90,7 @@ void clienttable_delete_client(struct netaddr *addr)
     }
 
     mutex_lock(&clientt_mutex);
-    for (uint8_t i = 0; i < AODVV2_MAX_CLIENTS; i++) {
+    for (unsigned i = 0; i < AODVV2_MAX_CLIENTS; i++) {
         if (!netaddr_cmp(&client_table[i], addr)) {
             memset(&client_table[i], 0, sizeof(client_table[i]));
             mutex_unlock(&clientt_mutex);
@@ -105,7 +105,7 @@ void rreqtable_init(void)
     null_time = timex_set(0, 0);
     _max_idletime = timex_set(AODVV2_MAX_IDLETIME, 0);
 
-    for (uint8_t i = 0; i < AODVV2_RREQ_BUF; i++) {
+    for (unsigned i = 0; i < AODVV2_RREQ_BUF; i++) {
         memset(&rreq_table[i], 0, sizeof(rreq_table[i]));
     }
     mutex_unlock(&rreqt_mutex);
@@ -175,7 +175,7 @@ bool rreqtable_is_redundant(struct aodvv2_packet_data *packet_data)
  */
 static struct aodvv2_rreq_entry *_get_comparable_rreq(struct aodvv2_packet_data *packet_data)
 {
-    for (uint8_t i = 0; i < AODVV2_RREQ_BUF; i++) {
+    for (unsigned i = 0; i < AODVV2_RREQ_BUF; i++) {
         _reset_entry_if_stale(i);
 
         if (!netaddr_cmp(&rreq_table[i].origNode, &packet_data->origNode.addr) &&
@@ -194,7 +194,7 @@ static void _add_rreq(struct aodvv2_packet_data *packet_data)
     if (!(_get_comparable_rreq(packet_data))) {
         /*find empty rreq and fill it with packet_data */
 
-        for (uint8_t i = 0; i < AODVV2_RREQ_BUF; i++) {
+        for (unsigned i = 0; i < AODVV2_RREQ_BUF; i++) {
             if (!rreq_table[i].timestamp.seconds &&
                 !rreq_table[i].timestamp.microseconds) {
                 rreq_table[i].origNode = packet_data->origNode.addr;
@@ -235,7 +235,7 @@ void ipv6_addr_t_to_netaddr(ipv6_addr_t *src, struct netaddr *dst)
 
 void netaddr_to_ipv6_addr_t(struct netaddr *src, ipv6_addr_t *dst)
 {
-    for (int i = 0; i < NETADDR_MAX_LENGTH; i++) {
+    for (unsigned i = 0; i < NETADDR_MAX_LENGTH; i++) {
         memcpy(dst, src->_addr, sizeof(uint8_t) * NETADDR_MAX_LENGTH);
     }
 }

@@ -583,7 +583,7 @@ static enum rfc5444_result _cb_rerr_blocktlv_messagetlvs_okay(struct rfc5444_rea
 
     /* prepare buffer for unreachable nodes */
     num_unreachable_nodes = 0;
-    for (uint8_t i = 0; i < AODVV2_MAX_UNREACHABLE_NODES; i++) {
+    for (unsigned i = 0; i < AODVV2_MAX_UNREACHABLE_NODES; i++) {
         memset(&unreachable_nodes[i], 0, sizeof(unreachable_nodes[i]));
     }
     return RFC5444_OKAY;
