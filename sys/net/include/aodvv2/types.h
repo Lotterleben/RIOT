@@ -23,7 +23,9 @@
  * @brief   AODVv2 metric types. Extend to include alternate metrics.
  */
 typedef enum {
-    AODVV2_DEFAULT_METRIC_TYPE = 3,
+    HOP_COUNT = 3,              /**< see RFC6551*/
 } aodvv2_metric_t;
+
+#define AODVV2_DEFAULT_METRIC_TYPE HOP_COUNT
 
 #endif /* AODVV2_TYPES_H */
