@@ -40,7 +40,7 @@ void routingtable_init(void)
     max_idletime = timex_set(AODVV2_MAX_IDLETIME, 0);
     validity_t = timex_set(AODVV2_ACTIVE_INTERVAL + AODVV2_MAX_IDLETIME, 0);
 
-    for (uint8_t i = 0; i < AODVV2_MAX_ROUTING_ENTRIES; i++) {
+    for (unsigned i = 0; i < AODVV2_MAX_ROUTING_ENTRIES; i++) {
         memset(&routing_table[i], 0, sizeof(routing_table[i]));
     }
     DEBUG("[aodvv2] routing table initialized.\n");
@@ -60,7 +60,7 @@ void routingtable_add_entry(struct aodvv2_routing_entry_t *entry)
     /* only add if we don't already know the address */
     if (!(routingtable_get_entry(&(entry->addr), entry->metricType))) {
         /*find free spot in RT and place rt_entry there */
-        for (uint8_t i = 0; i < AODVV2_MAX_ROUTING_ENTRIES; i++) {
+        for (unsigned i = 0; i < AODVV2_MAX_ROUTING_ENTRIES; i++) {
             if (routing_table[i].addr._type == AF_UNSPEC) {
                 memcpy(&routing_table[i], entry, sizeof(struct aodvv2_routing_entry_t));
                 return;
@@ -71,7 +71,7 @@ void routingtable_add_entry(struct aodvv2_routing_entry_t *entry)
 
 struct aodvv2_routing_entry_t *routingtable_get_entry(struct netaddr *addr, aodvv2_metric_t metricType)
 {
-    for (uint8_t i = 0; i < AODVV2_MAX_ROUTING_ENTRIES; i++) {
+    for (unsigned i = 0; i < AODVV2_MAX_ROUTING_ENTRIES; i++) {
         _reset_entry_if_stale(i);
 
         if ((!netaddr_cmp(&routing_table[i].addr, addr)) &&
@@ -88,7 +88,7 @@ struct aodvv2_routing_entry_t *routingtable_get_entry(struct netaddr *addr, aodv
 
 void routingtable_delete_entry(struct netaddr *addr, aodvv2_metric_t metricType)
 {
-    for (uint8_t i = 0; i < AODVV2_MAX_ROUTING_ENTRIES; i++) {
+    for (unsigned i = 0; i < AODVV2_MAX_ROUTING_ENTRIES; i++) {
         _reset_entry_if_stale(i);
 
         if ((!netaddr_cmp(&routing_table[i].addr, addr)) &&
@@ -103,7 +103,7 @@ void routingtable_break_and_get_all_hopping_over(struct netaddr *hop, struct unr
 {
     *len = 0; /* to be sure */
 
-    for (uint8_t i = 0; i < AODVV2_MAX_ROUTING_ENTRIES; i++) {
+    for (unsigned i = 0; i < AODVV2_MAX_ROUTING_ENTRIES; i++) {
         _reset_entry_if_stale(i);
 
         if (netaddr_cmp(&routing_table[i].nextHopAddr, hop) == 0) {
