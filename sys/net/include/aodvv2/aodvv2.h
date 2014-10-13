@@ -1,9 +1,18 @@
+/*
+ * Copyright (C) 2014 Freie Universität Berlin
+ * Copyright (C) 2014 Lotte Steenbrink <lotte.steenbrink@fu-berlin.de>
+ *
+ * This file is subject to the terms and conditions of the GNU Lesser
+ * General Public License v2.1. See the file LICENSE in the top level
+ * directory for more details.
+ */
+
 /**
  * @ingroup     aodvv2
  * @{
  *
- * @file        aodvv2.h
- * @brief       aodvv2 routing protocol
+ * @file        aodvv2/aodvv2.h
+ * @brief       the aodvv2 routing protocol
  *
  * @author      Lotte Steenbrink <lotte.steenbrink@fu-berlin.de>
  */
