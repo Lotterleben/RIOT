@@ -43,7 +43,7 @@ struct aodvv2_rreq_entry
     struct netaddr targNode;            /**< Target (destination) of the RREQ */
     aodvv2_metric_t metricType;         /**< Metric type of the RREQ */
     uint8_t metric;                     /**< Metric of the RREQ */
-    uint16_t seqnum;                    /**< Sequence number of the RREQ */
+    aodvv2_seqnum_t seqnum;             /**< Sequence number of the RREQ */
     timex_t timestamp;                  /**< Last time this entry was updated */
 };
 

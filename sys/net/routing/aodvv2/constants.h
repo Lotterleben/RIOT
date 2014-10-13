@@ -81,7 +81,7 @@ struct node_data
 {
     struct netaddr addr;                        /**< IP address of the node */
     uint8_t metric;                             /**< Metric value */
-    uint16_t seqnum;                            /**< Sequence Number */
+    aodvv2_seqnum_t seqnum;                     /**< Sequence Number */
 };
 
 /**
@@ -104,7 +104,7 @@ struct aodvv2_packet_data
 struct unreachable_node
 {
     struct netaddr addr;                        /**< IP address */
-    uint16_t seqnum;                            /**< Sequence Number */
+    aodvv2_seqnum_t seqnum;                     /**< Sequence Number */
 };
 
 #endif /* CONSTANTS_H_ */

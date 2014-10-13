@@ -47,7 +47,7 @@ enum aodvv2_routing_states
 struct aodvv2_routing_entry_t
 {
     struct netaddr addr;                /**< IP address of this route's destination */
-    uint8_t seqnum;                     /**< The Sequence Number obtained from the last packet that updated the entry */
+    aodvv2_seqnum_t seqnum;             /**< The Sequence Number obtained from the last packet that updated the entry */
     struct netaddr nextHopAddr;         /**< IP address of the the next hop towards the destination */
     timex_t lastUsed;                   /**< IP address of this route's destination */
     timex_t expirationTime;             /**< Time at which this route expires */

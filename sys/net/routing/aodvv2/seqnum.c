@@ -22,7 +22,7 @@
 #define ENABLE_DEBUG (0)
 #include "debug.h"
 
-static uint16_t seqnum;
+static aodvv2_seqnum_t seqnum;
 
 void seqnum_init(void)
 {
@@ -42,14 +42,14 @@ void seqnum_inc(void)
     }
 }
 
-uint16_t seqnum_get(void)
+aodvv2_seqnum_t seqnum_get(void)
 {
     return seqnum;
 }
 
-int seqnum_cmp(uint16_t s1, uint16_t s2)
+int seqnum_cmp(aodvv2_seqnum_t s1, aodvv2_seqnum_t s2)
 {
-    uint16_t diff = s1 - s2;
+    aodvv2_seqnum_t diff = s1 - s2;
     if (diff == 0) {
         return 0;
     }
