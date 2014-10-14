@@ -195,7 +195,7 @@ static void _init_addresses(void)
      * with oonf based stuff */
     ipv6_addr_t_to_netaddr(&_v6_addr_local, &na_local);
     ipv6_addr_t_to_netaddr(&_v6_addr_mcast, &na_mcast);
-    ipv6_addr_init(&_v6_addr_loopback, 0, 0, 0, 0, 0, 0, 0, 1);
+    ipv6_addr_set_loopback_addr(&_v6_addr_loopback);
 
     /* init sockaddr that write_packet will use to send data */
     sa_wp.sin6_family = AF_INET6;
