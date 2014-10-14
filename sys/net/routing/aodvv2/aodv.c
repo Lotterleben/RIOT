@@ -24,7 +24,7 @@
 #include "debug.h"
 
 #define UDP_BUFFER_SIZE     (128) /* with respect to IEEE 802.15.4's MTU */
-#define RCV_MSG_Q_SIZE      (64)  /* TODO: check if smaller values work, too*/
+#define RCV_MSG_Q_SIZE      (32)  /* TODO: check if smaller values work, too*/
 
 static void _init_addresses(void);
 static void _init_sock_snd(void);
