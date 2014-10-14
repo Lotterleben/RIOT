@@ -22,7 +22,6 @@
 
 #include <string.h>
 
-#include "ipv6.h"
 #include "common/netaddr.h"
 
 #include "aodvv2/types.h"

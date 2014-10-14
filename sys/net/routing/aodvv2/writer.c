@@ -17,8 +17,6 @@
  * @author      Lotte Steenbrink <lotte.steenbrink@fu-berlin.de>
  */
 
-#include <string.h>
-#include <stdio.h>
 #ifdef RIOT
 #include "net_help.h"
 #endif

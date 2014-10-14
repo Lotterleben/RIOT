@@ -25,9 +25,7 @@
 #include "kernel.h"
 #include "udp.h"
 #include "socket_base/socket.h"
-#include "transceiver.h"
 #include "net_help.h"
-#include "mutex.h"
 
 #include "aodvv2/types.h"
 #include "constants.h"

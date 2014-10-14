@@ -21,12 +21,9 @@
 #define READER_H_
 #include <string.h>
 #include <stdio.h>
-#include <stdlib.h>
 
-#include "common/common_types.h"
 #include "common/netaddr.h"
 #include "rfc5444/rfc5444_reader.h"
-#include "mutex.h"
 
 #include "utils.h"
 #include "routingtable.h"
