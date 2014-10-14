@@ -20,14 +20,8 @@
 #ifndef WRITER_H_
 #define WRITER_H_
 
-#include "common/common_types.h"
-#include "rfc5444/rfc5444_writer.h"
-#include "reader.h"
-
-#include "common/common_types.h"
 #include "common/netaddr.h"
 #include "rfc5444/rfc5444_writer.h"
-#include "rfc5444/rfc5444_iana.h"
 #include "mutex.h"
 
 #include "constants.h"

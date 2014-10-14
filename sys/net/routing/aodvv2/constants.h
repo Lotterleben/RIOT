@@ -20,7 +20,6 @@
 #include "aodvv2/types.h"
 
 #include "common/netaddr.h"
-#include "rfc5444/rfc5444_print.h"
 
 #ifndef CONSTANTS_H_
 #define CONSTANTS_H_
