@@ -29,6 +29,10 @@
 #include "constants.h"
 #include "seqnum.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #define AODVV2_MAX_CLIENTS 1    /* multiple clients are currently not supported. */
 #define AODVV2_RREQ_BUF 128     /* should be enough for now... */
 #define AODVV2_RREQ_WAIT_TIME 2 /* seconds */
@@ -101,5 +105,9 @@ void ipv6_addr_t_to_netaddr(ipv6_addr_t *src, struct netaddr *dst);
  * @param dst       ipv6_addr_t to convert
  */
 void netaddr_to_ipv6_addr_t(struct netaddr *src, ipv6_addr_t *dst);
+
+#ifdef  __cplusplus
+}
+#endif
 
 #endif /* AODVV2_UTILS_H_ */

@@ -36,6 +36,10 @@
 #include "writer.h"
 #include "thread.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /**
  * @brief   This struct contains data which needs to be put into a RREQ or RREP.
  *          It is used to transport this data in a message to the sender_thread.
@@ -121,5 +125,9 @@ void aodv_send_rrep(struct aodvv2_packet_data *packet_data, struct netaddr *next
  * @param[in] next_hop           Address of the next hop the RERR should be sent to
  */
 void aodv_send_rerr(struct unreachable_node unreachable_nodes[], int len, int hoplimit, struct netaddr *next_hop);
+
+#ifdef  __cplusplus
+}
+#endif
 
 #endif /* AODV_H_ */

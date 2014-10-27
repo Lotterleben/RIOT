@@ -31,6 +31,10 @@
 #include "seqnum.h"
 #include "aodv.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /**
  * @brief Initialize reader.
  */
@@ -49,4 +53,9 @@ void reader_cleanup(void);
  * @param[in] sender  Address of the node from which the packet was received
  */
 int reader_handle_packet(void *buffer, size_t length, struct netaddr *sender);
+
+#ifdef  __cplusplus
+}
+#endif
+
 #endif /* AODVV2_READER_H_ */

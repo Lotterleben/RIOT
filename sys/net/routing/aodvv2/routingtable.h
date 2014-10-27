@@ -28,6 +28,10 @@
 #include "constants.h"
 #include "seqnum.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /**
  * A route table entry (i.e., a route) may be in one of the following states:
  */
@@ -141,5 +145,9 @@ void routingtable_fill_routing_entry_t_rrep(struct aodvv2_packet_data *packet_da
 
 void print_routingtable(void);
 void print_routingtable_entry(struct aodvv2_routing_entry_t *rt_entry);
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 #endif /* AODVV2_ROUTINGTABLE_H_*/
