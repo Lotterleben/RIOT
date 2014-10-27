@@ -17,8 +17,8 @@
  * @author      Lotte Steenbrink <lotte.steenbrink@fu-berlin.de>
  */
 
-#ifndef READER_H_
-#define READER_H_
+#ifndef AODVV2_READER_H_
+#define AODVV2_READER_H_
 #include <string.h>
 #include <stdio.h>
 
@@ -49,4 +49,4 @@ void reader_cleanup(void);
  * @param[in] sender  Address of the node from which the packet was received
  */
 int reader_handle_packet(void *buffer, size_t length, struct netaddr *sender);
-#endif /* READER_H_ */
+#endif /* AODVV2_READER_H_ */

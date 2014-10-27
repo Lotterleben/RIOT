@@ -17,8 +17,8 @@
  * @author      Lotte Steenbrink <lotte.steenbrink@fu-berlin.de>
  */
 
-#ifndef WRITER_H_
-#define WRITER_H_
+#ifndef AODVV2_WRITER_H_
+#define AODVV2_WRITER_H_
 
 #include "common/netaddr.h"
 #include "rfc5444/rfc5444_writer.h"
@@ -83,4 +83,4 @@ void writer_send_rrep(struct aodvv2_packet_data *packet_data, struct netaddr *ne
  */
 void writer_send_rerr(struct unreachable_node unreachable_nodes[], int len, int hoplimit, struct netaddr *next_hop);
 
-#endif /* WRITER_H_ */
+#endif /* AODVV2_WRITER_H_ */
