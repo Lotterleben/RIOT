@@ -17,8 +17,8 @@
  * @author      Lotte Steenbrink <lotte.steenbrink@fu-berlin.de>
  */
 
-#ifndef SEQNUM_H_
-#define SEQNUM_H_
+#ifndef AODVV2_SEQNUM_H_
+#define AODVV2_SEQNUM_H_
 #include <stdint.h>
 
 #include "aodvv2/types.h"
@@ -48,4 +48,4 @@ void seqnum_inc(void);
  */
 int seqnum_cmp(aodvv2_seqnum_t s1, aodvv2_seqnum_t s2);
 
-#endif /* SEQNUM_H_ */
+#endif /* AODVV2_SEQNUM_H_ */

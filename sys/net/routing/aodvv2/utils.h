@@ -17,8 +17,8 @@
  * @author      Lotte Steenbrink <lotte.steenbrink@fu-berlin.de>
  */
 
-#ifndef UTILS_H_
-#define UTILS_H_
+#ifndef AODVV2_UTILS_H_
+#define AODVV2_UTILS_H_
 #include <stdio.h>
 
 #include "ipv6.h"
@@ -102,4 +102,4 @@ void ipv6_addr_t_to_netaddr(ipv6_addr_t *src, struct netaddr *dst);
  */
 void netaddr_to_ipv6_addr_t(struct netaddr *src, ipv6_addr_t *dst);
 
-#endif /* UTILS_H_ */
+#endif /* AODVV2_UTILS_H_ */

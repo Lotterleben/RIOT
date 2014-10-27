@@ -21,8 +21,8 @@
 
 #include "common/netaddr.h"
 
-#ifndef CONSTANTS_H_
-#define CONSTANTS_H_
+#ifndef AODVV2_CONSTANTS_H_
+#define AODVV2_CONSTANTS_H_
 
 /* RFC5498 */
 #define MANET_PORT  269
@@ -106,4 +106,4 @@ struct unreachable_node
     aodvv2_seqnum_t seqnum;                     /**< Sequence Number */
 };
 
-#endif /* CONSTANTS_H_ */
+#endif /* AODVV2_CONSTANTS_H_ */
