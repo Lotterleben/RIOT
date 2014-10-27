@@ -19,6 +19,7 @@
 
 #ifndef AODVV2_SEQNUM_H_
 #define AODVV2_SEQNUM_H_
+
 #include <stdint.h>
 
 #include "aodvv2/types.h"
