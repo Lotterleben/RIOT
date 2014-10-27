@@ -27,6 +27,10 @@
 #include "constants.h"
 #include "seqnum.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /**
  * @brief   Wrapper for the rfc5444_writer_target that the _write_packet() callback receives.
  *          _write_packet() needs to know the type, payload and target address
@@ -82,5 +86,9 @@ void writer_send_rrep(struct aodvv2_packet_data *packet_data, struct netaddr *ne
  * @param next_hop            Address the RREP is sent to
  */
 void writer_send_rerr(struct unreachable_node unreachable_nodes[], int len, int hoplimit, struct netaddr *next_hop);
+
+#ifdef  __cplusplus
+}
+#endif
 
 #endif /* AODVV2_WRITER_H_ */

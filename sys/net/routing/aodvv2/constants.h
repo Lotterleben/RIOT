@@ -24,6 +24,10 @@
 #ifndef AODVV2_CONSTANTS_H_
 #define AODVV2_CONSTANTS_H_
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /* RFC5498 */
 #define MANET_PORT  269
 
@@ -105,5 +109,9 @@ struct unreachable_node
     struct netaddr addr;                        /**< IP address */
     aodvv2_seqnum_t seqnum;                     /**< Sequence Number */
 };
+
+#ifdef  __cplusplus
+}
+#endif
 
 #endif /* AODVV2_CONSTANTS_H_ */
