@@ -19,6 +19,7 @@
 
 #ifndef AODVV2_UTILS_H_
 #define AODVV2_UTILS_H_
+
 #include <stdio.h>
 
 #include "ipv6.h"
