@@ -66,7 +66,7 @@ static struct unreachable_node unreachable_nodes[AODVV2_MAX_UNREACHABLE_NODES];
 static int num_unreachable_nodes;
 
 static struct rfc5444_reader reader;
-#ifdef DEBUG
+#if DEBUG
 static struct netaddr_str nbuf;
 #endif
 
@@ -189,7 +189,7 @@ static enum rfc5444_result _cb_rreq_blocktlv_messagetlvs_okay(struct rfc5444_rea
  */
 static enum rfc5444_result _cb_rreq_blocktlv_addresstlvs_okay(struct rfc5444_reader_tlvblock_context *cont)
 {
-#ifdef DEBUG
+#if DEBUG
     struct netaddr_str nbuf;
 #endif
     struct rfc5444_reader_tlvblock_entry *tlv;
@@ -405,7 +405,7 @@ static enum rfc5444_result _cb_rrep_blocktlv_messagetlvs_okay(struct rfc5444_rea
  */
 static enum rfc5444_result _cb_rrep_blocktlv_addresstlvs_okay(struct rfc5444_reader_tlvblock_context *cont)
 {
-#ifdef DEBUG
+#if DEBUG
     struct netaddr_str nbuf;
 #endif
     struct rfc5444_reader_tlvblock_entry *tlv;
@@ -470,7 +470,7 @@ static enum rfc5444_result _cb_rrep_end_callback(
     VDEBUG("[aodvv2] %s()\n", __func__);
 
     struct aodvv2_routing_entry_t *rt_entry;
-#ifdef DEBUG
+#if DEBUG
     struct netaddr_str nbuf;
 #endif
     timex_t now;
@@ -550,7 +550,7 @@ static enum rfc5444_result _cb_rrep_end_callback(
     earlier RREQ, and RREP processing is completed.  Any packets
     buffered for OrigNode should be transmitted. */
     if (clienttable_is_client(&packet_data.origNode.addr)) {
-#ifdef DEBUG
+#if DEBUG
         static struct netaddr_str nbuf2;
 #endif
 
@@ -595,7 +595,7 @@ static enum rfc5444_result _cb_rerr_blocktlv_messagetlvs_okay(struct rfc5444_rea
 
 static enum rfc5444_result _cb_rerr_blocktlv_addresstlvs_okay(struct rfc5444_reader_tlvblock_context *cont)
 {
-#ifdef DEBUG
+#if DEBUG
     struct netaddr_str nbuf;
 #endif
     struct aodvv2_routing_entry_t *unreachable_entry;

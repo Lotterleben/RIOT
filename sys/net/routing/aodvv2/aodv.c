@@ -35,7 +35,7 @@ static void _write_packet(struct rfc5444_writer *wr __attribute__ ((unused)),
                           struct rfc5444_writer_target *iface __attribute__((unused)),
                           void *buffer, size_t length);
 
-#ifdef DEBUG
+#if DEBUG
 char addr_str[IPV6_MAX_ADDR_STR_LEN];
 #endif
 
@@ -51,7 +51,7 @@ static ipv6_addr_t _v6_addr_local, _v6_addr_mcast, _v6_addr_loopback;
 static struct netaddr na_local; /* the same as _v6_addr_local, but to save us constant calls to ipv6_addr_t_to_netaddr()... */
 static struct writer_target *wt;
 
-#ifdef DEBUG
+#if DEBUG
 static struct netaddr_str nbuf;
 #endif
 
@@ -399,7 +399,7 @@ ipv6_addr_t *aodv_get_next_hop(ipv6_addr_t *dest)
         }
     };
 
-    printf("\tNo route found towards %s, starting route discovery... \n", ipv6_addr_to_str(addr_str, IPV6_MAX_ADDR_STR_LEN, dest));
+    DEBUG("\tNo route found towards %s, starting route discovery... \n", ipv6_addr_to_str(addr_str, IPV6_MAX_ADDR_STR_LEN, dest));
     aodv_send_rreq(&rreq_data);
 
     return NULL;
