@@ -34,10 +34,11 @@
 extern "C" {
 #endif
 
-#define AODVV2_MAX_CLIENTS 1    /* multiple clients are currently not supported. */
-#define AODVV2_RREQ_BUF 128     /* should be enough for now... */
-#define AODVV2_RREQ_WAIT_TIME 2 /* seconds */
-
+#define AODVV2_MAX_CLIENTS 1        /* multiple clients are currently not supported. */
+#define AODVV2_RREQ_BUF 128         /* should be enough for now... */
+#define AODVV2_RREQ_WAIT_TIME 2     /* seconds */
+#define AODVV2_RIOT_PREFIXLEN  128  /* Prefix length of the IPv6 addresses
+                                     * used in the network served by AODVv2 () */
 /**
  * @brief   RREQ Table entry which stores all information about a RREQ that was received
  *          in order to avoid duplicates.
