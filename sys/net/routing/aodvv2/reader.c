@@ -56,7 +56,7 @@ static enum rfc5444_result _cb_rerr_end_callback(
     struct rfc5444_reader_tlvblock_context *cont, bool dropped);
 
 /* helper functions */
-static uint8_t _get_link_cost(aodvv2_metric_t metricType, struct aodvv2_packet_data *data);
+static uint8_t _get_link_cost(aodvv2_metric_t metricType);
 static uint8_t _get_max_metric(aodvv2_metric_t metricType);
 static void _update_metric(aodvv2_metric_t metricType, uint8_t *metric);
 
@@ -259,7 +259,7 @@ static enum rfc5444_result _cb_rreq_end_callback(
 
     struct aodvv2_routing_entry_t *rt_entry;
     timex_t now;
-    uint8_t link_cost = _get_link_cost(packet_data.metricType, &packet_data);
+    uint8_t link_cost = _get_link_cost(packet_data.metricType);
 
     /* Check if packet contains the required information */
     if (dropped) {
@@ -474,7 +474,7 @@ static enum rfc5444_result _cb_rrep_end_callback(
     struct netaddr_str nbuf;
 #endif
     timex_t now;
-    uint8_t link_cost = _get_link_cost(packet_data.metricType, &packet_data);
+    uint8_t link_cost = _get_link_cost(packet_data.metricType);
 
     /* Check if packet contains the required information */
     if (dropped) {
@@ -708,7 +708,7 @@ int reader_handle_packet(void *buffer, size_t length, struct netaddr *sender)
  * (currently only AODVV2_DEFAULT_METRIC_TYPE (HopCt) implemented)
  * returns cost if metric is known, NULL otherwise
  */
-static uint8_t _get_link_cost(aodvv2_metric_t metricType, struct aodvv2_packet_data *packet_data)
+static uint8_t _get_link_cost(aodvv2_metric_t metricType)
 {
     if (metricType == AODVV2_DEFAULT_METRIC_TYPE) {
         return 1;
