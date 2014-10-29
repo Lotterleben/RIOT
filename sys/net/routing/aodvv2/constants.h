@@ -28,16 +28,15 @@
 extern "C" {
 #endif
 
-/* RFC5498 */
-#define MANET_PORT  269
+#define MANET_PORT  269                 /** RFC5498 */
 
 enum aodvv2_constants {
-    AODVV2_MAX_HOPCOUNT = 250,          /* as specified in the AODVv2 draft, section 14.2.*/
-    AODVV2_MAX_ROUTING_ENTRIES = 255,   /* maximum number of entries in the routing table */
-    AODVV2_ACTIVE_INTERVAL = 5,         /* seconds */
-    AODVV2_MAX_IDLETIME = 250,          /* seconds */
-    AODVV2_MAX_SEQNUM_LIFETIME = 300,   /* seconds */
-    AODVV2_MAX_UNREACHABLE_NODES = 15,  /* TODO: choose value (wisely) */
+    AODVV2_MAX_HOPCOUNT = 250,          /**< as specified in the AODVv2 draft, section 14.2.*/
+    AODVV2_MAX_ROUTING_ENTRIES = 255,   /**< maximum number of entries in the routing table */
+    AODVV2_ACTIVE_INTERVAL = 5,         /**< seconds */
+    AODVV2_MAX_IDLETIME = 250,          /**< seconds */
+    AODVV2_MAX_SEQNUM_LIFETIME = 300,   /**< seconds */
+    AODVV2_MAX_UNREACHABLE_NODES = 15,  /**< TODO: choose value (wisely) */
 };
 
 /**
