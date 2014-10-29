@@ -85,7 +85,7 @@ void writer_send_rrep(struct aodvv2_packet_data *packet_data, struct netaddr *ne
  * @param hoplimit            the message's hop limit
  * @param next_hop            Address the RREP is sent to
  */
-void writer_send_rerr(struct unreachable_node unreachable_nodes[], int len, int hoplimit, struct netaddr *next_hop);
+void writer_send_rerr(struct unreachable_node unreachable_nodes[], size_t len, int hoplimit, struct netaddr *next_hop);
 
 #ifdef  __cplusplus
 }

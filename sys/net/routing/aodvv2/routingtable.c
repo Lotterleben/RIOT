@@ -99,7 +99,7 @@ void routingtable_delete_entry(struct netaddr *addr, aodvv2_metric_t metricType)
     }
 }
 
-void routingtable_break_and_get_all_hopping_over(struct netaddr *hop, struct unreachable_node unreachable_nodes[], int *len)
+void routingtable_break_and_get_all_hopping_over(struct netaddr *hop, struct unreachable_node unreachable_nodes[], size_t *len)
 {
     *len = 0; /* to be sure */
 
