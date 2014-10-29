@@ -28,8 +28,8 @@
 
 static void _init_addresses(void);
 static void _init_sock_snd(void);
-static void _aodv_receiver_thread(void);
-static void _aodv_sender_thread(void);
+static void *_aodv_receiver_thread(void *arg);
+static void *_aodv_sender_thread(void *arg);
 static void _deep_free_msg_container(struct msg_container *msg_container);
 static void _write_packet(struct rfc5444_writer *wr __attribute__ ((unused)),
                           struct rfc5444_writer_target *iface __attribute__((unused)),
@@ -215,8 +215,10 @@ static void _init_sock_snd(void)
 
 /* Build RREQs, RREPs and RERRs from the information contained in the thread's
  * message queue and send them */
-static void _aodv_sender_thread(void)
+static void *_aodv_sender_thread(void *arg)
 {
+    (void) arg;
+
     msg_t msgq[RCV_MSG_Q_SIZE];
     msg_init_queue(msgq, sizeof msgq);
     DEBUG("[aodvv2] _aodv_sender_thread initialized.\n");
@@ -244,11 +246,15 @@ static void _aodv_sender_thread(void)
         }
         _deep_free_msg_container(mc);
     }
+
+    return NULL;
 }
 
 /* receive RREQs, RREPs and RERRs and handle them */
-static void _aodv_receiver_thread(void)
+static void *_aodv_receiver_thread(void *arg)
 {
+    (void) arg;
+
     DEBUG("[aodvv2] %s()\n", __func__);
     uint32_t fromlen;
     int32_t rcv_size;
@@ -291,6 +297,8 @@ static void _aodv_receiver_thread(void)
     }
 
     socket_base_close(sock_rcv);
+
+    return NULL;
 }
 
 ipv6_addr_t *aodv_get_next_hop(ipv6_addr_t *dest)
