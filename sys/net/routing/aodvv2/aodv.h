@@ -124,7 +124,7 @@ void aodv_send_rrep(struct aodvv2_packet_data *packet_data, struct netaddr *next
  * @param[in] hoplimit           Hoplimit of RERR
  * @param[in] next_hop           Address of the next hop the RERR should be sent to
  */
-void aodv_send_rerr(struct unreachable_node unreachable_nodes[], int len, int hoplimit, struct netaddr *next_hop);
+void aodv_send_rerr(struct unreachable_node unreachable_nodes[], int len, struct netaddr *next_hop);
 
 #ifdef  __cplusplus
 }
