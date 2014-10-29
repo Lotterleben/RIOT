@@ -61,7 +61,7 @@ struct rreq_rrep_data
 struct rerr_data
 {
     struct unreachable_node *unreachable_nodes; /**< All unreachable nodes. Beware, this is the start of an array */
-    int len;                                    /**< Length of the unreachable_nodes array */
+    size_t len;                                 /**< Length of the unreachable_nodes array */
     int hoplimit;                               /**< hoplimit for the RERR */
     struct netaddr *next_hop;                   /**< Next hop to which the RERR should be sent */
 };
@@ -124,7 +124,7 @@ void aodv_send_rrep(struct aodvv2_packet_data *packet_data, struct netaddr *next
  * @param[in] hoplimit           Hoplimit of RERR
  * @param[in] next_hop           Address of the next hop the RERR should be sent to
  */
-void aodv_send_rerr(struct unreachable_node unreachable_nodes[], int len, struct netaddr *next_hop);
+void aodv_send_rerr(struct unreachable_node unreachable_nodes[], size_t len, struct netaddr *next_hop);
 
 #ifdef  __cplusplus
 }

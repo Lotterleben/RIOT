@@ -38,7 +38,7 @@ struct rfc5444_writer writer;
 static struct writer_target _target;
 
 static struct unreachable_node *_unreachable_nodes;
-static int _num_unreachable_nodes;
+static size_t _num_unreachable_nodes;
 
 static uint8_t _msg_buffer[128];
 static uint8_t _msg_addrtlvs[1000];
@@ -307,7 +307,7 @@ void writer_send_rrep(struct aodvv2_packet_data *packet_data, struct netaddr *ne
  * @param hoplimit            the message's hop limit
  * @param next_hop            Address the RREP is sent to
  */
-void writer_send_rerr(struct unreachable_node unreachable_nodes[], int len, int hoplimit, struct netaddr *next_hop)
+void writer_send_rerr(struct unreachable_node unreachable_nodes[], size_t len, int hoplimit, struct netaddr *next_hop)
 {
     DEBUG("[aodvv2] %s()\n", __func__);
 

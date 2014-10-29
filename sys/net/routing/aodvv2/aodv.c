@@ -151,7 +151,7 @@ void aodv_send_rrep(struct aodvv2_packet_data *packet_data, struct netaddr *next
     msg_send(&msg, sender_thread);
 }
 
-void aodv_send_rerr(struct unreachable_node unreachable_nodes[], int len, struct netaddr *next_hop)
+void aodv_send_rerr(struct unreachable_node unreachable_nodes[], size_t len, struct netaddr *next_hop)
 {
     DEBUG("[aodvv2] %s()\n", __func__);
 
@@ -310,7 +310,7 @@ ipv6_addr_t *aodv_get_next_hop(ipv6_addr_t *dest)
     ipv6_addr_t_to_netaddr(dest, &_tmp_dest);
     timex_t now;
     struct unreachable_node unreachable_nodes[AODVV2_MAX_UNREACHABLE_NODES];
-    int len;
+    size_t len;
 
     /* currently, the network stack sometimes asks us for the next hop towards our own IP... */
     if (memcmp(dest, &_v6_addr_local, sizeof(ipv6_addr_t)) == 0) {

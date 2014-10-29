@@ -110,10 +110,10 @@ void routingtable_delete_entry(struct netaddr *addr, aodvv2_metric_t metricType)
  * @param hop                 Address of the newly unreachable next hop
  * @param unreachable_nodes[] array of newlu unreachable nodes to be filled.
  *                            should be empty.
- * @param len                 int* which will contain the length of
+ * @param len                 size_t* which will contain the length of
  *                            unreachable_nodes[] after execution
  */
-void routingtable_break_and_get_all_hopping_over(struct netaddr *hop, struct unreachable_node unreachable_nodes[], int *len);
+void routingtable_break_and_get_all_hopping_over(struct netaddr *hop, struct unreachable_node unreachable_nodes[], size_t *len);
 
 /**
  * Check if the data of a RREQ or RREP offers improvement for an existing routing
