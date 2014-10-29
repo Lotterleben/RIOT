@@ -138,6 +138,8 @@ _cb_rreq_addAddresses(struct rfc5444_writer *wr)
     rfc5444_writer_add_addrtlv(wr, origNode_addr, &_rreq_addrtlvs[RFC5444_MSGTLV_ORIGSEQNUM],
                                &_target.packet_data.origNode.seqnum,
                                sizeof(_target.packet_data.origNode.seqnum), false);
+    /* cppcheck: suppress false positive on non-trivially initialized arrays.
+     *           this is a known bug: http://trac.cppcheck.net/ticket/5497 */
     /* cppcheck-suppress arrayIndexOutOfBounds */
     rfc5444_writer_add_addrtlv(wr, origNode_addr, &_rreq_addrtlvs[RFC5444_MSGTLV_METRIC],
                                &_target.packet_data.origNode.metric,
@@ -193,6 +195,8 @@ _cb_rerr_addAddresses(struct rfc5444_writer *wr)
 
         /* add SeqNum TLV to unreachableNode */
         /* TODO: allow_dup true or false? */
+        /* cppcheck: suppress false positive on non-trivially initialized arrays.
+         *           this is a known bug: http://trac.cppcheck.net/ticket/5497 */
         /* cppcheck-suppress arrayIndexOutOfBounds */
         rfc5444_writer_add_addrtlv(wr, unreachableNode_addr, &_rerr_addrtlvs[RFC5444_MSGTLV_UNREACHABLE_NODE_SEQNUM],
                                    &_unreachable_nodes[i].seqnum,
