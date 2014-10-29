@@ -66,7 +66,7 @@ void clienttable_init(void);
  */
 void clienttable_add_client(struct netaddr *addr);
 
-/*
+/**
  * Find out if a client is in the list of clients that the router currently serves.
  * @param address   address of the client in question
  *                  (Since the current version doesn't offer support for Client Networks,
@@ -74,7 +74,7 @@ void clienttable_add_client(struct netaddr *addr);
  */
 bool clienttable_is_client(struct netaddr *addr);
 
-/*
+/**
  * Delete a client from the list of clients that the router currently serves.
  * @param address   address of the client to delete
  *                  (Since the current version doesn't offer support for Client Networks,
@@ -82,7 +82,7 @@ bool clienttable_is_client(struct netaddr *addr);
  */
 void clienttable_delete_client(struct netaddr *addr);
 
-/*
+/**
  * Initialize RREQ table.
  */
 void rreqtable_init(void);
