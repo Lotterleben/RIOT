@@ -98,7 +98,7 @@ void aodv_set_metric_type(aodvv2_metric_t metric_type);
  * @return  Address of the next hop towards dest if there is any,
  *          NULL if there is none (yet)
  */
-static ipv6_addr_t *aodv_get_next_hop(ipv6_addr_t *dest);
+ipv6_addr_t *aodv_get_next_hop(ipv6_addr_t *dest);
 
 /**
  * @brief   Dispatch a RREQ
