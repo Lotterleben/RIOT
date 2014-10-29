@@ -255,6 +255,8 @@ static enum rfc5444_result _cb_rreq_blocktlv_addresstlvs_okay(struct rfc5444_rea
 static enum rfc5444_result _cb_rreq_end_callback(
     struct rfc5444_reader_tlvblock_context *cont, bool dropped)
 {
+    (void) cont;
+
     struct aodvv2_routing_entry_t *rt_entry;
     timex_t now;
     uint8_t link_cost = _get_link_cost(packet_data.metricType, &packet_data);
@@ -463,6 +465,8 @@ static enum rfc5444_result _cb_rrep_blocktlv_addresstlvs_okay(struct rfc5444_rea
 static enum rfc5444_result _cb_rrep_end_callback(
     struct rfc5444_reader_tlvblock_context *cont, bool dropped)
 {
+    (void) cont;
+
     VDEBUG("[aodvv2] %s()\n", __func__);
 
     struct aodvv2_routing_entry_t *rt_entry;
@@ -641,6 +645,8 @@ static enum rfc5444_result _cb_rerr_blocktlv_addresstlvs_okay(struct rfc5444_rea
 
 static enum rfc5444_result _cb_rerr_end_callback(struct rfc5444_reader_tlvblock_context *cont, bool dropped)
 {
+    (void) cont;
+
     if (dropped) {
         VDEBUG("\tDropping packet.\n");
         return RFC5444_DROP_PACKET;
