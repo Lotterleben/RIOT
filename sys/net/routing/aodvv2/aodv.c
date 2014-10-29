@@ -28,14 +28,14 @@
 
 static void _init_addresses(void);
 static void _init_sock_snd(void);
-static void _aodv_receiver_thread(void);
-static void _aodv_sender_thread(void);
+static void *_aodv_receiver_thread(void *arg);
+static void *_aodv_sender_thread(void *arg);
 static void _deep_free_msg_container(struct msg_container *msg_container);
 static void _write_packet(struct rfc5444_writer *wr __attribute__ ((unused)),
                           struct rfc5444_writer_target *iface __attribute__((unused)),
                           void *buffer, size_t length);
 
-#ifdef DEBUG
+#if DEBUG
 char addr_str[IPV6_MAX_ADDR_STR_LEN];
 char addr_str2[IPV6_MAX_ADDR_STR_LEN];
 #endif
@@ -52,7 +52,7 @@ static ipv6_addr_t _v6_addr_local, _v6_addr_mcast, _v6_addr_loopback;
 static struct netaddr na_local; /* the same as _v6_addr_local, but to save us constant calls to ipv6_addr_t_to_netaddr()... */
 static struct writer_target *wt;
 
-#ifdef DEBUG
+#if DEBUG
 static struct netaddr_str nbuf;
 #endif
 
@@ -119,7 +119,7 @@ void aodv_send_rreq(struct aodvv2_packet_data *packet_data)
     msg_t msg;
     msg.content.ptr = (char *) mc;
 
-    msg_send(&msg, sender_thread, false);
+    msg_try_send(&msg, sender_thread);
 }
 
 void aodv_send_rrep(struct aodvv2_packet_data *packet_data, struct netaddr *next_hop)
@@ -149,10 +149,10 @@ void aodv_send_rrep(struct aodvv2_packet_data *packet_data, struct netaddr *next
     msg_t msg;
     msg.content.ptr = (char *) mc;
 
-    msg_send(&msg, sender_thread, false);
+    msg_try_send(&msg, sender_thread);
 }
 
-void aodv_send_rerr(struct unreachable_node unreachable_nodes[], int len, int hoplimit, struct netaddr *next_hop)
+void aodv_send_rerr(struct unreachable_node unreachable_nodes[], int len, struct netaddr *next_hop)
 {
     DEBUG("[aodvv2] %s()\n", __func__);
 
@@ -175,7 +175,7 @@ void aodv_send_rerr(struct unreachable_node unreachable_nodes[], int len, int ho
     msg_t msg2;
     msg2.content.ptr = (char *) mc2;
 
-    msg_send(&msg2, sender_thread, false);
+    msg_try_send(&msg2, sender_thread);
 }
 
 /*
@@ -216,8 +216,10 @@ static void _init_sock_snd(void)
 
 /* Build RREQs, RREPs and RERRs from the information contained in the thread's
  * message queue and send them */
-static void _aodv_sender_thread(void)
+static void *_aodv_sender_thread(void *arg)
 {
+    (void) arg;
+
     msg_t msgq[RCV_MSG_Q_SIZE];
     msg_init_queue(msgq, sizeof msgq);
     DEBUG("[aodvv2] _aodv_sender_thread initialized.\n");
@@ -245,11 +247,15 @@ static void _aodv_sender_thread(void)
         }
         _deep_free_msg_container(mc);
     }
+
+    return NULL;
 }
 
 /* receive RREQs, RREPs and RERRs and handle them */
-static void _aodv_receiver_thread(void)
+static void *_aodv_receiver_thread(void *arg)
 {
+    (void) arg;
+
     DEBUG("[aodvv2] %s()\n", __func__);
     uint32_t fromlen;
     int32_t rcv_size;
@@ -292,9 +298,11 @@ static void _aodv_receiver_thread(void)
     }
 
     socket_base_close(sock_rcv);
+
+    return NULL;
 }
 
-static ipv6_addr_t *aodv_get_next_hop(ipv6_addr_t *dest)
+ipv6_addr_t *aodv_get_next_hop(ipv6_addr_t *dest)
 {
     DEBUG("[aodvv2] aodv_get_next_hop() %s: getting next hop for %s\n", ipv6_addr_to_str(addr_str, IPV6_MAX_ADDR_STR_LEN, &_v6_addr_local), ipv6_addr_to_str(addr_str2, IPV6_MAX_ADDR_STR_LEN, dest));
 
@@ -331,7 +339,7 @@ static ipv6_addr_t *aodv_get_next_hop(ipv6_addr_t *dest)
              * and add all *Active* routes to the list of unreachable nodes */
             routingtable_break_and_get_all_hopping_over(&_tmp_dest, unreachable_nodes, &len);
 
-            aodv_send_rerr(unreachable_nodes, len, AODVV2_MAX_HOPCOUNT, &na_mcast);
+            aodv_send_rerr(unreachable_nodes, len, &na_mcast);
             return NULL;
         }
 
@@ -347,7 +355,7 @@ static ipv6_addr_t *aodv_get_next_hop(ipv6_addr_t *dest)
             DEBUG("\tRouting table entry found, but invalid (state %i). Sending RERR.\n", rt_entry->state);
             unreachable_nodes[0].addr = _tmp_dest;
             unreachable_nodes[0].seqnum = rt_entry->seqnum;
-            aodv_send_rerr(unreachable_nodes, 1, AODVV2_MAX_HOPCOUNT, &na_mcast);
+            aodv_send_rerr(unreachable_nodes, 1, &na_mcast);
             return NULL;
         }
 
@@ -388,10 +396,12 @@ static ipv6_addr_t *aodv_get_next_hop(ipv6_addr_t *dest)
         .targNode = (struct node_data)
         {
             .addr = _tmp_dest,
-        }
+        },
+
+        .timestamp = now
     };
 
-    printf("\tNo route found towards %s, starting route discovery... \n", ipv6_addr_to_str(addr_str, IPV6_MAX_ADDR_STR_LEN, dest));
+    DEBUG("\tNo route found towards %s, starting route discovery... \n", ipv6_addr_to_str(addr_str, IPV6_MAX_ADDR_STR_LEN, dest));
     aodv_send_rreq(&rreq_data);
 
     return NULL;
@@ -432,6 +442,7 @@ static void _write_packet(struct rfc5444_writer *wr __attribute__ ((unused)),
     int bytes_sent = socket_base_sendto(_sock_snd, buffer, length,
                                         0, &sa_wp, sizeof sa_wp);
 
+    (void) bytes_sent;
     DEBUG("[aodvv2] %d bytes sent.\n", bytes_sent);
 }
 

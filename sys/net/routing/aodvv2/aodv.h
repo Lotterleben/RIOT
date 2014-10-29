@@ -98,7 +98,7 @@ void aodv_set_metric_type(aodvv2_metric_t metric_type);
  * @return  Address of the next hop towards dest if there is any,
  *          NULL if there is none (yet)
  */
-static ipv6_addr_t *aodv_get_next_hop(ipv6_addr_t *dest);
+ipv6_addr_t *aodv_get_next_hop(ipv6_addr_t *dest);
 
 /**
  * @brief   Dispatch a RREQ
@@ -124,7 +124,7 @@ void aodv_send_rrep(struct aodvv2_packet_data *packet_data, struct netaddr *next
  * @param[in] hoplimit           Hoplimit of RERR
  * @param[in] next_hop           Address of the next hop the RERR should be sent to
  */
-void aodv_send_rerr(struct unreachable_node unreachable_nodes[], int len, int hoplimit, struct netaddr *next_hop);
+void aodv_send_rerr(struct unreachable_node unreachable_nodes[], int len, struct netaddr *next_hop);
 
 #ifdef  __cplusplus
 }
