@@ -432,6 +432,7 @@ static void _write_packet(struct rfc5444_writer *wr __attribute__ ((unused)),
     int bytes_sent = socket_base_sendto(_sock_snd, buffer, length,
                                         0, &sa_wp, sizeof sa_wp);
 
+    (void) bytes_sent;
     DEBUG("[aodvv2] %d bytes sent.\n", bytes_sent);
 }
 
