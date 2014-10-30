@@ -8,11 +8,12 @@
  */
 
 /**
- * @ingroup     aodvv2
+ * @defgroup    aodvv2 AODVv2
+ * @ingroup     net
  * @{
  *
  * @file        aodvv2/aodvv2.h
- * @brief       the aodvv2 routing protocol
+ * @brief       Interface for the AODVv2 routing protocol
  *
  * @author      Lotte Steenbrink <lotte.steenbrink@fu-berlin.de>
  */
