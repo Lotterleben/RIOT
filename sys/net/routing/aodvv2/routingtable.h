@@ -50,13 +50,16 @@ enum aodvv2_routing_states
 struct aodvv2_routing_entry_t
 {
     struct netaddr addr;                /**< IP address of this route's destination */
-    aodvv2_seqnum_t seqnum;             /**< The Sequence Number obtained from the last packet that updated the entry */
-    struct netaddr nextHopAddr;         /**< IP address of the the next hop towards the destination */
+    aodvv2_seqnum_t seqnum;             /**< The Sequence Number obtained from the
+                                         *   last packet that updated the entry */
+    struct netaddr nextHopAddr;         /**< IP address of the the next hop towards
+                                         *   the destination */
     timex_t lastUsed;                   /**< IP address of this route's destination */
     timex_t expirationTime;             /**< Time at which this route expires */
     aodvv2_metric_t metricType;         /**< Metric type of this route */
     uint8_t metric;                     /**< Metric value of this route*/
-    uint8_t state;                      /**< State of this route (i.e. one of aodvv2_routing_states) */
+    uint8_t state;                      /**< State of this route
+                                         *   (i.e. one of aodvv2_routing_states) */
 };
 
 /**
@@ -113,7 +116,9 @@ void routingtable_delete_entry(struct netaddr *addr, aodvv2_metric_t metricType)
  * @param len                 size_t* which will contain the length of
  *                            unreachable_nodes[] after execution
  */
-void routingtable_break_and_get_all_hopping_over(struct netaddr *hop, struct unreachable_node unreachable_nodes[], size_t *len);
+void routingtable_break_and_get_all_hopping_over(struct netaddr *hop,
+                                                 struct unreachable_node unreachable_nodes[],
+                                                 size_t *len);
 
 /**
  * Check if the data of a RREQ or RREP offers improvement for an existing routing
@@ -125,7 +130,8 @@ void routingtable_break_and_get_all_hopping_over(struct netaddr *hop, struct unr
  *                            TargNode's data (i.e. packet_data.targNode) must
  *                            be passed.
  */
-bool routingtable_offers_improvement(struct aodvv2_routing_entry_t *rt_entry, struct node_data *node_data);
+bool routingtable_offers_improvement(struct aodvv2_routing_entry_t *rt_entry,
+                                     struct node_data *node_data);
 
 /**
  * Fills a routing table entry with the data of a RREQ.
@@ -133,7 +139,9 @@ bool routingtable_offers_improvement(struct aodvv2_routing_entry_t *rt_entry, st
  * @param rt_entry            the routing table entry to fill
  * @param link_cost           the link cost for this RREQ
  */
-void routingtable_fill_routing_entry_t_rreq(struct aodvv2_packet_data *packet_data, struct aodvv2_routing_entry_t *rt_entry, uint8_t link_cost);
+void routingtable_fill_routing_entry_t_rreq(struct aodvv2_packet_data *packet_data,
+                                            struct aodvv2_routing_entry_t *rt_entry,
+                                            uint8_t link_cost);
 
 /**
  * Fills a routing table entry with the data of a RREP.
@@ -141,7 +149,9 @@ void routingtable_fill_routing_entry_t_rreq(struct aodvv2_packet_data *packet_da
  * @param rt_entry            the routing table entry to fill
  * @param link_cost           the link cost for this RREP
  */
-void routingtable_fill_routing_entry_t_rrep(struct aodvv2_packet_data *packet_data, struct aodvv2_routing_entry_t *rt_entry, uint8_t link_cost);
+void routingtable_fill_routing_entry_t_rrep(struct aodvv2_packet_data *packet_data,
+                                            struct aodvv2_routing_entry_t *rt_entry,
+                                            uint8_t link_cost);
 
 void print_routingtable(void);
 void print_routingtable_entry(struct aodvv2_routing_entry_t *rt_entry);

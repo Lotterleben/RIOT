@@ -36,7 +36,8 @@ extern "C" {
  *          _write_packet() needs to know the type, payload and target address
  *          of the RFC5444 message to be sent as well, but the oonf api does not
  *          offer this feature. Having this wrapper enables the use of the
- *          container_of macro to fetch this information. It is hacky, but it does the trick.
+ *          container_of macro to fetch this information.
+ *          It is hacky, but it does the trick.
  */
 struct writer_target
 {
@@ -47,7 +48,8 @@ struct writer_target
 };
 
 typedef void (*write_packet_func_ptr)(
-    struct rfc5444_writer *wr, struct rfc5444_writer_target *iface, void *buffer, size_t length);
+    struct rfc5444_writer *wr, struct rfc5444_writer_target *iface,
+    void *buffer, size_t length);
 
 /**
  * Initialize RFC5444 writer
@@ -85,7 +87,8 @@ void writer_send_rrep(struct aodvv2_packet_data *packet_data, struct netaddr *ne
  * @param hoplimit            the message's hop limit
  * @param next_hop            Address the RREP is sent to
  */
-void writer_send_rerr(struct unreachable_node unreachable_nodes[], size_t len, int hoplimit, struct netaddr *next_hop);
+void writer_send_rerr(struct unreachable_node unreachable_nodes[], size_t len,
+                      int hoplimit, struct netaddr *next_hop);
 
 #ifdef  __cplusplus
 }

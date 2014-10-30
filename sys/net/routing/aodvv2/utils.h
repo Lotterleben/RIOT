@@ -61,24 +61,24 @@ void clienttable_init(void);
 /**
  * Add client to the list of clients that the router currently serves.
  * @param addr      address of the client
- *                  (Since the current version doesn't offer support for Client Networks,
- *                  the prefixlen is currently ignored.)
+ *                  (Since the current version doesn't offer support for
+ *                  Client Networks, the prefixlen is currently ignored.)
  */
 void clienttable_add_client(struct netaddr *addr);
 
 /**
  * Find out if a client is in the list of clients that the router currently serves.
  * @param addr      address of the client in question
- *                  (Since the current version doesn't offer support for Client Networks,
- *                  the prefixlen is currently ignored.)
+ *                  (Since the current version doesn't offer support for
+ *                  Client Networks, the prefixlen is currently ignored.)
  */
 bool clienttable_is_client(struct netaddr *addr);
 
 /**
  * Delete a client from the list of clients that the router currently serves.
  * @param addr      address of the client to delete
- *                  (Since the current version doesn't offer support for Client Networks,
- *                  the prefixlen is currently ignored.)
+ *                  (Since the current version doesn't offer support for
+ *                  Client Networks, the prefixlen is currently ignored.)
  */
 void clienttable_delete_client(struct netaddr *addr);
 

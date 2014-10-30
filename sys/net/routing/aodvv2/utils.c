@@ -60,7 +60,8 @@ void clienttable_add_client(struct netaddr *addr)
             if ((client_table[i]._type == AF_UNSPEC) &&
                 (client_table[i]._prefix_len == 0)) {
                 client_table[i] = *addr;
-                DEBUG("[aodvv2] clienttable: added client %s\n", netaddr_to_string(&nbuf, addr));
+                DEBUG("[aodvv2] clienttable: added client %s\n",
+                      netaddr_to_string(&nbuf, addr));
                 mutex_unlock(&clientt_mutex);
                 return;
             }
@@ -220,7 +221,8 @@ static void _reset_entry_if_stale(uint8_t i)
         timex_t expiration_time = timex_add(rreq_table[i].timestamp, _max_idletime);
         if (timex_cmp(expiration_time, now) < 0) {
             /* timestamp+expiration time is in the past: this entry is stale */
-            DEBUG("\treset rreq table entry %s\n", netaddr_to_string(&nbuf, &rreq_table[i].origNode));
+            DEBUG("\treset rreq table entry %s\n",
+                  netaddr_to_string(&nbuf, &rreq_table[i].origNode));
             memset(&rreq_table[i], 0, sizeof(rreq_table[i]));
         }
     }
