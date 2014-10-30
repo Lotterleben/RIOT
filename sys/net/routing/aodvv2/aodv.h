@@ -94,9 +94,9 @@ void aodv_set_metric_type(aodvv2_metric_t metric_type);
  *          ipv6_sendto() to determine the next hop towards dest. This function
  *          is non-blocking.
  *
- * @param[in] destination of the packet
- * @return  Address of the next hop towards dest if there is any,
- *          NULL if there is none (yet)
+ * @param[in] dest  destination of the packet
+ * @return          Address of the next hop towards dest if there is any,
+ *                  NULL if there is none (yet)
  */
 ipv6_addr_t *aodv_get_next_hop(ipv6_addr_t *dest);
 
@@ -121,7 +121,6 @@ void aodv_send_rrep(struct aodvv2_packet_data *packet_data, struct netaddr *next
  * @param[in] unreachable_nodes  All nodes that are marked as unreachable
  *                               by this RERR
  * @param[in] len                Number of unreachable nodes
- * @param[in] hoplimit           Hoplimit of RERR
  * @param[in] next_hop           Address of the next hop the RERR should be sent to
  */
 void aodv_send_rerr(struct unreachable_node unreachable_nodes[], size_t len, struct netaddr *next_hop);

@@ -60,7 +60,7 @@ void clienttable_init(void);
 
 /**
  * Add client to the list of clients that the router currently serves.
- * @param address   address of the client
+ * @param addr      address of the client
  *                  (Since the current version doesn't offer support for Client Networks,
  *                  the prefixlen is currently ignored.)
  */
@@ -68,7 +68,7 @@ void clienttable_add_client(struct netaddr *addr);
 
 /**
  * Find out if a client is in the list of clients that the router currently serves.
- * @param address   address of the client in question
+ * @param addr      address of the client in question
  *                  (Since the current version doesn't offer support for Client Networks,
  *                  the prefixlen is currently ignored.)
  */
@@ -76,7 +76,7 @@ bool clienttable_is_client(struct netaddr *addr);
 
 /**
  * Delete a client from the list of clients that the router currently serves.
- * @param address   address of the client to delete
+ * @param addr      address of the client to delete
  *                  (Since the current version doesn't offer support for Client Networks,
  *                  the prefixlen is currently ignored.)
  */
@@ -90,7 +90,7 @@ void rreqtable_init(void);
 /**
  * Check if a RREQ is redundant, i.e. was received from another node already.
  * Behaves as described in Sections 5.7. and 7.6.
- * @param paket_data  data of the RREQ in question
+ * @param packet_data  data of the RREQ in question
  */
 bool rreqtable_is_redundant(struct aodvv2_packet_data *packet_data);
 
