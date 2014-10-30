@@ -82,14 +82,6 @@ struct msg_container
 };
 
 /**
- * @brief   Set the metric type. If metric_type does not match any known metric
- *          types, no changes will be made.
- *
- * @param[in] metric_type       type of new metric
- */
-void aodv_set_metric_type(aodvv2_metric_t metric_type);
-
-/**
  * @brief   When set as ipv6_iface_routing_provider, this function is called by
  *          ipv6_sendto() to determine the next hop towards dest. This function
  *          is non-blocking.
