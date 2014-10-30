@@ -31,8 +31,9 @@ extern "C" {
 #define MANET_PORT  269                 /** RFC5498 */
 
 enum aodvv2_constants {
-    AODVV2_MAX_HOPCOUNT = 250,          /**< as specified in the AODVv2 draft, section 14.2.*/
-    AODVV2_MAX_ROUTING_ENTRIES = 255,   /**< maximum number of entries in the routing table */
+    AODVV2_MAX_HOPCOUNT = 250,          /**< see AODVv2 draft, section 14.2.*/
+    AODVV2_MAX_ROUTING_ENTRIES = 255,   /**< maximum number of entries
+                                         *   in the routing table */
     AODVV2_ACTIVE_INTERVAL = 5,         /**< seconds */
     AODVV2_MAX_IDLETIME = 250,          /**< seconds */
     AODVV2_MAX_SEQNUM_LIFETIME = 300,   /**< seconds */
@@ -80,9 +81,9 @@ struct netaddr na_mcast;
  */
 struct node_data
 {
-    struct netaddr addr;                        /**< IP address of the node */
-    uint8_t metric;                             /**< Metric value */
-    aodvv2_seqnum_t seqnum;                     /**< Sequence Number */
+    struct netaddr addr;                /**< IP address of the node */
+    uint8_t metric;                     /**< Metric value */
+    aodvv2_seqnum_t seqnum;             /**< Sequence Number */
 };
 
 /**
@@ -90,13 +91,16 @@ struct node_data
  */
 struct aodvv2_packet_data
 {
-    uint8_t hoplimit;                           /**< Hop limit */
-    struct netaddr sender;                      /**< IP address of the neighboring router which sent the RREQ/RREP*/
-    aodvv2_metric_t metricType;                 /**< Metric type */
-    struct node_data origNode;                  /**< Data about the originating node */
-    struct node_data targNode;                  /**< Data about the originating node */
-    timex_t timestamp;                          /**< point at which the packet was (roughly) received. Note that this
-                                                     timestamp will be set after the packet has been successfully parsed. */
+    uint8_t hoplimit;                   /**< Hop limit */
+    struct netaddr sender;              /**< IP address of the neighboring router
+                                         *   which sent the RREQ/RREP*/
+    aodvv2_metric_t metricType;         /**< Metric type */
+    struct node_data origNode;          /**< Data about the originating node */
+    struct node_data targNode;          /**< Data about the originating node */
+    timex_t timestamp;                  /**< point at which the packet was (roughly)
+                                         *   received. Note that this timestamp
+                                         *   will be set after the packet has been
+                                         *   successfully parsed. */
 };
 
 /**

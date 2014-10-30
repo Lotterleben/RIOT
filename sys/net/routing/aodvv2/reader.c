@@ -154,7 +154,9 @@ static struct rfc5444_reader_tlvblock_consumer_entry _rreq_rrep_address_consumer
  */
 static struct rfc5444_reader_tlvblock_consumer_entry _rerr_address_consumer_entries[] =
 {
-    [RFC5444_MSGTLV_UNREACHABLE_NODE_SEQNUM] = { .type = RFC5444_MSGTLV_UNREACHABLE_NODE_SEQNUM},
+    [RFC5444_MSGTLV_UNREACHABLE_NODE_SEQNUM] = {
+        .type = RFC5444_MSGTLV_UNREACHABLE_NODE_SEQNUM
+    },
 };
 
 /**
@@ -240,7 +242,8 @@ static enum rfc5444_result _cb_rreq_blocktlv_addresstlvs_okay(struct rfc5444_rea
             DEBUG("\tERROR: Metric TLV belongs to wrong address.\n");
             return RFC5444_DROP_PACKET;
         }
-        VDEBUG("\ttlv RFC5444_MSGTLV_METRIC val: %d, exttype: %d\n", *tlv->single_value, tlv->type_ext);
+        VDEBUG("\ttlv RFC5444_MSGTLV_METRIC val: %d, exttype: %d\n",
+               *tlv->single_value, tlv->type_ext);
         packet_data.metricType = tlv->type_ext;
         packet_data.origNode.metric = *tlv->single_value;
     }
@@ -280,7 +283,8 @@ static enum rfc5444_result _cb_rreq_end_callback(
         DEBUG("\tERROR: Hoplimit is 0. Dropping packet.\n");
         return RFC5444_DROP_PACKET;
     }
-    if ((_get_max_metric(packet_data.metricType) - link_cost) <= packet_data.origNode.metric) {
+    if ((_get_max_metric(packet_data.metricType) - link_cost)
+        <= packet_data.origNode.metric) {
         DEBUG("\tMetric Limit reached. Dropping packet.\n");
         return RFC5444_DROP_PACKET;
     }
@@ -334,7 +338,8 @@ static enum rfc5444_result _cb_rreq_end_callback(
 
         VDEBUG("\tCreating new Routing Table entry...\n");
 
-        struct aodvv2_routing_entry_t *tmp_rt_entry = (struct aodvv2_routing_entry_t *)malloc(sizeof(struct aodvv2_routing_entry_t));
+        struct aodvv2_routing_entry_t *tmp_rt_entry = (struct aodvv2_routing_entry_t *)
+                                                       malloc(sizeof(struct aodvv2_routing_entry_t));
         memset(tmp_rt_entry, 0, sizeof(*tmp_rt_entry));
 
         routingtable_fill_routing_entry_t_rreq(&packet_data, tmp_rt_entry, link_cost);
@@ -452,7 +457,8 @@ static enum rfc5444_result _cb_rrep_blocktlv_addresstlvs_okay(struct rfc5444_rea
             DEBUG("\tERROR: metric TLV belongs to wrong address.\n");
             return RFC5444_DROP_PACKET;
         }
-        VDEBUG("\ttlv RFC5444_MSGTLV_METRIC val: %d, exttype: %d\n", *tlv->single_value, tlv->type_ext);
+        VDEBUG("\ttlv RFC5444_MSGTLV_METRIC val: %d, exttype: %d\n",
+               *tlv->single_value, tlv->type_ext);
         packet_data.metricType = tlv->type_ext;
         packet_data.origNode.metric = *tlv->single_value;
     }
@@ -485,14 +491,17 @@ static enum rfc5444_result _cb_rrep_end_callback(
         DEBUG("\t Dropping packet.\n");
         return RFC5444_DROP_PACKET;
     }
-    if ((packet_data.origNode.addr._type == AF_UNSPEC) || !packet_data.origNode.seqnum) {
+    if ((packet_data.origNode.addr._type == AF_UNSPEC)
+        || !packet_data.origNode.seqnum) {
         DEBUG("\tERROR: missing OrigNode Address or SeqNum. Dropping packet.\n");
         return RFC5444_DROP_PACKET;
     }
-    if ((packet_data.targNode.addr._type == AF_UNSPEC) || !packet_data.targNode.seqnum) {
+    if ((packet_data.targNode.addr._type == AF_UNSPEC)
+        || !packet_data.targNode.seqnum) {
         DEBUG("\tERROR: missing TargNode Address or SeqNum. Dropping packet.\n");
         return RFC5444_DROP_PACKET;
-    } if ((_get_max_metric(packet_data.metricType) - link_cost) <= packet_data.targNode.metric) {
+    } if ((_get_max_metric(packet_data.metricType) - link_cost)
+        <= packet_data.targNode.metric) {
         DEBUG("\tMetric Limit reached. Dropping packet.\n");
         return RFC5444_DROP_PACKET;
     }
@@ -530,7 +539,8 @@ static enum rfc5444_result _cb_rrep_end_callback(
         /* HACKY FIX ENDS HERE */
         VDEBUG("\tCreating new Routing Table entry...\n");
 
-        struct aodvv2_routing_entry_t *tmp_rt_entry = (struct aodvv2_routing_entry_t *)malloc(sizeof(struct aodvv2_routing_entry_t));
+        struct aodvv2_routing_entry_t *tmp_rt_entry = (struct aodvv2_routing_entry_t *)
+                                                       malloc(sizeof(struct aodvv2_routing_entry_t));
         memset(tmp_rt_entry, 0, sizeof(*tmp_rt_entry));
 
         routingtable_fill_routing_entry_t_rrep(&packet_data, tmp_rt_entry, link_cost);
@@ -567,7 +577,8 @@ static enum rfc5444_result _cb_rrep_end_callback(
      * Route.NextHopAddress for the RREP.AddrBlk[OrigNodeNdx]. */
     else {
         DEBUG("[aodvv2] Not my RREP, passing it on to the next hop\n");
-        aodv_send_rrep(&packet_data, routingtable_get_next_hop(&packet_data.origNode.addr, packet_data.metricType));
+        aodv_send_rrep(&packet_data,
+                       routingtable_get_next_hop(&packet_data.origNode.addr,packet_data.metricType));
     }
     return RFC5444_OKAY;
 }
@@ -630,12 +641,7 @@ static enum rfc5444_result _cb_rerr_blocktlv_addresstlvs_okay(struct rfc5444_rea
     /* Check if there is an entry for unreachable node in our routing table */
     unreachable_entry = routingtable_get_entry(&packet_data.origNode.addr, packet_data.metricType);
     if (unreachable_entry) {
-        VDEBUG("\t found possibly unreachable entry:\n");
-        VDEBUG("\n\n\t sender: %s\n", netaddr_to_string(&nbuf, &packet_data.sender));
-        VDEBUG("\t tlv: %i\n", *tlv->single_value);
-        VDEBUG("\t seqnum entry: %i, sender: %i\n", unreachable_entry->seqnum, packet_data.origNode.seqnum);
-        VDEBUG("na_cmp: %i, seqnum_cmp: %i\n", netaddr_cmp(&unreachable_entry->nextHopAddr, &packet_data.sender),
-               seqnum_cmp(unreachable_entry->seqnum, packet_data.origNode.seqnum));
+        VDEBUG("\t found possibly unreachable entry.\n");
 
         /* check if route to unreachable node has to be marked as broken and RERR has to be forwarded */
         if (netaddr_cmp(&unreachable_entry->nextHopAddr, &packet_data.sender) == 0
@@ -685,11 +691,14 @@ void reader_init(void)
 
     /* register address consumer */
     rfc5444_reader_add_message_consumer(&reader, &_rreq_address_consumer,
-                                        _rreq_rrep_address_consumer_entries, ARRAYSIZE(_rreq_rrep_address_consumer_entries));
+                                        _rreq_rrep_address_consumer_entries,
+                                        ARRAYSIZE(_rreq_rrep_address_consumer_entries));
     rfc5444_reader_add_message_consumer(&reader, &_rrep_address_consumer,
-                                        _rreq_rrep_address_consumer_entries, ARRAYSIZE(_rreq_rrep_address_consumer_entries));
+                                        _rreq_rrep_address_consumer_entries,
+                                        ARRAYSIZE(_rreq_rrep_address_consumer_entries));
     rfc5444_reader_add_message_consumer(&reader, &_rerr_address_consumer,
-                                        _rerr_address_consumer_entries, ARRAYSIZE(_rerr_address_consumer_entries));
+                                        _rerr_address_consumer_entries,
+                                        ARRAYSIZE(_rerr_address_consumer_entries));
 }
 
 void reader_cleanup(void)

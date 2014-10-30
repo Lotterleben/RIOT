@@ -69,7 +69,8 @@ void routingtable_add_entry(struct aodvv2_routing_entry_t *entry)
     }
 }
 
-struct aodvv2_routing_entry_t *routingtable_get_entry(struct netaddr *addr, aodvv2_metric_t metricType)
+struct aodvv2_routing_entry_t *routingtable_get_entry(struct netaddr *addr,
+                                                      aodvv2_metric_t metricType)
 {
     for (unsigned i = 0; i < AODVV2_MAX_ROUTING_ENTRIES; i++) {
         _reset_entry_if_stale(i);
@@ -99,7 +100,9 @@ void routingtable_delete_entry(struct netaddr *addr, aodvv2_metric_t metricType)
     }
 }
 
-void routingtable_break_and_get_all_hopping_over(struct netaddr *hop, struct unreachable_node unreachable_nodes[], size_t *len)
+void routingtable_break_and_get_all_hopping_over(struct netaddr *hop,
+                                                 struct unreachable_node unreachable_nodes[],
+                                                 size_t *len)
 {
     *len = 0; /* to be sure */
 
@@ -147,7 +150,8 @@ static void _reset_entry_if_stale(uint8_t i)
 
         if ((state == ROUTE_STATE_ACTIVE) &&
             (timex_cmp(timex_sub(now, active_interval), lastUsed) == 1)) {
-            DEBUG("\t[routing] route towards %s Idle\n", netaddr_to_string(&nbuf, &routing_table[i].addr));
+            DEBUG("\t[routing] route towards %s Idle\n",
+                  netaddr_to_string(&nbuf, &routing_table[i].addr));
             routing_table[i].state = ROUTE_STATE_IDLE;
             routing_table[i].lastUsed = now; /* mark the time entry was set to Idle */
         }
@@ -163,8 +167,11 @@ static void _reset_entry_if_stale(uint8_t i)
 
         if ((state == ROUTE_STATE_IDLE) &&
             (timex_cmp(expirationTime, now) < 1)) {
-            DEBUG("\t[routing] route towards %s Expired\n", netaddr_to_string(&nbuf, &routing_table[i].addr));
-            DEBUG("\t expirationTime: %"PRIu32":%"PRIu32" , now: %"PRIu32":%"PRIu32"\n", expirationTime.seconds, expirationTime.microseconds, now.seconds, now.microseconds);
+            DEBUG("\t[routing] route towards %s Expired\n",
+                  netaddr_to_string(&nbuf, &routing_table[i].addr));
+            DEBUG("\t expirationTime: %"PRIu32":%"PRIu32" , now: %"PRIu32":%"PRIu32"\n",
+                  expirationTime.seconds, expirationTime.microseconds,
+                  now.seconds, now.microseconds);
             routing_table[i].state = ROUTE_STATE_EXPIRED;
             routing_table[i].lastUsed = now; /* mark the time entry was set to Expired */
         }
@@ -172,20 +179,23 @@ static void _reset_entry_if_stale(uint8_t i)
         /* After that time, old sequence number information is considered no longer
          * valuable and the Expired route MUST BE expunged */
         if (timex_cmp(timex_sub(now, lastUsed), max_seqnum_lifetime) >= 0) {
-            DEBUG("\t[routing] reset routing table entry for %s at %i\n", netaddr_to_string(&nbuf, &routing_table[i].addr), i);
+            DEBUG("\t[routing] reset routing table entry for %s at %i\n",
+                  netaddr_to_string(&nbuf, &routing_table[i].addr), i);
             memset(&routing_table[i], 0, sizeof(routing_table[i]));
         }
     }
 }
 
-bool routingtable_offers_improvement(struct aodvv2_routing_entry_t *rt_entry, struct node_data *node_data)
+bool routingtable_offers_improvement(struct aodvv2_routing_entry_t *rt_entry,
+                                     struct node_data *node_data)
 {
     /* Check if new info is stale */
     if (seqnum_cmp(node_data->seqnum, rt_entry->seqnum) == -1) {
         return false;
     }
     /* Check if new info is more costly */
-    if ((node_data->metric >= rt_entry->metric) && !(rt_entry->state != ROUTE_STATE_BROKEN)) {
+    if ((node_data->metric >= rt_entry->metric)
+        && !(rt_entry->state != ROUTE_STATE_BROKEN)) {
         return false;
     }
     /* Check if new info repairs a broken route */
@@ -195,7 +205,9 @@ bool routingtable_offers_improvement(struct aodvv2_routing_entry_t *rt_entry, st
     return true;
 }
 
-void routingtable_fill_routing_entry_t_rreq(struct aodvv2_packet_data *packet_data, struct aodvv2_routing_entry_t *rt_entry, uint8_t link_cost)
+void routingtable_fill_routing_entry_t_rreq(struct aodvv2_packet_data *packet_data,
+                                            struct aodvv2_routing_entry_t *rt_entry,
+                                            uint8_t link_cost)
 {
     rt_entry->addr = packet_data->origNode.addr;
     rt_entry->seqnum = packet_data->origNode.seqnum;
@@ -207,7 +219,9 @@ void routingtable_fill_routing_entry_t_rreq(struct aodvv2_packet_data *packet_da
     rt_entry->state = ROUTE_STATE_ACTIVE;
 }
 
-void routingtable_fill_routing_entry_t_rrep(struct aodvv2_packet_data *packet_data, struct aodvv2_routing_entry_t *rt_entry, uint8_t link_cost)
+void routingtable_fill_routing_entry_t_rrep(struct aodvv2_packet_data *packet_data,
+                                            struct aodvv2_routing_entry_t *rt_entry,
+                                            uint8_t link_cost)
 {
     rt_entry->addr = packet_data->targNode.addr;
     rt_entry->seqnum = packet_data->targNode.seqnum;
@@ -224,7 +238,8 @@ void print_routingtable(void)
     printf("===== BEGIN ROUTING TABLE ===================\n");
     for (int i = 0; i < AODVV2_MAX_ROUTING_ENTRIES; i++) {
         /* route has been used before => non-empty entry */
-        if (routing_table[i].lastUsed.seconds || routing_table[i].lastUsed.microseconds) {
+        if (routing_table[i].lastUsed.seconds
+            || routing_table[i].lastUsed.microseconds) {
             print_routingtable_entry(&routing_table[i]);
         }
     }
@@ -238,9 +253,12 @@ void print_routingtable_entry(struct aodvv2_routing_entry_t *rt_entry)
     printf(".................................\n");
     printf("\t address: %s\n", netaddr_to_string(&nbuf, &(rt_entry->addr)));
     printf("\t seqnum: %i\n", rt_entry->seqnum);
-    printf("\t nextHopAddress: %s\n", netaddr_to_string(&nbuf, &(rt_entry->nextHopAddr)));
-    printf("\t lastUsed: %"PRIu32":%"PRIu32"\n", rt_entry->lastUsed.seconds, rt_entry->lastUsed.microseconds);
-    printf("\t expirationTime: %"PRIu32":%"PRIu32"\n", rt_entry->expirationTime.seconds, rt_entry->expirationTime.microseconds);
+    printf("\t nextHopAddress: %s\n",
+            netaddr_to_string(&nbuf, &(rt_entry->nextHopAddr)));
+    printf("\t lastUsed: %"PRIu32":%"PRIu32"\n",
+            rt_entry->lastUsed.seconds, rt_entry->lastUsed.microseconds);
+    printf("\t expirationTime: %"PRIu32":%"PRIu32"\n",
+            rt_entry->expirationTime.seconds, rt_entry->expirationTime.microseconds);
     printf("\t metricType: %i\n", rt_entry->metricType);
     printf("\t metric: %d\n", rt_entry->metric);
     printf("\t state: %d\n", rt_entry->state);

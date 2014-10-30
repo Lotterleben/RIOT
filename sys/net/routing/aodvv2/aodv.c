@@ -48,7 +48,8 @@ static int _sock_snd;
 static struct autobuf _hexbuf;
 static sockaddr6_t sa_wp;
 static ipv6_addr_t _v6_addr_local, _v6_addr_mcast, _v6_addr_loopback;
-static struct netaddr na_local; /* the same as _v6_addr_local, but to save us constant calls to ipv6_addr_t_to_netaddr()... */
+static struct netaddr na_local; /* the same as _v6_addr_local, but to save us
+                                 * constant calls to ipv6_addr_t_to_netaddr()... */
 static struct writer_target *wt;
 
 #if DEBUG
@@ -77,9 +78,12 @@ void aodv_init(void)
     writer_init(_write_packet);
 
     /* start listening & enable sending */
-    thread_create(aodv_rcv_stack_buf, sizeof(aodv_rcv_stack_buf), PRIORITY_MAIN, CREATE_STACKTEST, _aodv_receiver_thread, NULL, "_aodv_receiver_thread");
+    thread_create(aodv_rcv_stack_buf, sizeof(aodv_rcv_stack_buf), PRIORITY_MAIN,
+                  CREATE_STACKTEST, _aodv_receiver_thread, NULL, "_aodv_receiver_thread");
     DEBUG("[aodvv2] listening on port %d\n", HTONS(MANET_PORT));
-    sender_thread = thread_create(aodv_snd_stack_buf, KERNEL_CONF_STACKSIZE_MAIN, PRIORITY_MAIN, CREATE_STACKTEST, _aodv_sender_thread, NULL, "_aodv_sender_thread");
+    sender_thread = thread_create(aodv_snd_stack_buf, KERNEL_CONF_STACKSIZE_MAIN,
+                                  PRIORITY_MAIN, CREATE_STACKTEST, _aodv_sender_thread,
+                                  NULL, "_aodv_sender_thread");
 
     /* register aodv for routing */
     ipv6_iface_set_routing_provider(aodv_get_next_hop);
@@ -186,11 +190,13 @@ static void _init_addresses(void)
 {
     /* init multicast address: set to to a link-local all nodes multicast address */
     ipv6_addr_set_all_nodes_addr(&_v6_addr_mcast);
-    DEBUG("[aodvv2] my multicast address is: %s\n", ipv6_addr_to_str(addr_str, IPV6_MAX_ADDR_STR_LEN, &_v6_addr_mcast));
+    DEBUG("[aodvv2] my multicast address is: %s\n",
+          ipv6_addr_to_str(addr_str, IPV6_MAX_ADDR_STR_LEN, &_v6_addr_mcast));
 
     /* get best IP for sending */
     ipv6_net_if_get_best_src_addr(&_v6_addr_local, &_v6_addr_mcast);
-    DEBUG("[aodvv2] my src address is:       %s\n", ipv6_addr_to_str(addr_str, IPV6_MAX_ADDR_STR_LEN, &_v6_addr_local));
+    DEBUG("[aodvv2] my src address is:       %s\n",
+          ipv6_addr_to_str(addr_str, IPV6_MAX_ADDR_STR_LEN, &_v6_addr_local));
 
     /* store src & multicast address as netaddr as well for easy interaction
      * with oonf based stuff */
@@ -240,7 +246,8 @@ static void *_aodv_sender_thread(void *arg)
         }
         else if (mc->type == RFC5444_MSGTYPE_RERR) {
             struct rerr_data *rerr_data = (struct rerr_data *) mc->data;
-            writer_send_rerr(rerr_data->unreachable_nodes, rerr_data->len, rerr_data->hoplimit, rerr_data->next_hop);
+            writer_send_rerr(rerr_data->unreachable_nodes, rerr_data->len,
+                             rerr_data->hoplimit, rerr_data->next_hop);
         }
         else {
             DEBUG("ERROR: Couldn't identify Message\n");
@@ -284,8 +291,10 @@ static void *_aodv_receiver_thread(void *arg)
             DEBUG("[aodvv2] ERROR receiving data!\n");
         }
 
-        DEBUG("[aodvv2] _aodv_receiver_thread() %s:", ipv6_addr_to_str(addr_str, IPV6_MAX_ADDR_STR_LEN, &_v6_addr_local));
-        DEBUG(" UDP packet received from %s\n", ipv6_addr_to_str(addr_str, IPV6_MAX_ADDR_STR_LEN, &sa_rcv.sin6_addr));
+        DEBUG("[aodvv2] _aodv_receiver_thread() %s:",
+              ipv6_addr_to_str(addr_str, IPV6_MAX_ADDR_STR_LEN, &_v6_addr_local));
+        DEBUG(" UDP packet received from %s\n",
+              ipv6_addr_to_str(addr_str, IPV6_MAX_ADDR_STR_LEN, &sa_rcv.sin6_addr));
 
         struct netaddr _sender;
         ipv6_addr_t_to_netaddr(&sa_rcv.sin6_addr, &_sender);
@@ -304,8 +313,10 @@ static void *_aodv_receiver_thread(void *arg)
 
 ipv6_addr_t *aodv_get_next_hop(ipv6_addr_t *dest)
 {
-    DEBUG("[aodvv2] aodv_get_next_hop() %s:", ipv6_addr_to_str(addr_str, IPV6_MAX_ADDR_STR_LEN, &_v6_addr_local));
-    DEBUG(" getting next hop for %s\n", ipv6_addr_to_str(addr_str, IPV6_MAX_ADDR_STR_LEN, dest));
+    DEBUG("[aodvv2] aodv_get_next_hop() %s:",
+          ipv6_addr_to_str(addr_str, IPV6_MAX_ADDR_STR_LEN, &_v6_addr_local));
+    DEBUG(" getting next hop for %s\n",
+          ipv6_addr_to_str(addr_str, IPV6_MAX_ADDR_STR_LEN, dest));
 
     struct netaddr _tmp_dest;
     ipv6_addr_t_to_netaddr(dest, &_tmp_dest);
@@ -313,7 +324,7 @@ ipv6_addr_t *aodv_get_next_hop(ipv6_addr_t *dest)
     struct unreachable_node unreachable_nodes[AODVV2_MAX_UNREACHABLE_NODES];
     size_t len;
 
-    /* currently, the network stack sometimes asks us for the next hop towards our own IP... */
+    /* The network stack sometimes asks us for the next hop towards our own IP */
     if (memcmp(dest, &_v6_addr_local, sizeof(ipv6_addr_t)) == 0) {
         DEBUG("[aodvv2] That's me, returning loopback\n");
         return &_v6_addr_loopback;
@@ -334,7 +345,8 @@ ipv6_addr_t *aodv_get_next_hop(ipv6_addr_t *dest)
             ndp_nc_entry->state == NDP_NCE_STATUS_PROBE) &&
             (rt_entry != NULL && rt_entry->state != ROUTE_STATE_BROKEN)) {
 
-            DEBUG("\tNeighbor Cache entry found, but invalid (state: %i). Sending RERR.\n", ndp_nc_entry->state);
+            DEBUG("\tNeighbor Cache entry found, but invalid (state: %i). Sending RERR.\n",
+                  ndp_nc_entry->state);
 
             /* mark all routes (active, idle, expired) that use next_hop as broken
              * and add all *Active* routes to the list of unreachable nodes */
@@ -347,20 +359,23 @@ ipv6_addr_t *aodv_get_next_hop(ipv6_addr_t *dest)
         DEBUG("[aodvv2][ndp] found NC entry. Returning dest addr.\n");
         return dest;
     }
-    DEBUG("\t[ndp] no entry for addr %s found\n", ipv6_addr_to_str(addr_str, IPV6_MAX_ADDR_STR_LEN, dest));
+    DEBUG("\t[ndp] no entry for addr %s found\n",
+          ipv6_addr_to_str(addr_str, IPV6_MAX_ADDR_STR_LEN, dest));
 
     if (rt_entry) {
         /* Case 1: Undeliverable Packet */
         if (rt_entry->state == ROUTE_STATE_BROKEN ||
             rt_entry->state == ROUTE_STATE_EXPIRED ) {
-            DEBUG("\tRouting table entry found, but invalid (state %i). Sending RERR.\n", rt_entry->state);
+            DEBUG("\tRouting table entry found, but invalid (state %i). Sending RERR.\n",
+                  rt_entry->state);
             unreachable_nodes[0].addr = _tmp_dest;
             unreachable_nodes[0].seqnum = rt_entry->seqnum;
             aodv_send_rerr(unreachable_nodes, 1, &na_mcast);
             return NULL;
         }
 
-        DEBUG("\tfound dest %s in routing table\n",  ipv6_addr_to_str(addr_str, IPV6_MAX_ADDR_STR_LEN, dest));
+        DEBUG("\tfound dest %s in routing table\n",
+              ipv6_addr_to_str(addr_str, IPV6_MAX_ADDR_STR_LEN, dest));
 
         vtimer_now(&now);
         rt_entry->lastUsed = now;
@@ -398,10 +413,12 @@ ipv6_addr_t *aodv_get_next_hop(ipv6_addr_t *dest)
         {
             .addr = _tmp_dest,
         },
-        .timestamp = (timex_t) {0,0} /* this timestamp is never used, it exists merely to make the compiler shut up */
+        .timestamp = (timex_t) {0,0} /* this timestamp is never used, it exists
+                                      * merely to make the compiler shut up */
     };
 
-    DEBUG("\tNo route found towards %s, starting route discovery... \n", ipv6_addr_to_str(addr_str, IPV6_MAX_ADDR_STR_LEN, dest));
+    DEBUG("\tNo route found towards %s, starting route discovery... \n",
+          ipv6_addr_to_str(addr_str, IPV6_MAX_ADDR_STR_LEN, dest));
     aodv_send_rreq(&rreq_data);
 
     return NULL;
@@ -434,8 +451,11 @@ static void _write_packet(struct rfc5444_writer *wr __attribute__ ((unused)),
     netaddr_to_ipv6_addr_t(&wt->target_addr, &sa_wp.sin6_addr);
 
     /* When originating a RREQ, add it to our RREQ table/update its predecessor */
-    if (wt->type == RFC5444_MSGTYPE_RREQ && netaddr_cmp(&wt->packet_data.origNode.addr, &na_local) == 0) {
-        DEBUG("[aodvv2] originating RREQ with SeqNum %d towards %s; updating RREQ table...\n", wt->packet_data.origNode.seqnum, netaddr_to_string(&nbuf, &wt->packet_data.targNode.addr));
+    if (wt->type == RFC5444_MSGTYPE_RREQ
+        && netaddr_cmp(&wt->packet_data.origNode.addr, &na_local) == 0) {
+        DEBUG("[aodvv2] originating RREQ with SeqNum %d towards %s; updating RREQ table...\n",
+              wt->packet_data.origNode.seqnum,
+              netaddr_to_string(&nbuf, &wt->packet_data.targNode.addr));
         rreqtable_is_redundant(&wt->packet_data);
     }
 
