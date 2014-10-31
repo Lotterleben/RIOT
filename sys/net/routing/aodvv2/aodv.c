@@ -35,8 +35,9 @@ static void _write_packet(struct rfc5444_writer *wr __attribute__ ((unused)),
                           struct rfc5444_writer_target *iface __attribute__((unused)),
                           void *buffer, size_t length);
 
-#if DEBUG
+#ifdef DEBUG
 char addr_str[IPV6_MAX_ADDR_STR_LEN];
+static struct netaddr_str nbuf;
 #endif
 
 char aodv_rcv_stack_buf[KERNEL_CONF_STACKSIZE_MAIN];
@@ -52,9 +53,6 @@ static struct netaddr na_local; /* the same as _v6_addr_local, but to save us
                                  * constant calls to ipv6_addr_t_to_netaddr()... */
 static struct writer_target *wt;
 
-#if DEBUG
-static struct netaddr_str nbuf;
-#endif
 
 void aodv_init(void)
 {
