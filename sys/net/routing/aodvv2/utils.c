@@ -237,7 +237,5 @@ void ipv6_addr_t_to_netaddr(ipv6_addr_t *src, struct netaddr *dst)
 
 void netaddr_to_ipv6_addr_t(struct netaddr *src, ipv6_addr_t *dst)
 {
-    for (unsigned i = 0; i < NETADDR_MAX_LENGTH; i++) {
-        memcpy(dst, src->_addr, sizeof(uint8_t) * NETADDR_MAX_LENGTH);
-    }
+    memcpy(dst, src->_addr, sizeof(uint8_t) * NETADDR_MAX_LENGTH);
 }
