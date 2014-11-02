@@ -20,7 +20,7 @@
 #include "aodv.h"
 #include "aodvv2/aodvv2.h"
 
-#define ENABLE_DEBUG (1)
+#define ENABLE_DEBUG (0)
 #include "debug.h"
 
 #define UDP_BUFFER_SIZE     (128) /** with respect to IEEE 802.15.4's MTU */
@@ -57,6 +57,10 @@ static struct writer_target *wt;
 void aodv_init(void)
 {
     DEBUG("[aodvv2] %s()\n", __func__);
+
+    // TODO: set if_id properly
+    int if_id = 0;
+    net_if_set_src_address_mode(if_id, NET_IF_TRANS_ADDR_M_SHORT);
 
     aodv_set_metric_type(AODVV2_DEFAULT_METRIC_TYPE);
     _init_addresses();
@@ -451,9 +455,9 @@ static void _write_packet(struct rfc5444_writer *wr __attribute__ ((unused)),
     /* When originating a RREQ, add it to our RREQ table/update its predecessor */
     if (wt->type == RFC5444_MSGTYPE_RREQ
         && netaddr_cmp(&wt->packet_data.origNode.addr, &na_local) == 0) {
-        DEBUG("[aodvv2] originating RREQ with SeqNum %d towards %s; updating RREQ table...\n",
+        DEBUG("[aodvv2] originating RREQ with SeqNum %d towards %s via %s; updating RREQ table...\n",
               wt->packet_data.origNode.seqnum,
-              //netaddr_to_string(&nbuf, &wt->packet_data.targNode.addr));
+              netaddr_to_string(&nbuf, &wt->packet_data.targNode.addr),
               ipv6_addr_to_str(addr_str, IPV6_MAX_ADDR_STR_LEN, &sa_wp.sin6_addr));
         rreqtable_is_redundant(&wt->packet_data);
     }

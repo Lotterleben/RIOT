@@ -26,6 +26,7 @@
 #include "udp.h"
 #include "socket_base/socket.h"
 #include "net_help.h"
+#include "net_if.h"
 
 #include "aodvv2/types.h"
 #include "constants.h"
