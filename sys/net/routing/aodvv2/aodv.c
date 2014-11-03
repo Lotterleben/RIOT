@@ -58,7 +58,7 @@ void aodv_init(void)
 {
     DEBUG("[aodvv2] %s()\n", __func__);
 
-    // TODO: set if_id properly
+    /* TODO: set if_id properly */
     int if_id = 0;
     net_if_set_src_address_mode(if_id, NET_IF_TRANS_ADDR_M_SHORT);
 
