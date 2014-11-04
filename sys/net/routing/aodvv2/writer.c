@@ -26,6 +26,11 @@
 #define ENABLE_DEBUG (0)
 #include "debug.h"
 
+#ifdef DEBUG
+#define ENABLE_AODV_DEBUG (1)
+#include "aodv_debug.h"
+#endif
+
 static void _cb_addMessageHeader(struct rfc5444_writer *wr,
                                  struct rfc5444_writer_message *message);
 
@@ -114,7 +119,7 @@ static struct rfc5444_writer_tlvtype _rerr_addrtlvs[] =
 static void
 _cb_addMessageHeader(struct rfc5444_writer *wr, struct rfc5444_writer_message *message)
 {
-    DEBUG("[aodvv2] %s()\n", __func__);
+    AODV_DEBUG("%s()\n", __func__);
 
     /* no originator, no hopcount, has hoplimit, no seqno */
     rfc5444_writer_set_msg_header(wr, message, false, false, true, false);
@@ -128,7 +133,7 @@ _cb_addMessageHeader(struct rfc5444_writer *wr, struct rfc5444_writer_message *m
 static void
 _cb_rreq_addAddresses(struct rfc5444_writer *wr)
 {
-    DEBUG("[aodvv2] %s()\n", __func__);
+    AODV_DEBUG("%s()\n", __func__);
 
     struct rfc5444_writer_address *origNode_addr;
 
@@ -160,7 +165,7 @@ _cb_rreq_addAddresses(struct rfc5444_writer *wr)
 static void
 _cb_rrep_addAddresses(struct rfc5444_writer *wr)
 {
-    DEBUG("[aodvv2] %s()\n", __func__);
+    AODV_DEBUG("%s()\n", __func__);
 
     struct rfc5444_writer_address *origNode_addr, *targNode_addr;
 
@@ -198,7 +203,7 @@ _cb_rrep_addAddresses(struct rfc5444_writer *wr)
 static void
 _cb_rerr_addAddresses(struct rfc5444_writer *wr)
 {
-    DEBUG("[aodvv2] %s()\n", __func__);
+    AODV_DEBUG("%s()\n", __func__);
 
     for (unsigned i = 0; i < _num_unreachable_nodes; i++) {
         /* add unreachableNode addresses (has no address tlv); is mandatory address */
@@ -220,7 +225,7 @@ _cb_rerr_addAddresses(struct rfc5444_writer *wr)
 
 void writer_init(write_packet_func_ptr ptr)
 {
-    DEBUG("[aodvv2] %s()\n", __func__);
+    AODV_DEBUG("%s()\n", __func__);
 
     mutex_init(&writer_mutex);
 
@@ -273,7 +278,7 @@ void writer_init(write_packet_func_ptr ptr)
  */
 void writer_send_rreq(struct aodvv2_packet_data *packet_data, struct netaddr *next_hop)
 {
-    DEBUG("[aodvv2] %s()\n", __func__);
+    AODV_DEBUG("%s()\n", __func__);
 
     if (packet_data == NULL || next_hop == NULL) {
         return;
@@ -302,7 +307,7 @@ void writer_send_rreq(struct aodvv2_packet_data *packet_data, struct netaddr *ne
  */
 void writer_send_rrep(struct aodvv2_packet_data *packet_data, struct netaddr *next_hop)
 {
-    DEBUG("[aodvv2] %s()\n", __func__);
+    AODV_DEBUG("%s()\n", __func__);
 
     if (packet_data == NULL || next_hop == NULL) {
         return;
@@ -334,7 +339,7 @@ void writer_send_rrep(struct aodvv2_packet_data *packet_data, struct netaddr *ne
 void writer_send_rerr(struct unreachable_node unreachable_nodes[], size_t len,
                       int hoplimit, struct netaddr *next_hop)
 {
-    DEBUG("[aodvv2] %s()\n", __func__);
+    AODV_DEBUG("%s()\n", __func__);
 
     if (unreachable_nodes == NULL || next_hop == NULL) {
         return;
@@ -356,6 +361,6 @@ void writer_send_rerr(struct unreachable_node unreachable_nodes[], size_t len,
 
 void writer_cleanup(void)
 {
-    DEBUG("[aodvv2] %s()\n", __func__);
+    AODV_DEBUG("%s()\n", __func__);
     rfc5444_writer_cleanup(&writer);
 }

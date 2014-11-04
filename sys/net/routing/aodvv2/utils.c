@@ -22,6 +22,11 @@
 #define ENABLE_DEBUG (0)
 #include "debug.h"
 
+#ifdef DEBUG
+#define ENABLE_AODV_DEBUG (1)
+#include "aodv_debug.h"
+#endif
+
 /* Some aodvv2 utilities (mostly tables) */
 static mutex_t clientt_mutex;
 static mutex_t rreqt_mutex;
@@ -48,7 +53,7 @@ void clienttable_init(void)
     }
     mutex_unlock(&clientt_mutex);
 
-    DEBUG("[aodvv2] client table initialized.\n");
+    AODV_DEBUG("client table initialized.\n");
 }
 
 void clienttable_add_client(struct netaddr *addr)
@@ -60,13 +65,13 @@ void clienttable_add_client(struct netaddr *addr)
             if ((client_table[i]._type == AF_UNSPEC) &&
                 (client_table[i]._prefix_len == 0)) {
                 client_table[i] = *addr;
-                DEBUG("[aodvv2] clienttable: added client %s\n",
+                AODV_DEBUG("clienttable: added client %s\n",
                       netaddr_to_string(&nbuf, addr));
                 mutex_unlock(&clientt_mutex);
                 return;
             }
         }
-        DEBUG("[aodvv2] Error: Client could not be added: Client table is full.\n");
+        AODV_DEBUG("Error: Client could not be added: Client table is full.\n");
         mutex_unlock(&clientt_mutex);
     }
 }
@@ -110,7 +115,7 @@ void rreqtable_init(void)
         memset(&rreq_table[i], 0, sizeof(rreq_table[i]));
     }
     mutex_unlock(&rreqt_mutex);
-    DEBUG("[aodvv2] RREQ table initialized.\n");
+    AODV_DEBUG("RREQ table initialized.\n");
 }
 
 bool rreqtable_is_redundant(struct aodvv2_packet_data *packet_data)

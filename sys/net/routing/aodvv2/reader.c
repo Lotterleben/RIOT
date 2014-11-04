@@ -26,12 +26,14 @@
 #define ENABLE_DEBUG (0)
 #include "debug.h"
 
+#ifdef DEBUG
+#define ENABLE_AODV_DEBUG (1)
+#include "aodv_debug.h"
+#endif
+
 #define VERBOSE_DEBUG (0)
 #if VERBOSE_DEBUG
-#define VDEBUG(...) printf(__VA_ARGS__)
-#undef VERBOSE_DEBUG
-#else
-#define VDEBUG(...)
+#define VDEBUG(...) AODV_DEBUG(__VA_ARGS__)
 #endif
 
 static enum rfc5444_result _cb_rreq_blocktlv_addresstlvs_okay(
@@ -167,7 +169,7 @@ static struct rfc5444_reader_tlvblock_consumer_entry _rerr_address_consumer_entr
  */
 static enum rfc5444_result _cb_rreq_blocktlv_messagetlvs_okay(struct rfc5444_reader_tlvblock_context *cont)
 {
-    VDEBUG("[aodvv2] %s()\n", __func__);
+    VDEBUG("%s()\n", __func__);
 
     if (!cont->has_hoplimit) {
         DEBUG("\tERROR: missing hop limit\n");
@@ -198,7 +200,7 @@ static enum rfc5444_result _cb_rreq_blocktlv_addresstlvs_okay(struct rfc5444_rea
     bool is_origNode_addr = false;
     bool is_targNode_addr = false;
 
-    VDEBUG("[aodvv2] %s()\n", __func__);
+    VDEBUG("%s()\n", __func__);
     DEBUG("\taddr: %s\n", netaddr_to_string(&nbuf, &cont->addr));
 
     /* handle OrigNode SeqNum TLV */
@@ -366,14 +368,14 @@ static enum rfc5444_result _cb_rreq_end_callback(
      * processing continues as follows.
      */
     if (clienttable_is_client(&packet_data.targNode.addr)) {
-        DEBUG("[aodvv2] TargNode is in client list, sending RREP\n");
+        AODV_DEBUG("TargNode is in client list, sending RREP\n");
 
         /* make sure to start with a clean metric value */
         packet_data.targNode.metric = 0;
         aodv_send_rrep(&packet_data, &packet_data.sender);
     }
     else {
-        DEBUG("[aodvv2] I am not TargNode, forwarding RREQ\n");
+        AODV_DEBUG("I am not TargNode, forwarding RREQ\n");
         aodv_send_rreq(&packet_data);
     }
     return RFC5444_OKAY;
@@ -387,7 +389,7 @@ static enum rfc5444_result _cb_rreq_end_callback(
  */
 static enum rfc5444_result _cb_rrep_blocktlv_messagetlvs_okay(struct rfc5444_reader_tlvblock_context *cont)
 {
-    VDEBUG("[aodvv2] %s()\n", __func__);
+    VDEBUG("%s()\n", __func__);
 
     if (!cont->has_hoplimit) {
         VDEBUG("\tERROR: missing hop limit\n");
@@ -418,7 +420,7 @@ static enum rfc5444_result _cb_rrep_blocktlv_addresstlvs_okay(struct rfc5444_rea
     struct rfc5444_reader_tlvblock_entry *tlv;
     bool is_targNode_addr = false;
 
-    VDEBUG("[aodvv2] %s()\n", __func__);
+    VDEBUG("%s()\n", __func__);
     VDEBUG("\taddr: %s\n", netaddr_to_string(&nbuf, &cont->addr));
 
     /* handle TargNode SeqNum TLV */
@@ -477,7 +479,7 @@ static enum rfc5444_result _cb_rrep_end_callback(
 {
     (void) cont;
 
-    VDEBUG("[aodvv2] %s()\n", __func__);
+    VDEBUG("%s()\n", __func__);
 
     struct aodvv2_routing_entry_t *rt_entry;
 #ifdef DEBUG
@@ -576,7 +578,7 @@ static enum rfc5444_result _cb_rrep_end_callback(
     /* If HandlingRtr is not RREQ_Gen then the outgoing RREP is sent to the
      * Route.NextHopAddress for the RREP.AddrBlk[OrigNodeNdx]. */
     else {
-        DEBUG("[aodvv2] Not my RREP, passing it on to the next hop\n");
+        AODV_DEBUG("Not my RREP, passing it on to the next hop\n");
         aodv_send_rrep(&packet_data,
                        routingtable_get_next_hop(&packet_data.origNode.addr,packet_data.metricType));
     }
@@ -585,7 +587,7 @@ static enum rfc5444_result _cb_rrep_end_callback(
 
 static enum rfc5444_result _cb_rerr_blocktlv_messagetlvs_okay(struct rfc5444_reader_tlvblock_context *cont)
 {
-    VDEBUG("[aodvv2] %s()\n", __func__);
+    VDEBUG("%s()\n", __func__);
 
     if (!cont->has_hoplimit) {
         VDEBUG("\tERROR: missing hop limit\n");
@@ -616,7 +618,7 @@ static enum rfc5444_result _cb_rerr_blocktlv_addresstlvs_okay(struct rfc5444_rea
     struct aodvv2_routing_entry_t *unreachable_entry;
     struct rfc5444_reader_tlvblock_entry *tlv;
 
-    VDEBUG("[aodvv2] %s()\n", __func__);
+    VDEBUG("%s()\n", __func__);
     VDEBUG("\tmessage type: %d\n", cont->type);
     VDEBUG("\taddr: %s\n", netaddr_to_string(&nbuf, &cont->addr));
 
@@ -675,7 +677,7 @@ static enum rfc5444_result _cb_rerr_end_callback(struct rfc5444_reader_tlvblock_
 
 void reader_init(void)
 {
-    VDEBUG("[aodvv2] %s()\n", __func__);
+    VDEBUG("%s()\n", __func__);
 
     /* initialize reader */
     rfc5444_reader_init(&reader);
@@ -703,13 +705,13 @@ void reader_init(void)
 
 void reader_cleanup(void)
 {
-    VDEBUG("[aodvv2] %s()\n", __func__);
+    VDEBUG("%s()\n", __func__);
     rfc5444_reader_cleanup(&reader);
 }
 
 int reader_handle_packet(void *buffer, size_t length, struct netaddr *sender)
 {
-    DEBUG("[aodvv2] %s()\n", __func__);
+    AODV_DEBUG("%s()\n", __func__);
     memcpy(&packet_data.sender, sender, sizeof(*sender));
     DEBUG("\t sender: %s\n", netaddr_to_string(&nbuf, &packet_data.sender));
 

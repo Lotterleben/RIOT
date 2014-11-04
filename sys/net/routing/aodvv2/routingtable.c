@@ -22,6 +22,11 @@
 #define ENABLE_DEBUG (0)
 #include "debug.h"
 
+#ifdef DEBUG
+#define ENABLE_AODV_DEBUG (1)
+#include "aodv_debug.h"
+#endif
+
 /* helper functions */
 static void _reset_entry_if_stale(uint8_t i);
 
@@ -43,7 +48,7 @@ void routingtable_init(void)
     for (unsigned i = 0; i < AODVV2_MAX_ROUTING_ENTRIES; i++) {
         memset(&routing_table[i], 0, sizeof(routing_table[i]));
     }
-    DEBUG("[aodvv2] routing table initialized.\n");
+    AODV_DEBUG("routing table initialized.\n");
 }
 
 struct netaddr *routingtable_get_next_hop(struct netaddr *dest, aodvv2_metric_t metricType)

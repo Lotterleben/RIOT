@@ -23,6 +23,11 @@
 #define ENABLE_DEBUG (0)
 #include "debug.h"
 
+#ifdef DEBUG
+#define ENABLE_AODV_DEBUG (1)
+#include "aodv_debug.h"
+#endif
+
 #define UDP_BUFFER_SIZE     (128) /** with respect to IEEE 802.15.4's MTU */
 #define RCV_MSG_Q_SIZE      (32)  /* TODO: check if smaller values work, too */
 
@@ -56,7 +61,7 @@ static struct writer_target *wt;
 
 void aodv_init(void)
 {
-    DEBUG("[aodvv2] %s()\n", __func__);
+    AODV_DEBUG("%s()\n", __func__);
 
     /* TODO: set if_id properly */
     int if_id = 0;
@@ -82,7 +87,7 @@ void aodv_init(void)
     /* start listening & enable sending */
     thread_create(aodv_rcv_stack_buf, sizeof(aodv_rcv_stack_buf), PRIORITY_MAIN,
                   CREATE_STACKTEST, _aodv_receiver_thread, NULL, "_aodv_receiver_thread");
-    DEBUG("[aodvv2] listening on port %d\n", HTONS(MANET_PORT));
+    AODV_DEBUG("listening on port %d\n", HTONS(MANET_PORT));
     sender_thread = thread_create(aodv_snd_stack_buf, KERNEL_CONF_STACKSIZE_MAIN,
                                   PRIORITY_MAIN, CREATE_STACKTEST, _aodv_sender_thread,
                                   NULL, "_aodv_sender_thread");
@@ -102,7 +107,7 @@ void aodv_set_metric_type(aodvv2_metric_t metric_type)
 
 void aodv_send_rreq(struct aodvv2_packet_data *packet_data)
 {
-    DEBUG("[aodvv2] %s()\n", __func__);
+    AODV_DEBUG("%s()\n", __func__);
 
     struct aodvv2_packet_data *pd = malloc(sizeof(struct aodvv2_packet_data));
     memcpy(pd, packet_data, sizeof(struct aodvv2_packet_data));
@@ -129,7 +134,7 @@ void aodv_send_rreq(struct aodvv2_packet_data *packet_data)
 
 void aodv_send_rrep(struct aodvv2_packet_data *packet_data, struct netaddr *next_hop)
 {
-    DEBUG("[aodvv2] %s()\n", __func__);
+    AODV_DEBUG("%s()\n", __func__);
 
     struct aodvv2_packet_data *pd = malloc(sizeof(struct aodvv2_packet_data));
     memcpy(pd, packet_data, sizeof(struct aodvv2_packet_data));
@@ -159,7 +164,7 @@ void aodv_send_rrep(struct aodvv2_packet_data *packet_data, struct netaddr *next
 
 void aodv_send_rerr(struct unreachable_node unreachable_nodes[], size_t len, struct netaddr *next_hop)
 {
-    DEBUG("[aodvv2] %s()\n", __func__);
+    AODV_DEBUG("%s()\n", __func__);
 
     struct rerr_data *rerrd = malloc(sizeof(struct rerr_data));
     *rerrd = (struct rerr_data)
@@ -192,12 +197,12 @@ static void _init_addresses(void)
 {
     /* init multicast address: set to to a link-local all nodes multicast address */
     ipv6_addr_set_all_nodes_addr(&_v6_addr_mcast);
-    DEBUG("[aodvv2] my multicast address is: %s\n",
+    AODV_DEBUG("my multicast address is: %s\n",
           ipv6_addr_to_str(addr_str, IPV6_MAX_ADDR_STR_LEN, &_v6_addr_mcast));
 
     /* get best IP for sending */
     ipv6_net_if_get_best_src_addr(&_v6_addr_local, &_v6_addr_mcast);
-    DEBUG("[aodvv2] my src address is:       %s\n",
+    AODV_DEBUG("my src address is:       %s\n",
           ipv6_addr_to_str(addr_str, IPV6_MAX_ADDR_STR_LEN, &_v6_addr_local));
 
     /* store src & multicast address as netaddr as well for easy interaction
@@ -217,7 +222,7 @@ static void _init_sock_snd(void)
     _sock_snd = socket_base_socket(PF_INET6, SOCK_DGRAM, IPPROTO_UDP);
 
     if (-1 == _sock_snd) {
-        DEBUG("[aodvv2] Error Creating Socket!\n");
+        AODV_DEBUG("Error Creating Socket!\n");
         return;
     }
 }
@@ -230,10 +235,10 @@ static void *_aodv_sender_thread(void *arg)
 
     msg_t msgq[RCV_MSG_Q_SIZE];
     msg_init_queue(msgq, sizeof msgq);
-    DEBUG("[aodvv2] _aodv_sender_thread initialized.\n");
+    AODV_DEBUG("_aodv_sender_thread initialized.\n");
 
     while (true) {
-        DEBUG("[aodvv2] %s()\n", __func__);
+        AODV_DEBUG("%s()\n", __func__);
         msg_t msg;
         msg_receive(&msg);
         struct msg_container *mc = (struct msg_container *) msg.content.ptr;
@@ -265,7 +270,7 @@ static void *_aodv_receiver_thread(void *arg)
 {
     (void) arg;
 
-    DEBUG("[aodvv2] %s()\n", __func__);
+    AODV_DEBUG("%s()\n", __func__);
     uint32_t fromlen;
     int32_t rcv_size;
     char buf_rcv[UDP_BUFFER_SIZE];
@@ -284,16 +289,16 @@ static void *_aodv_receiver_thread(void *arg)
         socket_base_close(sock_rcv);
     }
 
-    DEBUG("[aodvv2] ready to receive data\n");
+    AODV_DEBUG("ready to receive data\n");
     while (true) {
         rcv_size = socket_base_recvfrom(sock_rcv, (void *)buf_rcv, UDP_BUFFER_SIZE, 0,
                                         &sa_rcv, &fromlen);
 
         if (rcv_size < 0) {
-            DEBUG("[aodvv2] ERROR receiving data!\n");
+            AODV_DEBUG("ERROR receiving data!\n");
         }
 
-        DEBUG("[aodvv2] _aodv_receiver_thread() %s:",
+        AODV_DEBUG("_aodv_receiver_thread() %s:",
               ipv6_addr_to_str(addr_str, IPV6_MAX_ADDR_STR_LEN, &_v6_addr_local));
         DEBUG(" UDP packet received from %s\n",
               ipv6_addr_to_str(addr_str, IPV6_MAX_ADDR_STR_LEN, &sa_rcv.sin6_addr));
@@ -303,7 +308,7 @@ static void *_aodv_receiver_thread(void *arg)
 
         /* For some reason we sometimes get passed our own packets. drop them. */
         if (!netaddr_cmp(&_sender, &na_local) == 0) {
-            DEBUG("[aodvv2] received our own packet, dropping it.\n");
+            AODV_DEBUG("received our own packet, dropping it.\n");
             reader_handle_packet((void *) buf_rcv, rcv_size, &_sender);
         }
     }
@@ -315,7 +320,7 @@ static void *_aodv_receiver_thread(void *arg)
 
 ipv6_addr_t *aodv_get_next_hop(ipv6_addr_t *dest)
 {
-    DEBUG("[aodvv2] aodv_get_next_hop() %s:",
+    AODV_DEBUG("aodv_get_next_hop() %s:",
           ipv6_addr_to_str(addr_str, IPV6_MAX_ADDR_STR_LEN, &_v6_addr_local));
     DEBUG(" getting next hop for %s\n",
           ipv6_addr_to_str(addr_str, IPV6_MAX_ADDR_STR_LEN, dest));
@@ -328,7 +333,7 @@ ipv6_addr_t *aodv_get_next_hop(ipv6_addr_t *dest)
 
     /* The network stack sometimes asks us for the next hop towards our own IP */
     if (memcmp(dest, &_v6_addr_local, sizeof(ipv6_addr_t)) == 0) {
-        DEBUG("[aodvv2] That's me, returning loopback\n");
+        AODV_DEBUG("That's me, returning loopback\n");
         return &_v6_addr_loopback;
     }
 
@@ -438,7 +443,7 @@ static void _write_packet(struct rfc5444_writer *wr __attribute__ ((unused)),
                           struct rfc5444_writer_target *iface __attribute__((unused)),
                           void *buffer, size_t length)
 {
-    DEBUG("[aodvv2] %s()\n", __func__);
+    AODV_DEBUG("%s()\n", __func__);
     /* generate hexdump and human readable representation of packet
      * and print to console */
     abuf_hexdump(&_hexbuf, "\t", buffer, length);
@@ -455,7 +460,7 @@ static void _write_packet(struct rfc5444_writer *wr __attribute__ ((unused)),
     /* When originating a RREQ, add it to our RREQ table/update its predecessor */
     if (wt->type == RFC5444_MSGTYPE_RREQ
         && netaddr_cmp(&wt->packet_data.origNode.addr, &na_local) == 0) {
-        DEBUG("[aodvv2] originating RREQ with SeqNum %d towards %s via %s; updating RREQ table...\n",
+        AODV_DEBUG("originating RREQ with SeqNum %d towards %s via %s; updating RREQ table...\n",
               wt->packet_data.origNode.seqnum,
               netaddr_to_string(&nbuf, &wt->packet_data.targNode.addr),
               ipv6_addr_to_str(addr_str, IPV6_MAX_ADDR_STR_LEN, &sa_wp.sin6_addr));
@@ -466,7 +471,7 @@ static void _write_packet(struct rfc5444_writer *wr __attribute__ ((unused)),
                                         0, &sa_wp, sizeof sa_wp);
 
     (void) bytes_sent;
-    DEBUG("[aodvv2] %d bytes sent.\n", bytes_sent);
+    AODV_DEBUG("%d bytes sent.\n", bytes_sent);
 }
 
 /* free the matryoshka doll of cobbled-together structs that the sender_thread receives */
