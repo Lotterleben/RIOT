@@ -44,7 +44,7 @@ extern "C" {
 /**
  * @brief   This struct contains data which needs to be put into a RREQ or RREP.
  *          It is used to transport this data in a message to the sender_thread.
- *          Please note that it is for internal use only. To send a RREQ or RREP,
+ * @note    Please note that it is for internal use only. To send a RREQ or RREP,
  *          please use the aodv_send_rreq() and aodv_send_rrep() functions.
  */
 struct rreq_rrep_data
@@ -57,7 +57,7 @@ struct rreq_rrep_data
 /**
  * @brief   This struct contains data which needs to be put into a RERR.
  *          It is used to transport this data in a message to the sender_thread.
- *          Please note that it is for internal use only. To send a RERR,
+ * @note    Please note that it is for internal use only. To send a RERR,
  *          please use the aodv_send_rerr() function.
  */
 struct rerr_data
@@ -76,7 +76,7 @@ struct rerr_data
  *          in a rreq_rrep_data or rerr_data struct) and the next hop the RREQ, RREP
  *          or RERR should be sent to. It used for message communication with
  *          the sender_thread.
- *          Please note that it is for internal use only. To send a RERR,
+ * @note    Please note that it is for internal use only. To send a RERR,
  *          please use the aodv_send_rerr() function.
  */
 struct msg_container
