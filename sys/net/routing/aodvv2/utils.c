@@ -127,34 +127,34 @@ bool rreqtable_is_redundant(struct aodvv2_packet_data *packet_data)
     if (comparable_rreq == NULL) {
         _add_rreq(packet_data);
         result = false;
-    }
+    } else {
+        seqnum_comparison = seqnum_cmp(packet_data->origNode.seqnum, comparable_rreq->seqnum);
 
-    seqnum_comparison = seqnum_cmp(packet_data->origNode.seqnum, comparable_rreq->seqnum);
-
-    /*
-     * If two RREQs have the same
-     * metric type and OrigNode and Targnode addresses, the information from
-     * the one with the older Sequence Number is not needed in the table
-     */
-    if (seqnum_comparison == -1) {
-        result = true;
-    }
-
-    if (seqnum_comparison == 1) {
-        /* Update RREQ table entry with new seqnum value */
-        comparable_rreq->seqnum = packet_data->origNode.seqnum;
-    }
-
-    /*
-     * in case they have the same Sequence Number, the one with the greater
-     * Metric value is not needed
-     */
-    if (seqnum_comparison == 0) {
-        if (comparable_rreq->metric <= packet_data->origNode.metric) {
+        /*
+         * If two RREQs have the same
+         * metric type and OrigNode and Targnode addresses, the information from
+         * the one with the older Sequence Number is not needed in the table
+         */
+        if (seqnum_comparison == -1) {
             result = true;
         }
-        /* Update RREQ table entry with new metric value */
-        comparable_rreq->metric = packet_data->origNode.metric;
+
+        if (seqnum_comparison == 1) {
+            /* Update RREQ table entry with new seqnum value */
+            comparable_rreq->seqnum = packet_data->origNode.seqnum;
+        }
+
+        /*
+         * in case they have the same Sequence Number, the one with the greater
+         * Metric value is not needed
+         */
+        if (seqnum_comparison == 0) {
+            if (comparable_rreq->metric <= packet_data->origNode.metric) {
+                result = true;
+            }
+            /* Update RREQ table entry with new metric value */
+            comparable_rreq->metric = packet_data->origNode.metric;
+        }
     }
 
     /* Since we've changed RREQ info, update the timestamp */
