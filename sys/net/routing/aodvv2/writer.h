@@ -47,40 +47,44 @@ struct writer_target
     int type;                                   /**< Type of the AODVv2 Message (i.e. rfc5444_msg_type) */
 };
 
+/**
+ * @brief   oonf api voodo. Pointer to a callback function which is passed to
+ *          writer_init() and called when the packet is ready to send.
+ */
 typedef void (*write_packet_func_ptr)(
     struct rfc5444_writer *wr, struct rfc5444_writer_target *iface,
     void *buffer, size_t length);
 
 /**
- * Initialize RFC5444 writer
- * @param ptr pointer to "send_packet" callback
+ * @brief   Initialize RFC5444 writer
+ * @param ptr   pointer to "send_packet" callback
  */
 void aodv_packet_writer_init(write_packet_func_ptr ptr);
 
 /**
- * Clean up after the RFC5444 writer
+ * @brief   Clean up after the RFC5444 writer
  */
 void aodv_packet_writer_cleanup(void);
 
 /**
- * Send a RREQ. DO NOT use this function to dispatch packets from anything else
- * than the sender_thread. To send RREQs, use aodv_send_rreq().
- * @param packet_data parameters of the RREQ
+ * @brief   Send a RREQ. DO NOT use this function to dispatch packets from anything else
+ *          than the sender_thread. To send RREQs, use aodv_send_rreq().
+ * @param packet_data      parameters of the RREQ
  * @param next_hop Address the RREP is sent to
  */
 void aodv_packet_writer_send_rreq(struct aodvv2_packet_data *packet_data, struct netaddr *next_hop);
 
 /**
- * Send a RREP. DO NOT use this function to dispatch packets from anything else
- * than the sender_thread. To send RREPs, use aodv_send_rrep().
+ * @brief   Send a RREP. DO NOT use this function to dispatch packets from anything else
+ *          than the sender_thread. To send RREPs, use aodv_send_rrep().
  * @param packet_data parameters of the RREP
  * @param next_hop Address the RREP is sent to
  */
 void aodv_packet_writer_send_rrep(struct aodvv2_packet_data *packet_data, struct netaddr *next_hop);
 
 /**
- * Send a RERR. DO NOT use this function to dispatch packets from anything else
- * than the sender_thread. To send RERRs, use aodv_send_rerr().
+ * @brief   Send a RERR. DO NOT use this function to dispatch packets from anything else
+ *          than the sender_thread. To send RERRs, use aodv_send_rerr().
  * @param unreachable_nodes[] array containing all newly unreachable nodes. each
  *                            in a struct unreachable_node
  * @param len                 length of unreachable_nodes[]
