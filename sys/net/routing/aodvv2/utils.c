@@ -116,7 +116,6 @@ void rreqtable_init(void)
 bool rreqtable_is_redundant(struct aodvv2_packet_data *packet_data)
 {
     struct aodvv2_rreq_entry *comparable_rreq;
-    int seqnum_comparison;
     timex_t now;
     bool result;
 
@@ -128,7 +127,7 @@ bool rreqtable_is_redundant(struct aodvv2_packet_data *packet_data)
         _add_rreq(packet_data);
         result = false;
     } else {
-        seqnum_comparison = seqnum_cmp(packet_data->origNode.seqnum, comparable_rreq->seqnum);
+        int seqnum_comparison = seqnum_cmp(packet_data->origNode.seqnum, comparable_rreq->seqnum);
 
         /*
          * If two RREQs have the same
