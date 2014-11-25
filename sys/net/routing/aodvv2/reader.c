@@ -34,6 +34,8 @@
 #define VERBOSE_DEBUG (0)
 #if VERBOSE_DEBUG
 #define VDEBUG(...) AODV_DEBUG(__VA_ARGS__)
+#else
+#define VDEBUG(...)
 #endif
 
 static enum rfc5444_result _cb_rreq_blocktlv_addresstlvs_okay(
