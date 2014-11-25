@@ -296,7 +296,7 @@ static void *_aodv_receiver_thread(void *arg)
         ipv6_addr_t_to_netaddr(&sa_rcv.sin6_addr, &_sender);
 
         /* For some reason we sometimes get passed our own packets. drop them. */
-        if (!netaddr_cmp(&_sender, &na_local) == 0) {
+        if (netaddr_cmp(&_sender, &na_local) == 0) {
             AODV_DEBUG("received our own packet, dropping it.\n");
             aodv_packet_reader_handle_packet((void *) buf_rcv, rcv_size, &_sender);
         }
