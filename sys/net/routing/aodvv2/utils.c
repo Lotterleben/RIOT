@@ -45,7 +45,7 @@ static timex_t null_time, now, _max_idletime;
 void clienttable_init(void)
 {
     mutex_lock(&clientt_mutex);
-    memset(client_table, 0, sizeof(client_table));
+    memset(&client_table, 0, sizeof(client_table));
     mutex_unlock(&clientt_mutex);
 
     AODV_DEBUG("client table initialized.\n");
@@ -108,7 +108,7 @@ void rreqtable_init(void)
     null_time = timex_set(0, 0);
     _max_idletime = timex_set(AODVV2_MAX_IDLETIME, 0);
 
-    memset(rreq_table, 0, sizeof(rreq_table));
+    memset(&rreq_table, 0, sizeof(rreq_table));
     mutex_unlock(&rreqt_mutex);
     AODV_DEBUG("RREQ table initialized.\n");
 }
