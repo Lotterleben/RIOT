@@ -45,9 +45,7 @@ static timex_t null_time, now, _max_idletime;
 void clienttable_init(void)
 {
     mutex_lock(&clientt_mutex);
-    for (unsigned i = 0; i < AODVV2_MAX_CLIENTS; i++) {
-        memset(&client_table[i], 0, sizeof(client_table[i]));
-    }
+    memset(client_table, 0, sizeof(client_table));
     mutex_unlock(&clientt_mutex);
 
     AODV_DEBUG("client table initialized.\n");

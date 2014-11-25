@@ -42,9 +42,7 @@ void routingtable_init(void)
     max_idletime = timex_set(AODVV2_MAX_IDLETIME, 0);
     validity_t = timex_set(AODVV2_ACTIVE_INTERVAL + AODVV2_MAX_IDLETIME, 0);
 
-    for (unsigned i = 0; i < AODVV2_MAX_ROUTING_ENTRIES; i++) {
-        memset(&routing_table[i], 0, sizeof(routing_table[i]));
-    }
+    memset(routing_table, 0, sizeof(routing_table));
     AODV_DEBUG("routing table initialized.\n");
 }
 
