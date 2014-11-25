@@ -49,3 +49,4 @@ void aodv_set_metric_type(aodvv2_metric_t metric_type);
 #endif
 
 #endif /* AODVV2_H_ */
+/** @} */
