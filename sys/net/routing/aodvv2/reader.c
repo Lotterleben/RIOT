@@ -675,7 +675,7 @@ static enum rfc5444_result _cb_rerr_end_callback(struct rfc5444_reader_tlvblock_
     return RFC5444_OKAY;
 }
 
-void reader_init(void)
+void aodv_packet_reader_init(void)
 {
     VDEBUG("%s()\n", __func__);
 
@@ -703,13 +703,13 @@ void reader_init(void)
                                         ARRAYSIZE(_rerr_address_consumer_entries));
 }
 
-void reader_cleanup(void)
+void aodv_packet_reader_cleanup(void)
 {
     VDEBUG("%s()\n", __func__);
     rfc5444_reader_cleanup(&reader);
 }
 
-int reader_handle_packet(void *buffer, size_t length, struct netaddr *sender)
+int aodv_packet_reader_handle_packet(void *buffer, size_t length, struct netaddr *sender)
 {
     AODV_DEBUG("%s()\n", __func__);
     memcpy(&packet_data.sender, sender, sizeof(*sender));

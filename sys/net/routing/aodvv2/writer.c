@@ -220,7 +220,7 @@ _cb_rerr_addAddresses(struct rfc5444_writer *wr)
     }
 }
 
-void writer_init(write_packet_func_ptr ptr)
+void aodv_packet_writer_init(write_packet_func_ptr ptr)
 {
     AODV_DEBUG("%s()\n", __func__);
 
@@ -273,7 +273,7 @@ void writer_init(write_packet_func_ptr ptr)
  * @param packet_data parameters of the RREQ
  * @param next_hop Address the RREP is sent to
  */
-void writer_send_rreq(struct aodvv2_packet_data *packet_data, struct netaddr *next_hop)
+void aodv_packet_writer_send_rreq(struct aodvv2_packet_data *packet_data, struct netaddr *next_hop)
 {
     AODV_DEBUG("%s()\n", __func__);
 
@@ -302,7 +302,7 @@ void writer_send_rreq(struct aodvv2_packet_data *packet_data, struct netaddr *ne
  * @param packet_data parameters of the RREP
  * @param next_hop Address the RREP is sent to
  */
-void writer_send_rrep(struct aodvv2_packet_data *packet_data, struct netaddr *next_hop)
+void aodv_packet_writer_send_rrep(struct aodvv2_packet_data *packet_data, struct netaddr *next_hop)
 {
     AODV_DEBUG("%s()\n", __func__);
 
@@ -333,7 +333,7 @@ void writer_send_rrep(struct aodvv2_packet_data *packet_data, struct netaddr *ne
  * @param hoplimit            the message's hop limit
  * @param next_hop            Address the RREP is sent to
  */
-void writer_send_rerr(struct unreachable_node unreachable_nodes[], size_t len,
+void aodv_packet_writer_send_rerr(struct unreachable_node unreachable_nodes[], size_t len,
                       int hoplimit, struct netaddr *next_hop)
 {
     AODV_DEBUG("%s()\n", __func__);
@@ -356,7 +356,7 @@ void writer_send_rerr(struct unreachable_node unreachable_nodes[], size_t len,
     mutex_unlock(&writer_mutex);
 }
 
-void writer_cleanup(void)
+void aodv_packet_writer_cleanup(void)
 {
     AODV_DEBUG("%s()\n", __func__);
     rfc5444_writer_cleanup(&writer);

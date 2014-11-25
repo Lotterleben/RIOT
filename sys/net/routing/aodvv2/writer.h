@@ -55,12 +55,12 @@ typedef void (*write_packet_func_ptr)(
  * Initialize RFC5444 writer
  * @param ptr pointer to "send_packet" callback
  */
-void writer_init(write_packet_func_ptr ptr);
+void aodv_packet_writer_init(write_packet_func_ptr ptr);
 
 /**
  * Clean up after the RFC5444 writer
  */
-void writer_cleanup(void);
+void aodv_packet_writer_cleanup(void);
 
 /**
  * Send a RREQ. DO NOT use this function to dispatch packets from anything else
@@ -68,7 +68,7 @@ void writer_cleanup(void);
  * @param packet_data parameters of the RREQ
  * @param next_hop Address the RREP is sent to
  */
-void writer_send_rreq(struct aodvv2_packet_data *packet_data, struct netaddr *next_hop);
+void aodv_packet_writer_send_rreq(struct aodvv2_packet_data *packet_data, struct netaddr *next_hop);
 
 /**
  * Send a RREP. DO NOT use this function to dispatch packets from anything else
@@ -76,7 +76,7 @@ void writer_send_rreq(struct aodvv2_packet_data *packet_data, struct netaddr *ne
  * @param packet_data parameters of the RREP
  * @param next_hop Address the RREP is sent to
  */
-void writer_send_rrep(struct aodvv2_packet_data *packet_data, struct netaddr *next_hop);
+void aodv_packet_writer_send_rrep(struct aodvv2_packet_data *packet_data, struct netaddr *next_hop);
 
 /**
  * Send a RERR. DO NOT use this function to dispatch packets from anything else
@@ -87,7 +87,7 @@ void writer_send_rrep(struct aodvv2_packet_data *packet_data, struct netaddr *ne
  * @param hoplimit            the message's hop limit
  * @param next_hop            Address the RREP is sent to
  */
-void writer_send_rerr(struct unreachable_node unreachable_nodes[], size_t len,
+void aodv_packet_writer_send_rerr(struct unreachable_node unreachable_nodes[], size_t len,
                       int hoplimit, struct netaddr *next_hop);
 
 #ifdef  __cplusplus

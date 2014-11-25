@@ -78,8 +78,8 @@ void aodv_init(void)
     rreqtable_init();
 
     /* init reader and writer */
-    reader_init();
-    writer_init(_write_packet);
+    aodv_packet_reader_init();
+    aodv_packet_writer_init(_write_packet);
 
     /* start listening & enable sending */
     thread_create(aodv_rcv_stack_buf, sizeof(aodv_rcv_stack_buf), PRIORITY_MAIN,
@@ -234,15 +234,15 @@ static void *_aodv_sender_thread(void *arg)
 
         if (mc->type == RFC5444_MSGTYPE_RREQ) {
             struct rreq_rrep_data *rreq_data = (struct rreq_rrep_data *) mc->data;
-            writer_send_rreq(rreq_data->packet_data, rreq_data->next_hop);
+            aodv_packet_writer_send_rreq(rreq_data->packet_data, rreq_data->next_hop);
         }
         else if (mc->type == RFC5444_MSGTYPE_RREP) {
             struct rreq_rrep_data *rrep_data = (struct rreq_rrep_data *) mc->data;
-            writer_send_rrep(rrep_data->packet_data, rrep_data->next_hop);
+            aodv_packet_writer_send_rrep(rrep_data->packet_data, rrep_data->next_hop);
         }
         else if (mc->type == RFC5444_MSGTYPE_RERR) {
             struct rerr_data *rerr_data = (struct rerr_data *) mc->data;
-            writer_send_rerr(rerr_data->unreachable_nodes, rerr_data->len,
+            aodv_packet_writer_send_rerr(rerr_data->unreachable_nodes, rerr_data->len,
                              rerr_data->hoplimit, rerr_data->next_hop);
         }
         else {
@@ -298,7 +298,7 @@ static void *_aodv_receiver_thread(void *arg)
         /* For some reason we sometimes get passed our own packets. drop them. */
         if (!netaddr_cmp(&_sender, &na_local) == 0) {
             AODV_DEBUG("received our own packet, dropping it.\n");
-            reader_handle_packet((void *) buf_rcv, rcv_size, &_sender);
+            aodv_packet_reader_handle_packet((void *) buf_rcv, rcv_size, &_sender);
         }
     }
 

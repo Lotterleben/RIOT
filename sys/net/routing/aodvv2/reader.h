@@ -39,12 +39,12 @@ extern "C" {
 /**
  * @brief Initialize reader.
  */
-void reader_init(void);
+void aodv_packet_reader_init(void);
 
 /**
  * @brief Clean up after reader. Only needs to be called upon shutdown.
  */
-void reader_cleanup(void);
+void aodv_packet_reader_cleanup(void);
 
 /**
  * @brief Read data buffer as RFC5444 packet and handle the data it contains
@@ -53,7 +53,7 @@ void reader_cleanup(void);
  * @param[in] length  Length of data
  * @param[in] sender  Address of the node from which the packet was received
  */
-int reader_handle_packet(void *buffer, size_t length, struct netaddr *sender);
+int aodv_packet_reader_handle_packet(void *buffer, size_t length, struct netaddr *sender);
 
 #ifdef  __cplusplus
 }
