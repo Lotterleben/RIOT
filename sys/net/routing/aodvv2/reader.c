@@ -28,7 +28,6 @@
 
 #define ENABLE_DEBUG (0)
 
-
 #define VERBOSE_DEBUG (0)
 #if VERBOSE_DEBUG
 #define VDEBUG(...) AODV_DEBUG(__VA_ARGS__)
