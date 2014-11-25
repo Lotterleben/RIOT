@@ -575,9 +575,9 @@ static enum rfc5444_result _cb_rrep_end_callback(
               packet_data.origNode.seqnum, netaddr_to_string(&nbuf2, &packet_data.targNode.addr));
     }
 
-    /* If HandlingRtr is not RREQ_Gen then the outgoing RREP is sent to the
-     * Route.NextHopAddress for the RREP.AddrBlk[OrigNodeNdx]. */
     else {
+        /* If HandlingRtr is not RREQ_Gen then the outgoing RREP is sent to the
+         * Route.NextHopAddress for the RREP.AddrBlk[OrigNodeNdx]. */
         AODV_DEBUG("Not my RREP, passing it on to the next hop\n");
         aodv_send_rrep(&packet_data,
                        routingtable_get_next_hop(&packet_data.origNode.addr,packet_data.metricType));
