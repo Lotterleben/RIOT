@@ -42,8 +42,8 @@ char addr_str[IPV6_MAX_ADDR_STR_LEN];
 static struct netaddr_str nbuf;
 #endif
 
-char aodv_rcv_stack_buf[KERNEL_CONF_STACKSIZE_MAIN];
-char aodv_snd_stack_buf[KERNEL_CONF_STACKSIZE_MAIN];
+static char aodv_rcv_stack_buf[KERNEL_CONF_STACKSIZE_MAIN];
+static char aodv_snd_stack_buf[KERNEL_CONF_STACKSIZE_MAIN];
 
 static aodvv2_metric_t _metric_type;
 static int sender_thread;
