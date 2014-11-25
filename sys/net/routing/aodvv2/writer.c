@@ -277,7 +277,7 @@ void aodv_packet_writer_send_rreq(struct aodvv2_packet_data *packet_data, struct
 {
     AODV_DEBUG("%s()\n", __func__);
 
-    if (packet_data == NULL || next_hop == NULL) {
+    if ((packet_data == NULL) || (next_hop == NULL)) {
         return;
     }
 
@@ -306,7 +306,7 @@ void aodv_packet_writer_send_rrep(struct aodvv2_packet_data *packet_data, struct
 {
     AODV_DEBUG("%s()\n", __func__);
 
-    if (packet_data == NULL || next_hop == NULL) {
+    if ((packet_data == NULL) || (next_hop == NULL)) {
         return;
     }
 
@@ -338,7 +338,7 @@ void aodv_packet_writer_send_rerr(struct unreachable_node unreachable_nodes[], s
 {
     AODV_DEBUG("%s()\n", __func__);
 
-    if (unreachable_nodes == NULL || next_hop == NULL) {
+    if ((unreachable_nodes == NULL) || (next_hop == NULL)) {
         return;
     }
 
