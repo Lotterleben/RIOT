@@ -422,10 +422,6 @@ ipv6_addr_t *aodv_get_next_hop(ipv6_addr_t *dest)
 /**
  * Handle the output of the RFC5444 packet creation process. This callback is
  * called by every writer_send_* function.
- * @param wr
- * @param iface
- * @param buffer
- * @param length
  */
 static void _write_packet(struct rfc5444_writer *wr __attribute__ ((unused)),
                           struct rfc5444_writer_target *iface __attribute__((unused)),
@@ -440,8 +436,8 @@ static void _write_packet(struct rfc5444_writer *wr __attribute__ ((unused)),
     abuf_clear(&_hexbuf);
 
     /* fetch the address the packet is supposed to be sent to (i.e. to a
-       specific node or the multicast address) from the writer_target struct
-       iface* is stored in. This is a bit hacky, but it does the trick. */
+     * specific node or the multicast address) from the writer_target struct
+     * iface* is stored in. This is a bit hacky, but it does the trick. */
     wt = container_of(iface, struct writer_target, interface);
     netaddr_to_ipv6_addr_t(&wt->target_addr, &sa_wp.sin6_addr);
 
