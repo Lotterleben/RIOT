@@ -9,6 +9,7 @@
 
 /**
  * @defgroup    aodvv2 AODVv2
+ * @brief       The Ad-hoc On-demand Distance Vector routing protocol, version 2
  * @ingroup     net
  * @{
  *
