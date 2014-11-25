@@ -108,9 +108,7 @@ void rreqtable_init(void)
     null_time = timex_set(0, 0);
     _max_idletime = timex_set(AODVV2_MAX_IDLETIME, 0);
 
-    for (unsigned i = 0; i < AODVV2_RREQ_BUF; i++) {
-        memset(&rreq_table[i], 0, sizeof(rreq_table[i]));
-    }
+    memset(rreq_table, 0, sizeof(rreq_table));
     mutex_unlock(&rreqt_mutex);
     AODV_DEBUG("RREQ table initialized.\n");
 }
