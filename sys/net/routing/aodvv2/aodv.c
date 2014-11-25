@@ -85,7 +85,7 @@ void aodv_init(void)
     thread_create(aodv_rcv_stack_buf, sizeof(aodv_rcv_stack_buf), PRIORITY_MAIN,
                   CREATE_STACKTEST, _aodv_receiver_thread, NULL, "_aodv_receiver_thread");
     AODV_DEBUG("listening on port %d\n", HTONS(MANET_PORT));
-    sender_thread = thread_create(aodv_snd_stack_buf, KERNEL_CONF_STACKSIZE_MAIN,
+    sender_thread = thread_create(sizeof(aodv_snd_stack_buf), KERNEL_CONF_STACKSIZE_MAIN,
                                   PRIORITY_MAIN, CREATE_STACKTEST, _aodv_sender_thread,
                                   NULL, "_aodv_sender_thread");
 
@@ -110,15 +110,13 @@ void aodv_send_rreq(struct aodvv2_packet_data *packet_data)
     memcpy(pd, packet_data, sizeof(struct aodvv2_packet_data));
 
     struct rreq_rrep_data *rd = malloc(sizeof(struct rreq_rrep_data));
-    *rd = (struct rreq_rrep_data)
-    {
+    *rd = (struct rreq_rrep_data) {
         .next_hop = &na_mcast,
         .packet_data = pd,
     };
 
     struct msg_container *mc = malloc(sizeof(struct msg_container));
-    *mc = (struct msg_container)
-    {
+    *mc = (struct msg_container) {
         .type = RFC5444_MSGTYPE_RREQ,
         .data = rd
     };
@@ -140,15 +138,13 @@ void aodv_send_rrep(struct aodvv2_packet_data *packet_data, struct netaddr *next
     memcpy(nh, next_hop, sizeof(struct netaddr));
 
     struct rreq_rrep_data *rd = malloc(sizeof(struct rreq_rrep_data));
-    *rd = (struct rreq_rrep_data)
-    {
+    *rd = (struct rreq_rrep_data) {
         .next_hop = nh,
         .packet_data = pd,
     };
 
     struct msg_container *mc = malloc(sizeof(struct msg_container));
-    *mc = (struct msg_container)
-    {
+    *mc = (struct msg_container) {
         .type = RFC5444_MSGTYPE_RREP,
         .data = rd
     };
@@ -164,8 +160,7 @@ void aodv_send_rerr(struct unreachable_node unreachable_nodes[], size_t len, str
     AODV_DEBUG("%s()\n", __func__);
 
     struct rerr_data *rerrd = malloc(sizeof(struct rerr_data));
-    *rerrd = (struct rerr_data)
-    {
+    *rerrd = (struct rerr_data) {
         .unreachable_nodes = unreachable_nodes,
         .len = len,
         .hoplimit = AODVV2_MAX_HOPCOUNT,
@@ -173,8 +168,7 @@ void aodv_send_rerr(struct unreachable_node unreachable_nodes[], size_t len, str
     };
 
     struct msg_container *mc2 = malloc(sizeof(struct msg_container));
-    *mc2 = (struct msg_container)
-    {
+    *mc2 = (struct msg_container) {
         .type = RFC5444_MSGTYPE_RERR,
         .data = rerrd
     };
@@ -403,18 +397,15 @@ ipv6_addr_t *aodv_get_next_hop(ipv6_addr_t *dest)
     aodvv2_seqnum_t seqnum = seqnum_get();
     seqnum_inc();
 
-    struct aodvv2_packet_data rreq_data = (struct aodvv2_packet_data)
-    {
+    struct aodvv2_packet_data rreq_data = (struct aodvv2_packet_data) {
         .hoplimit = AODVV2_MAX_HOPCOUNT,
         .metricType = _metric_type,
-        .origNode = (struct node_data)
-        {
+        .origNode = (struct node_data) {
             .addr = na_local,
             .metric = 0,
             .seqnum = seqnum,
         },
-        .targNode = (struct node_data)
-        {
+        .targNode = (struct node_data) {
             .addr = _tmp_dest,
         },
         .timestamp = (timex_t) {0,0} /* this timestamp is never used, it exists
