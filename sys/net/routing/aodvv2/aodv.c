@@ -335,11 +335,12 @@ ipv6_addr_t *aodv_get_next_hop(ipv6_addr_t *dest)
     struct aodvv2_routing_entry_t *rt_entry = routingtable_get_entry(&_tmp_dest, _metric_type);
 
     if (ndp_nc_entry != NULL) {
-
         /* Case 2: Broken Link (detected by lower layer) */
-        if (( ndp_nc_entry->state == NDP_NCE_STATUS_INCOMPLETE ||
-            ndp_nc_entry->state == NDP_NCE_STATUS_PROBE) &&
-            (rt_entry != NULL && rt_entry->state != ROUTE_STATE_BROKEN)) {
+        int link_broken = (ndp_nc_entry->state == NDP_NCE_STATUS_INCOMPLETE ||
+                           ndp_nc_entry->state == NDP_NCE_STATUS_PROBE) &&
+                          (rt_entry != NULL && rt_entry->state != ROUTE_STATE_BROKEN);
+
+        if (link_broken) {
 
             DEBUG("\tNeighbor Cache entry found, but invalid (state: %i). Sending RERR.\n",
                   ndp_nc_entry->state);
