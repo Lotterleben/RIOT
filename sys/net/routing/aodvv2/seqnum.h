@@ -51,7 +51,10 @@ void seqnum_inc(void);
  * @param[in] s2  second sequence number
  * @return        -1 when s1 is smaller, 0 if equal, 1 if s1 is bigger.
  */
-int seqnum_cmp(aodvv2_seqnum_t s1, aodvv2_seqnum_t s2);
+static inline int seqnum_cmp(aodvv2_seqnum_t s1, aodvv2_seqnum_t s2)
+{
+    return s1 == s2 ? 0 : (s1 > s2 ? +1 : -1);
+}
 
 #ifdef  __cplusplus
 }

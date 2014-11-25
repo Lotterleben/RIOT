@@ -47,15 +47,3 @@ aodvv2_seqnum_t seqnum_get(void)
 {
     return seqnum;
 }
-
-int seqnum_cmp(aodvv2_seqnum_t s1, aodvv2_seqnum_t s2)
-{
-    aodvv2_seqnum_t diff = s1 - s2;
-    if (diff == 0) {
-        return 0;
-    }
-    if ((0 < diff) && (diff < 32768)) {
-        return 1;
-    }
-    return -1;
-}
