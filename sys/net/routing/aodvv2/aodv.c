@@ -85,7 +85,7 @@ void aodv_init(void)
     thread_create(aodv_rcv_stack_buf, sizeof(aodv_rcv_stack_buf), PRIORITY_MAIN,
                   CREATE_STACKTEST, _aodv_receiver_thread, NULL, "_aodv_receiver_thread");
     AODV_DEBUG("listening on port %d\n", HTONS(MANET_PORT));
-    sender_thread = thread_create(sizeof(aodv_snd_stack_buf), KERNEL_CONF_STACKSIZE_MAIN,
+    sender_thread = thread_create(aodv_snd_stack_buf, KERNEL_CONF_STACKSIZE_MAIN,
                                   PRIORITY_MAIN, CREATE_STACKTEST, _aodv_sender_thread,
                                   NULL, "_aodv_sender_thread");
 
