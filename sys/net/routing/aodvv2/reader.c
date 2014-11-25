@@ -344,7 +344,6 @@ static enum rfc5444_result _cb_rreq_end_callback(
 
         routingtable_fill_routing_entry_t_rreq(&packet_data, tmp_rt_entry, link_cost);
         routingtable_add_entry(tmp_rt_entry);
-        print_routingtable_entry(tmp_rt_entry);
 
         free(tmp_rt_entry);
     }
@@ -546,7 +545,6 @@ static enum rfc5444_result _cb_rrep_end_callback(
 
         routingtable_fill_routing_entry_t_rrep(&packet_data, tmp_rt_entry, link_cost);
         routingtable_add_entry(tmp_rt_entry);
-        print_routingtable_entry(tmp_rt_entry);
 
         free(tmp_rt_entry);
     }
