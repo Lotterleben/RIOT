@@ -110,7 +110,6 @@ static struct rfc5444_writer_tlvtype _rerr_addrtlvs[] =
 
 /**
  * Callback to define the message header for a RFC5444 RREQ message
- * @param wr
  * @param message
  */
 static void
@@ -125,7 +124,6 @@ _cb_addMessageHeader(struct rfc5444_writer *wr, struct rfc5444_writer_message *m
 
 /**
  * Callback to add addresses and address TLVs to a RFC5444 RREQ message
- * @param wr
  */
 static void
 _cb_rreq_addAddresses(struct rfc5444_writer *wr)
@@ -157,7 +155,6 @@ _cb_rreq_addAddresses(struct rfc5444_writer *wr)
 
 /**
  * Callback to add addresses and address TLVs to a RFC5444 RREQ message
- * @param wr
  */
 static void
 _cb_rrep_addAddresses(struct rfc5444_writer *wr)
@@ -195,7 +192,6 @@ _cb_rrep_addAddresses(struct rfc5444_writer *wr)
 
 /**
  * Callback to add addresses and address TLVs to a RFC5444 RERR message
- * @param wr
  */
 static void
 _cb_rerr_addAddresses(struct rfc5444_writer *wr)
