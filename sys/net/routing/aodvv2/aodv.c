@@ -54,7 +54,7 @@ static ipv6_addr_t _v6_addr_local, _v6_addr_mcast, _v6_addr_loopback;
 static struct netaddr na_local; /* the same as _v6_addr_local, but to save us
                                  * constant calls to ipv6_addr_t_to_netaddr()... */
 static struct writer_target *wt;
-
+struct netaddr na_mcast = (struct netaddr){};
 
 void aodv_init(void)
 {
@@ -361,8 +361,9 @@ ipv6_addr_t *aodv_get_next_hop(ipv6_addr_t *dest)
 
     if (rt_entry) {
         /* Case 1: Undeliverable Packet */
-        if (rt_entry->state == ROUTE_STATE_BROKEN ||
-            rt_entry->state == ROUTE_STATE_EXPIRED ) {
+        int packet_indeliverable = rt_entry->state == ROUTE_STATE_BROKEN ||
+                                   rt_entry->state == ROUTE_STATE_EXPIRED;
+        if (packet_indeliverable) {
             DEBUG("\tRouting table entry found, but invalid (state %i). Sending RERR.\n",
                   rt_entry->state);
             unreachable_nodes[0].addr = _tmp_dest;

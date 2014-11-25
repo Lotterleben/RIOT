@@ -52,7 +52,7 @@ enum tlv_index
 };
 
 /* my multicast address */
-struct netaddr na_mcast;
+extern struct netaddr na_mcast;
 
 #ifdef  __cplusplus
 }
