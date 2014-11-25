@@ -18,14 +18,11 @@
  */
 
 #include "utils.h"
-
-#define ENABLE_DEBUG (0)
 #include "debug.h"
 
-#ifdef DEBUG
-#define ENABLE_AODV_DEBUG (1)
 #include "aodv_debug.h"
-#endif
+
+#define ENABLE_DEBUG (0)
 
 /* Some aodvv2 utilities (mostly tables) */
 static mutex_t clientt_mutex;
@@ -39,7 +36,7 @@ static void _reset_entry_if_stale(uint8_t i);
 static struct netaddr client_table[AODVV2_MAX_CLIENTS];
 static struct aodvv2_rreq_entry rreq_table[AODVV2_RREQ_BUF];
 
-#ifdef DEBUG
+#ifdef DEBUG_ENABLED
 static struct netaddr_str nbuf;
 #endif
 static timex_t null_time, now, _max_idletime;

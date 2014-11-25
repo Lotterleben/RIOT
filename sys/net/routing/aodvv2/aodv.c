@@ -17,16 +17,13 @@
  * @author      Lotte Steenbrink <lotte.steenbrink@fu-berlin.de>
  */
 
-#include "aodv.h"
-#include "aodvv2/aodvv2.h"
-
-#define ENABLE_DEBUG (0)
 #include "debug.h"
 
-#ifdef DEBUG
-#define ENABLE_AODV_DEBUG (1)
+#include "aodv.h"
+#include "aodvv2/aodvv2.h"
 #include "aodv_debug.h"
-#endif
+
+#define ENABLE_DEBUG (0)
 
 #define UDP_BUFFER_SIZE     (128) /** with respect to IEEE 802.15.4's MTU */
 #define RCV_MSG_Q_SIZE      (32)  /* TODO: check if smaller values work, too */
@@ -40,7 +37,7 @@ static void _write_packet(struct rfc5444_writer *wr __attribute__ ((unused)),
                           struct rfc5444_writer_target *iface __attribute__((unused)),
                           void *buffer, size_t length);
 
-#ifdef DEBUG
+#ifdef DEBUG_ENABLED
 char addr_str[IPV6_MAX_ADDR_STR_LEN];
 static struct netaddr_str nbuf;
 #endif

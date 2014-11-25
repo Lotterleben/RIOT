@@ -1,0 +1,15 @@
+break aodv.c:461
+disable
+break udp.c:202
+disable
+break ip.c:157
+disable
+break ip.c:182
+disable
+break ip.c:98
+disable
+break lowpan.c:198
+disable
+break lowpan.c:200
+disable
+break mac.c:303

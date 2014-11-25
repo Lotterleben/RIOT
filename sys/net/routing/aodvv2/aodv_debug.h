@@ -27,6 +27,10 @@
  extern "C" {
 #endif
 
+#ifdef DEBUG_ENABLED
+#define ENABLE_AODV_DEBUG (1)
+#endif
+
 /**
  * @brief Print aodvv2 specific debug information to std-out with [aodvv2] prefix
  *
@@ -38,6 +42,8 @@
         printf("[aodvv2] "); \
         printf(__VA_ARGS__); \
     } while (0)
+#else
+#define AODV_DEBUG(...)
 #endif
 
 #ifdef __cplusplus
