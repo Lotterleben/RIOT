@@ -213,7 +213,6 @@ static void _init_sock_snd(void)
 
     if (-1 == _sock_snd) {
         AODV_DEBUG("Error Creating Socket!\n");
-        return;
     }
 }
 
