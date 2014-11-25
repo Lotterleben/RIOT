@@ -176,7 +176,6 @@ void aodv_send_rerr(struct unreachable_node unreachable_nodes[], size_t len, str
     msg_t msg2;
     msg2.content.ptr = (char *) mc2;
 
-
     msg_try_send(&msg2, sender_thread);
 }
 
