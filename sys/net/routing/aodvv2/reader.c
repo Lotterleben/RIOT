@@ -315,7 +315,6 @@ static enum rfc5444_result _cb_rreq_end_callback(
     rt_entry = routingtable_get_entry(&packet_data.origNode.addr, packet_data.metricType);
 
     if (!rt_entry || (rt_entry->metricType != packet_data.metricType)) {
-
         /* CAUTION SUPER HACKY FIX FIXME ASAP
         problem: sometimes we get broadcasted RREQs from 2 hop neighbors and then
         AODVv2 gets super confused when they're not in the routing table and starts a
@@ -502,7 +501,8 @@ static enum rfc5444_result _cb_rrep_end_callback(
         || !packet_data.targNode.seqnum) {
         DEBUG("\tERROR: missing TargNode Address or SeqNum. Dropping packet.\n");
         return RFC5444_DROP_PACKET;
-    } if ((_get_max_metric(packet_data.metricType) - link_cost)
+    }
+    if ((_get_max_metric(packet_data.metricType) - link_cost)
         <= packet_data.targNode.metric) {
         DEBUG("\tMetric Limit reached. Dropping packet.\n");
         return RFC5444_DROP_PACKET;
