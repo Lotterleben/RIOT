@@ -261,7 +261,6 @@ static void *_aodv_receiver_thread(void *arg)
 
     AODV_DEBUG("%s()\n", __func__);
     uint32_t fromlen;
-    int32_t rcv_size;
     char buf_rcv[UDP_BUFFER_SIZE];
     msg_t msg_q[RCV_MSG_Q_SIZE];
 
@@ -280,7 +279,7 @@ static void *_aodv_receiver_thread(void *arg)
 
     AODV_DEBUG("ready to receive data\n");
     while (true) {
-        rcv_size = socket_base_recvfrom(sock_rcv, (void *)buf_rcv, UDP_BUFFER_SIZE, 0,
+        int32_t rcv_size = socket_base_recvfrom(sock_rcv, (void *)buf_rcv, UDP_BUFFER_SIZE, 0,
                                         &sa_rcv, &fromlen);
 
         if (rcv_size < 0) {
