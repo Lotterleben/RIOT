@@ -233,7 +233,7 @@ void ipv6_addr_t_to_netaddr(ipv6_addr_t *src, struct netaddr *dst)
 {
     dst->_type = AF_INET6;
     dst->_prefix_len = AODVV2_RIOT_PREFIXLEN;
-    memcpy(dst->_addr, src, sizeof dst->_addr);
+    memcpy(dst->_addr, src, sizeof(dst->_addr));
 }
 
 void netaddr_to_ipv6_addr_t(struct netaddr *src, ipv6_addr_t *dst)
