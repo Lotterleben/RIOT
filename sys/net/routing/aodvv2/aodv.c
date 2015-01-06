@@ -21,9 +21,11 @@
 
 #include "aodv.h"
 #include "aodvv2/aodvv2.h"
-#include "aodv_debug.h"
 
 #define ENABLE_DEBUG (0)
+#define ENABLE_EVAL_DEBUG (1)
+
+#include "aodvv2/aodv_debug.h"
 
 #define UDP_BUFFER_SIZE     (128) /** with respect to IEEE 802.15.4's MTU */
 #define RCV_MSG_Q_SIZE      (32)  /* TODO: check if smaller values work, too */
@@ -89,6 +91,8 @@ void aodv_init(void)
                                   PRIORITY_MAIN, CREATE_STACKTEST, _aodv_sender_thread,
                                   NULL, "_aodv_sender_thread");
 
+    // TODO DELETEME
+    EVAL_DEBUG("EVAL_DEBUG works! \n");
     /* register aodv for routing */
     ipv6_iface_set_routing_provider(aodv_get_next_hop);
 

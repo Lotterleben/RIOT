@@ -20,7 +20,7 @@
 #include "utils.h"
 #include "debug.h"
 
-#include "aodv_debug.h"
+#include "aodvv2/aodv_debug.h"
 
 #define ENABLE_DEBUG (0)
 

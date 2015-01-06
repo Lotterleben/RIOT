@@ -27,6 +27,13 @@
  extern "C" {
 #endif
 
+void (*eval_callback)(char *eval_output);
+
+static void set_eval_callback(void (*function)(char *eval_output))
+{
+    eval_callback = function;
+}
+
 #if ENABLE_DEBUG
 #define ENABLE_AODV_DEBUG (1)
 #endif
@@ -44,6 +51,26 @@
     } while (0)
 #else
 #define AODV_DEBUG(...)
+#endif
+
+/**
+ * @brief If a callback function eval_callback() is set, pass it the parameters of
+ *        EVAL_DEBUG(). Otherwise, just treat it like regular debug output and print it.
+ *
+ */
+#if ENABLE_EVAL_DEBUG
+#include "tcb.h"
+#define EVAL_DEBUG(...) \
+ do { \
+        if (eval_callback) { \
+            eval_callback(__VA_ARGS__); \
+        } \
+        else { \
+            printf(__VA_ARGS__); \
+        } \
+    } while (0)
+#else
+#define EVAL_DEBUG(...)
 #endif
 
 #ifdef __cplusplus
