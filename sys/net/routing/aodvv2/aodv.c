@@ -91,8 +91,6 @@ void aodv_init(void)
                                   PRIORITY_MAIN, CREATE_STACKTEST, _aodv_sender_thread,
                                   NULL, "_aodv_sender_thread");
 
-    // TODO DELETEME
-    EVAL_DEBUG("EVAL_DEBUG works! \n");
     /* register aodv for routing */
     ipv6_iface_set_routing_provider(aodv_get_next_hop);
 
