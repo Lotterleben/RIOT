@@ -25,17 +25,17 @@
 
 /**
  * @brief     Check whether route_1 relies on route_2, which may cause routing loops.
+ *            Two routes can only checked for loopfreeness if they share the same metric type.
  *
- * @param[in] route_1     TODO
- * @param[in] route_2     TODO
- * @param[in] metric_type TODO
+ * @param[in] route_1     the route which may be a subroute of the other
+ * @param[in] route_2     the base route to be checked against
+ * @param[in] metric_type the metric type of both routes
  *
- * @return  true  when route_1 is guaranteed to not rely on route_2,
- *                i.e. route_2 is not a subroute of route_1.
- *          NULL  if metric_type is not supported
- *          false otherwise.
+ * @return  true          when route_1 is guaranteed to not rely on route_2,
+ *                        so there is no danger for routing loops
+ *          NULL          if the route's metric type is not supported or not equal
+ *          false         otherwise.
  */
-bool loop_free(struct aodvv2_routing_entry_t *route_1, struct aodvv2_routing_entry_t *route_2,
-               aodvv2_metric_t metric_type);
+bool loop_free(struct aodvv2_routing_entry_t *route_1, struct aodvv2_routing_entry_t *route_2);
 
 #endif /* AODVV2_METRIC_H_ */

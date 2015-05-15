@@ -194,8 +194,13 @@ static void _reset_entry_if_stale(uint8_t i)
 bool routingtable_offers_improvement(struct aodvv2_routing_entry_t *rt_entry,
                                      struct node_data *node_data)
 {
-    /* (TODO only guaranteed for AODVV2_DEFAULT_METRIC_TYPE!)*/
-    bool is_loop_free = node_data->metric <= rt_entry->metric;
+    struct aodvv2_routing_entry_t proposed_route;
+    memcpy(&proposed_route, rt_entry, sizeof(aodvv2_routing_entry_t));
+    proposed_route.addr = node_data->addr;
+    proposed_route.metric = node_data->metric;
+    proposed_route.seqnum = node_data->seqnum;
+
+    bool is_loop_free = loop_free(&proposed_route, rt_entry);
     int stale = seqnum_cmp(node_data->seqnum, rt_entry->seqnum);
 
     if ((stale == 1)                                                 /* New info is more recent and MUST be used */
