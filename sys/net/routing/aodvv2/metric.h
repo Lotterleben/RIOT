@@ -27,7 +27,6 @@
 extern "C" {
 #endif
 
-
 /**
  * @brief     Check whether route_1 relies on route_2, which may cause routing loops.
  *            Two routes can only checked for loopfreeness if they share the same metric type.
