@@ -1,3 +1,23 @@
+/*
+ * Copyright (C) 2015 HAW Hamburg
+ * Copyright (C) 2015 Lotte Steenbrink <lotte.steenbrink@haw-hamburg.de>
+ *
+ * This file is subject to the terms and conditions of the GNU Lesser
+ * General Public License v2.1. See the file LICENSE in the top level
+ * directory for more details.
+ */
+
+/**
+ * @ingroup     aodvv2
+ * @{
+ *
+ * @file        metric.c
+ * @brief       create and handle metric values and types
+ *
+ * @author      Lotte Steenbrink <lotte.steenbrink@haw-hamburg.de>
+ */
+
+
 #include "metric.h"
 
 #define ENABLE_DEBUG (0)

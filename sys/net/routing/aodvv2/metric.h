@@ -23,6 +23,11 @@
 #include "aodvv2/types.h"
 #include "routingtable.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+
 /**
  * @brief     Check whether route_1 relies on route_2, which may cause routing loops.
  *            Two routes can only checked for loopfreeness if they share the same metric type.
@@ -38,4 +43,7 @@
  */
 bool loop_free(struct aodvv2_routing_entry_t *route_1, struct aodvv2_routing_entry_t *route_2);
 
+#ifdef  __cplusplus
+}
+#endif
 #endif /* AODVV2_METRIC_H_ */
