@@ -35,6 +35,8 @@ static void _deep_free_msg_container(struct msg_container *msg_container);
 static void _write_packet(struct rfc5444_writer *wr __attribute__ ((unused)),
                           struct rfc5444_writer_target *iface __attribute__((unused)),
                           void *buffer, size_t length);
+static void print_json_pkt_sent(struct writer_target *wt);
+
 
 #if ENABLE_DEBUG
 char addr_str[IPV6_MAX_ADDR_STR_LEN];
@@ -52,7 +54,6 @@ static sockaddr6_t sa_wp;
 static ipv6_addr_t _v6_addr_local, _v6_addr_mcast, _v6_addr_loopback;
 static struct netaddr na_local; /* the same as _v6_addr_local, but to save us
                                  * constant calls to ipv6_addr_t_to_netaddr()... */
-static struct writer_target *wt;
 static mutex_t rreq_mutex;
 static mutex_t rrep_mutex;
 static mutex_t rerr_mutex;
@@ -98,7 +99,6 @@ void aodv_init(void)
 
     /* register aodv for routing */
     ipv6_iface_set_routing_provider(aodv_get_next_hop);
-
 }
 
 void aodv_set_metric_type(aodvv2_metric_t metric_type)
@@ -457,7 +457,8 @@ static void _write_packet(struct rfc5444_writer *wr __attribute__ ((unused)),
     /* fetch the address the packet is supposed to be sent to (i.e. to a
      * specific node or the multicast address) from the writer_target struct
      * iface* is stored in. This is a bit hacky, but it does the trick. */
-    wt = container_of(iface, struct writer_target, interface);
+    struct writer_target *wt = container_of(iface, struct writer_target, interface);
+    print_json_pkt_sent(wt);
     netaddr_to_ipv6_addr_t(&wt->target_addr, &sa_wp.sin6_addr);
 
     /* When originating a RREQ, add it to our RREQ table/update its predecessor */
@@ -475,6 +476,32 @@ static void _write_packet(struct rfc5444_writer *wr __attribute__ ((unused)),
 
     (void) bytes_sent;
     AODV_DEBUG("%d bytes sent.\n", bytes_sent);
+}
+
+/* Print the json representation of a sent packet to stdout for debugging */
+static void print_json_pkt_sent(struct writer_target *wt)
+{
+    struct netaddr_str nbuf_oa, nbuf_ta, nbuf_nh;
+    // note: what if the content at wt has changed until this is printed? memcpy the entire thing?
+    int msg_type = wt->type;
+    if (msg_type == RFC5444_MSGTYPE_RREQ) {
+        printf("{\"log_type\": \"sent_rreq\", "
+                "\"log_data\": {\"orig_addr\": \"%s\", \"targ_addr\": \"%s\", \"seq_num\": %d}}\n",
+                netaddr_to_string(&nbuf_oa, &wt->packet_data.origNode.addr),
+                netaddr_to_string(&nbuf_ta, &wt->packet_data.targNode.addr),
+                wt->packet_data.origNode.seqnum);
+    }
+    if (msg_type == RFC5444_MSGTYPE_RREP) {
+        printf("{\"log_type\": \"sent_rrep\", "
+                "\"log_data\": {\"next_hop\": %s,\"orig_addr\": \"%s\", \"targ_addr\": \"%s\", \"seq_num\": %d}}\n",
+                netaddr_to_string(&nbuf_nh, &wt->target_addr),
+                netaddr_to_string(&nbuf_oa, &wt->packet_data.origNode.addr),
+                netaddr_to_string(&nbuf_ta, &wt->packet_data.targNode.addr),
+                wt->packet_data.origNode.seqnum);
+    }
+    if (msg_type == RFC5444_MSGTYPE_RERR) {
+        /* TODO */
+    }
 }
 
 /* free the matryoshka doll of cobbled-together structs that the sender_thread receives */
