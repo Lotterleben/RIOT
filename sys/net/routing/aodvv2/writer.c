@@ -279,7 +279,7 @@ void aodv_packet_writer_send_rreq(struct aodvv2_packet_data *packet_data, struct
     _target.packet_data.hoplimit = packet_data->hoplimit;
 
     /* set address to which the write_packet callback should send our RREQ */
-    memcpy(&_target.target_addr, next_hop, sizeof (struct netaddr));
+    memcpy(&_target.next_hop, next_hop, sizeof (struct netaddr));
 
     rfc5444_writer_create_message_alltarget(&writer, RFC5444_MSGTYPE_RREQ);
     rfc5444_writer_flush(&writer, &_target.interface, false);
@@ -305,7 +305,7 @@ void aodv_packet_writer_send_rrep(struct aodvv2_packet_data *packet_data, struct
     _target.packet_data.hoplimit = AODVV2_MAX_HOPCOUNT;
 
     /* set address to which the write_packet callback should send our RREQ */
-    memcpy(&_target.target_addr, next_hop, sizeof (struct netaddr));
+    memcpy(&_target.next_hop, next_hop, sizeof (struct netaddr));
 
     rfc5444_writer_create_message_alltarget(&writer, RFC5444_MSGTYPE_RREP);
     rfc5444_writer_flush(&writer, &_target.interface, false);
@@ -335,7 +335,7 @@ void aodv_packet_writer_send_rerr(struct unreachable_node unreachable_nodes[], s
     _num_unreachable_nodes = len;
 
     /* set address to which the write_packet callback should send our RREQ */
-    memcpy(&_target.target_addr, next_hop, sizeof (struct netaddr));
+    memcpy(&_target.next_hop, next_hop, sizeof (struct netaddr));
 
     rfc5444_writer_create_message_alltarget(&writer, RFC5444_MSGTYPE_RERR);
     rfc5444_writer_flush(&writer, &_target.interface, false);

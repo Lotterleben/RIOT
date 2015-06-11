@@ -459,7 +459,7 @@ static void _write_packet(struct rfc5444_writer *wr __attribute__ ((unused)),
      * iface* is stored in. This is a bit hacky, but it does the trick. */
     struct writer_target *wt = container_of(iface, struct writer_target, interface);
     print_json_pkt_sent(wt);
-    netaddr_to_ipv6_addr_t(&wt->target_addr, &sa_wp.sin6_addr);
+    netaddr_to_ipv6_addr_t(&wt->next_hop, &sa_wp.sin6_addr);
 
     /* When originating a RREQ, add it to our RREQ table/update its predecessor */
     if (wt->type == RFC5444_MSGTYPE_RREQ
@@ -494,7 +494,7 @@ static void print_json_pkt_sent(struct writer_target *wt)
     if (msg_type == RFC5444_MSGTYPE_RREP) {
         printf("{\"log_type\": \"sent_rrep\", "
                 "\"log_data\": {\"next_hop\": %s,\"orig_addr\": \"%s\", \"targ_addr\": \"%s\", \"seq_num\": %d}}\n",
-                netaddr_to_string(&nbuf_nh, &wt->target_addr),
+                netaddr_to_string(&nbuf_nh, &wt->next_hop),
                 netaddr_to_string(&nbuf_oa, &wt->packet_data.origNode.addr),
                 netaddr_to_string(&nbuf_ta, &wt->packet_data.targNode.addr),
                 wt->packet_data.origNode.seqnum);
