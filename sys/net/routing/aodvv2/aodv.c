@@ -493,7 +493,7 @@ static void print_json_pkt_sent(struct writer_target *wt)
     }
     if (msg_type == RFC5444_MSGTYPE_RREP) {
         printf("{\"log_type\": \"sent_rrep\","
-               " \"log_data\": {\"next_hop\": %s,\"orig_addr\": \"%s\", \"targ_addr\": \"%s\", \"seqnum\": %d}}\n",
+               " \"log_data\": {\"next_hop\": \"%s\",\"orig_addr\": \"%s\", \"targ_addr\": \"%s\", \"seqnum\": %d}}\n",
                 netaddr_to_string(&nbuf_nh, &wt->next_hop),
                 netaddr_to_string(&nbuf_oa, &wt->packet_data.origNode.addr),
                 netaddr_to_string(&nbuf_ta, &wt->packet_data.targNode.addr),

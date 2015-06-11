@@ -212,7 +212,7 @@ static enum rfc5444_result _cb_rreq_blocktlv_addresstlvs_okay(struct rfc5444_rea
     tlv = _rreq_rrep_address_consumer_entries[RFC5444_MSGTLV_ORIGSEQNUM].tlv;
     if (tlv) {
         DEBUG("\ttlv RFC5444_MSGTLV_ORIGSEQNUM: %d\n", *tlv->single_value);
-        printf("\"orig_addr\": \"%s\", \"seqnum\": %d, ",
+        printf("\"orig_addr\": \"%s\", \"orig_addr_seqnum\": %d, ",
                netaddr_to_string(&nbuf_test, &cont->addr), *tlv->single_value);
         is_origNode_addr = true;
         packet_data.origNode.addr = cont->addr;
@@ -404,6 +404,7 @@ static enum rfc5444_result _cb_rreq_end_callback(
 static enum rfc5444_result _cb_rrep_blocktlv_messagetlvs_okay(struct rfc5444_reader_tlvblock_context *cont)
 {
     VDEBUG("%s()\n", __func__);
+    struct netaddr_str nbuf_test;
 
     if (!cont->has_hoplimit) {
         VDEBUG("\tERROR: missing hop limit\n");
@@ -417,6 +418,11 @@ static enum rfc5444_result _cb_rrep_blocktlv_messagetlvs_okay(struct rfc5444_rea
     }
 
     packet_data.hoplimit--;
+
+    printf("{\"log_type\": \"received_rrep\","
+           " \"log_data\": {\"last_hop\": \"%s\",",
+            netaddr_to_string(&nbuf_test, &packet_data.sender));
+
     return RFC5444_OKAY;
 }
 
@@ -434,6 +440,7 @@ static enum rfc5444_result _cb_rrep_blocktlv_addresstlvs_okay(struct rfc5444_rea
 #endif
     struct rfc5444_reader_tlvblock_entry *tlv;
     bool is_targNode_addr = false;
+    struct netaddr_str nbuf_test;
 
     VDEBUG("%s()\n", __func__);
     VDEBUG("\taddr: %s\n", netaddr_to_string(&nbuf, &cont->addr));
@@ -442,6 +449,8 @@ static enum rfc5444_result _cb_rrep_blocktlv_addresstlvs_okay(struct rfc5444_rea
     tlv = _rreq_rrep_address_consumer_entries[RFC5444_MSGTLV_TARGSEQNUM].tlv;
     if (tlv) {
         VDEBUG("\ttlv RFC5444_MSGTLV_TARGSEQNUM: %d\n", *tlv->single_value);
+        printf("\"targ_addr\": \"%s\", \"targ_addr_seqnum\": %d ",
+               netaddr_to_string(&nbuf_test, &cont->addr), *tlv->single_value);
         is_targNode_addr = true;
         packet_data.targNode.addr = cont->addr;
         packet_data.targNode.seqnum = *tlv->single_value;
@@ -451,10 +460,13 @@ static enum rfc5444_result _cb_rrep_blocktlv_addresstlvs_okay(struct rfc5444_rea
     tlv = _rreq_rrep_address_consumer_entries[RFC5444_MSGTLV_ORIGSEQNUM].tlv;
     if (tlv) {
         VDEBUG("\ttlv RFC5444_MSGTLV_ORIGSEQNUM: %d\n", *tlv->single_value);
+        printf("\"orig_addr\": \"%s\", \"orig_addr_seqnum\": %d, ",
+               netaddr_to_string(&nbuf_test, &cont->addr), *tlv->single_value);
         is_targNode_addr = false;
         packet_data.origNode.addr = cont->addr;
         packet_data.origNode.seqnum = *tlv->single_value;
     }
+    /* TODO: this check is utter BS (see trello) */
     if (!tlv && !is_targNode_addr) {
         DEBUG("\tERROR: mandatory SeqNum TLV missing.\n");
         return RFC5444_DROP_PACKET;
@@ -501,6 +513,8 @@ static enum rfc5444_result _cb_rrep_end_callback(
     struct netaddr_str nbuf;
 #endif
     timex_t now;
+
+    printf("}}\n");
 
     /* Check if packet contains the required information */
     if (dropped) {
