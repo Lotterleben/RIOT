@@ -485,15 +485,15 @@ static void print_json_pkt_sent(struct writer_target *wt)
     // note: what if the content at wt has changed until this is printed? memcpy the entire thing?
     int msg_type = wt->type;
     if (msg_type == RFC5444_MSGTYPE_RREQ) {
-        printf("{\"log_type\": \"sent_rreq\", "
-                "\"log_data\": {\"orig_addr\": \"%s\", \"targ_addr\": \"%s\", \"seq_num\": %d}}\n",
+        printf("{\"log_type\": \"sent_rreq\","
+               " \"log_data\": {\"orig_addr\": \"%s\", \"targ_addr\": \"%s\", \"seqnum\": %d}}\n",
                 netaddr_to_string(&nbuf_oa, &wt->packet_data.origNode.addr),
                 netaddr_to_string(&nbuf_ta, &wt->packet_data.targNode.addr),
                 wt->packet_data.origNode.seqnum);
     }
     if (msg_type == RFC5444_MSGTYPE_RREP) {
-        printf("{\"log_type\": \"sent_rrep\", "
-                "\"log_data\": {\"next_hop\": %s,\"orig_addr\": \"%s\", \"targ_addr\": \"%s\", \"seq_num\": %d}}\n",
+        printf("{\"log_type\": \"sent_rrep\","
+               " \"log_data\": {\"next_hop\": %s,\"orig_addr\": \"%s\", \"targ_addr\": \"%s\", \"seqnum\": %d}}\n",
                 netaddr_to_string(&nbuf_nh, &wt->next_hop),
                 netaddr_to_string(&nbuf_oa, &wt->packet_data.origNode.addr),
                 netaddr_to_string(&nbuf_ta, &wt->packet_data.targNode.addr),
