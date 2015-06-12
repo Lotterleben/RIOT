@@ -182,10 +182,11 @@ static enum rfc5444_result _cb_rreq_blocktlv_messagetlvs_okay(struct rfc5444_rea
     }
     packet_data.hoplimit--;
 
+#if TEST_SETUP
     printf("{\"log_type\": \"received_rreq\","
            " \"log_data\": {\"last_hop\": \"%s\",",
             netaddr_to_string(&nbuf_test, &packet_data.sender));
-
+#endif
     return RFC5444_OKAY;
 }
 
@@ -212,8 +213,10 @@ static enum rfc5444_result _cb_rreq_blocktlv_addresstlvs_okay(struct rfc5444_rea
     tlv = _rreq_rrep_address_consumer_entries[RFC5444_MSGTLV_ORIGSEQNUM].tlv;
     if (tlv) {
         DEBUG("\ttlv RFC5444_MSGTLV_ORIGSEQNUM: %d\n", *tlv->single_value);
+#if TEST_SETUP
         printf("\"orig_addr\": \"%s\", \"orig_addr_seqnum\": %d, ",
                netaddr_to_string(&nbuf_test, &cont->addr), *tlv->single_value);
+#endif
         is_origNode_addr = true;
         packet_data.origNode.addr = cont->addr;
         packet_data.origNode.seqnum = *tlv->single_value;
@@ -223,8 +226,9 @@ static enum rfc5444_result _cb_rreq_blocktlv_addresstlvs_okay(struct rfc5444_rea
     tlv = _rreq_rrep_address_consumer_entries[RFC5444_MSGTLV_TARGSEQNUM].tlv;
     if (tlv) {
         DEBUG("\ttlv RFC5444_MSGTLV_TARGSEQNUM: %d\n", *tlv->single_value);
+#if TEST_SETUP
         printf("\"targ_addr\": \"%s\", ", netaddr_to_string(&nbuf_test, &cont->addr));
-
+#endif
         is_targNode_addr = true;
         packet_data.targNode.addr = cont->addr;
         packet_data.targNode.seqnum = *tlv->single_value;
@@ -235,7 +239,9 @@ static enum rfc5444_result _cb_rreq_blocktlv_addresstlvs_okay(struct rfc5444_rea
         packet_data.targNode.addr = cont->addr;
         /* NOTE: This is VERY feeble because targ_addr isn't guaranteed to be the
          * last and then the JSON breaks. TODO: port Jansson asap */
+#if TEST_SETUP
         printf("\"targ_addr\": \"%s\"", netaddr_to_string(&nbuf_test, &cont->addr));
+#endif
     }
     if (!is_origNode_addr && !is_targNode_addr) {
         DEBUG("\tERROR: mandatory RFC5444_MSGTLV_ORIGSEQNUM TLV missing.\n");
@@ -279,7 +285,9 @@ static enum rfc5444_result _cb_rreq_end_callback(
     struct aodvv2_routing_entry_t *rt_entry;
     timex_t now;
 
+#if TEST_SETUP
     printf("}}\n");
+#endif
 
     /* Check if packet contains the required information */
     if (dropped) {
@@ -419,9 +427,11 @@ static enum rfc5444_result _cb_rrep_blocktlv_messagetlvs_okay(struct rfc5444_rea
 
     packet_data.hoplimit--;
 
+#if TEST_SETUP
     printf("{\"log_type\": \"received_rrep\","
            " \"log_data\": {\"last_hop\": \"%s\",",
             netaddr_to_string(&nbuf_test, &packet_data.sender));
+#endif
 
     return RFC5444_OKAY;
 }
@@ -449,8 +459,10 @@ static enum rfc5444_result _cb_rrep_blocktlv_addresstlvs_okay(struct rfc5444_rea
     tlv = _rreq_rrep_address_consumer_entries[RFC5444_MSGTLV_TARGSEQNUM].tlv;
     if (tlv) {
         VDEBUG("\ttlv RFC5444_MSGTLV_TARGSEQNUM: %d\n", *tlv->single_value);
+#if TEST_SETUP
         printf("\"targ_addr\": \"%s\", \"targ_addr_seqnum\": %d ",
                netaddr_to_string(&nbuf_test, &cont->addr), *tlv->single_value);
+#endif
         is_targNode_addr = true;
         packet_data.targNode.addr = cont->addr;
         packet_data.targNode.seqnum = *tlv->single_value;
@@ -460,8 +472,10 @@ static enum rfc5444_result _cb_rrep_blocktlv_addresstlvs_okay(struct rfc5444_rea
     tlv = _rreq_rrep_address_consumer_entries[RFC5444_MSGTLV_ORIGSEQNUM].tlv;
     if (tlv) {
         VDEBUG("\ttlv RFC5444_MSGTLV_ORIGSEQNUM: %d\n", *tlv->single_value);
+#if TEST_SETUP
         printf("\"orig_addr\": \"%s\", \"orig_addr_seqnum\": %d, ",
                netaddr_to_string(&nbuf_test, &cont->addr), *tlv->single_value);
+#endif
         is_targNode_addr = false;
         packet_data.origNode.addr = cont->addr;
         packet_data.origNode.seqnum = *tlv->single_value;
@@ -514,7 +528,9 @@ static enum rfc5444_result _cb_rrep_end_callback(
 #endif
     timex_t now;
 
+#if TEST_SETUP
     printf("}}\n");
+#endif
 
     /* Check if packet contains the required information */
     if (dropped) {
