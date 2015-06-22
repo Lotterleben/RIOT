@@ -62,7 +62,7 @@ void routingtable_add_entry(struct aodvv2_routing_entry_t *entry)
 #if TEST_SETUP
     char rt_entry_json [500];
     routingtable_entry_to_json(entry, rt_entry_json);
-    printf("{\"log_type\": \"added_rt_entry\", \"log_data\": %s}", rt_entry_json);
+    printf("{\"log_type\": \"added_rt_entry\", \"log_data\": %s}\n", rt_entry_json);
 #endif
 
     /* only add if we don't already know the address */
@@ -263,7 +263,7 @@ void print_routingtable(void)
 void routingtable_entry_to_json(struct aodvv2_routing_entry_t *rt_entry, char* json_str) {
     struct netaddr_str nbuf_a, nbuf_nh;
     sprintf(json_str,"{\"addr\": \"%s\", \"next_hop\": \"%s\", \"seqnum\": %d,"
-                     "\"metric\": %d, \"state\": %d}",
+                     "\"metric\": %d, \"state\": %d}\n",
                      netaddr_to_string(&nbuf_a, &rt_entry->addr),
                      netaddr_to_string(&nbuf_nh, &rt_entry->nextHopAddr),
                      rt_entry->seqnum, rt_entry->metric, rt_entry->state);

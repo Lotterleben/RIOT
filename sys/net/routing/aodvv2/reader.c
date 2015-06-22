@@ -213,10 +213,8 @@ static enum rfc5444_result _cb_rreq_blocktlv_addresstlvs_okay(struct rfc5444_rea
     tlv = _rreq_rrep_address_consumer_entries[RFC5444_MSGTLV_ORIGSEQNUM].tlv;
     if (tlv) {
         DEBUG("\ttlv RFC5444_MSGTLV_ORIGSEQNUM: %d\n", *tlv->single_value);
-#if TEST_SETUP
         printf("\"orig_addr\": \"%s\", \"orig_addr_seqnum\": %d, ",
                netaddr_to_string(&nbuf_test, &cont->addr), *tlv->single_value);
-#endif
         is_origNode_addr = true;
         packet_data.origNode.addr = cont->addr;
         packet_data.origNode.seqnum = *tlv->single_value;
@@ -226,9 +224,8 @@ static enum rfc5444_result _cb_rreq_blocktlv_addresstlvs_okay(struct rfc5444_rea
     tlv = _rreq_rrep_address_consumer_entries[RFC5444_MSGTLV_TARGSEQNUM].tlv;
     if (tlv) {
         DEBUG("\ttlv RFC5444_MSGTLV_TARGSEQNUM: %d\n", *tlv->single_value);
-#if TEST_SETUP
         printf("\"targ_addr\": \"%s\", ", netaddr_to_string(&nbuf_test, &cont->addr));
-#endif
+
         is_targNode_addr = true;
         packet_data.targNode.addr = cont->addr;
         packet_data.targNode.seqnum = *tlv->single_value;
