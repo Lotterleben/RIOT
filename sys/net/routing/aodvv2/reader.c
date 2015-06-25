@@ -464,7 +464,7 @@ static enum rfc5444_result _cb_rrep_blocktlv_addresstlvs_okay(struct rfc5444_rea
         VDEBUG("\ttlv RFC5444_MSGTLV_TARGSEQNUM: %d\n", *tlv->single_value);
 #if TEST_SETUP
         printf("\"targ_addr\": \"%s\"",
-               netaddr_to_string(&nbuf_test, &cont->addr), *tlv->single_value);
+               netaddr_to_string(&nbuf_test, &cont->addr));
 #endif
         is_targNode_addr = true;
         packet_data.targNode.addr = cont->addr;
