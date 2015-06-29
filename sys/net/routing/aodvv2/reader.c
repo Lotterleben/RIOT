@@ -799,8 +799,8 @@ static uint8_t _get_max_metric(aodvv2_metric_t metricType)
 /*
  * Cost(R): Get Cost of a Route regarding the specified metric, based on the
  * earlier metric value of the Route.
- * (currently only AODVV2_DEFAULT_METRIC_TYPE (HopCt) implemented)
- * returns cost if metric is known, NULL otherwise
+ * (currently only AODVV2_DEFAULT_METRIC_TYPE (HopCount) implemented)
+ * returns cost if metric is known, 0 otherwise
  */
 static uint8_t _get_route_cost(aodvv2_metric_t metricType, uint8_t metric)
 {
