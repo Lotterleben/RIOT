@@ -487,7 +487,7 @@ static void print_json_pkt_sent(struct writer_target *wt)
     if (msg_type == RFC5444_MSGTYPE_RREQ) {
 #if TEST_SETUP
         printf("{\"log_type\": \"sent_rreq\","
-               " \"log_data\": {\"orig_addr\": \"%s\", \"targ_addr\": \"%s\", \"seqnum\": %d, \"metric\": %d}}\n",
+               " \"log_data\": {\"orig_addr\": \"%s\", \"targ_addr\": \"%s\", \"orig_seqnum\": %d, \"metric\": %d}}\n",
 #endif
                 netaddr_to_string(&nbuf_oa, &wt->packet_data.origNode.addr),
                 netaddr_to_string(&nbuf_ta, &wt->packet_data.targNode.addr),
@@ -496,7 +496,7 @@ static void print_json_pkt_sent(struct writer_target *wt)
     if (msg_type == RFC5444_MSGTYPE_RREP) {
 #if TEST_SETUP
         printf("{\"log_type\": \"sent_rrep\","
-               " \"log_data\": {\"next_hop\": \"%s\",\"orig_addr\": \"%s\", \"orig_addr_seqnum\": %d,"
+               " \"log_data\": {\"next_hop\": \"%s\",\"orig_addr\": \"%s\", \"orig_seqnum\": %d,"
                " \"targ_addr\": \"%s\"}}\n",
 #endif
                 netaddr_to_string(&nbuf_nh, &wt->next_hop),
