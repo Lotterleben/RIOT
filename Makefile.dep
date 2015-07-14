@@ -221,6 +221,12 @@ ifneq (,$(filter ng_slip,$(USEMODULE)))
   USEMODULE += ng_netbase
 endif
 
+ifneq (,$(filter ng_aodvv2,$(USEMODULE)))
+  USEMODULE += ng_sixlowpan_default
+  USEMODULE += oonf_common
+  USEMODULE += oonf_rfc5444
+endif
+
 ifneq (,$(filter aodvv2,$(USEMODULE)))
   USEMODULE += vtimer
   USEMODULE += sixlowpan
