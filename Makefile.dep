@@ -225,6 +225,7 @@ ifneq (,$(filter ng_aodvv2,$(USEMODULE)))
   USEMODULE += ng_sixlowpan_default
   USEMODULE += oonf_common
   USEMODULE += oonf_rfc5444
+  USEMODULE += fib
 endif
 
 ifneq (,$(filter aodvv2,$(USEMODULE)))
