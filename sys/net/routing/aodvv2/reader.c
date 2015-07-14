@@ -71,6 +71,7 @@ static struct netaddr_str nbuf;
 #endif
 #if TEST_SETUP
 static struct netaddr_str nbuf_origaddr, nbuf_targaddr, nbuf_send;
+
 #endif
 /*
  * Message consumer, will be called once for every message of
