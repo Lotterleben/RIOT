@@ -43,6 +43,9 @@ static void _write_packet(struct rfc5444_writer *wr __attribute__ ((unused)),
 char addr_str[IPV6_MAX_ADDR_STR_LEN];
 static struct netaddr_str nbuf;
 #endif
+#if TEST_SETUP
+static struct netaddr_str nbuf_oa, nbuf_ta, nbuf_nh;
+#endif
 
 static char aodv_rcv_stack_buf[THREAD_STACKSIZE_MAIN];
 static char aodv_snd_stack_buf[THREAD_STACKSIZE_MAIN];
@@ -184,8 +187,6 @@ void aodv_send_rreq(struct aodvv2_packet_data *packet_data)
     /* Make sure only one thread is dispatching a RREQ at a time */
     mutex_lock(&rreq_mutex);
 
-    AODV_DEBUG("%s()\n", __func__);
-
     struct aodvv2_packet_data *pd = malloc(sizeof(struct aodvv2_packet_data));
     memcpy(pd, packet_data, sizeof(struct aodvv2_packet_data));
 
@@ -212,8 +213,6 @@ void aodv_send_rrep(struct aodvv2_packet_data *packet_data, struct netaddr *next
 {
     /* Make sure only one thread is dispatching a RREP at a time */
     mutex_lock(&rrep_mutex);
-
-    AODV_DEBUG("%s()\n", __func__);
 
     struct aodvv2_packet_data *pd = malloc(sizeof(struct aodvv2_packet_data));
     memcpy(pd, packet_data, sizeof(struct aodvv2_packet_data));
@@ -244,8 +243,6 @@ void aodv_send_rerr(struct unreachable_node unreachable_nodes[], size_t len, str
 {
     /* Make sure only one thread is dispatching a RERR at a time */
     mutex_lock(&rerr_mutex);
-
-    AODV_DEBUG("%s()\n", __func__);
 
     struct rerr_data *rerrd = malloc(sizeof(struct rerr_data));
     *rerrd = (struct rerr_data) {
@@ -313,10 +310,8 @@ static void *_aodv_sender_thread(void *arg)
 
     msg_t msgq[RCV_MSG_Q_SIZE];
     msg_init_queue(msgq, RCV_MSG_Q_SIZE);
-    AODV_DEBUG("_aodv_sender_thread initialized.\n");
 
     while (true) {
-        AODV_DEBUG("%s()\n", __func__);
         msg_t msg;
         msg_receive(&msg);
         struct msg_container *mc = (struct msg_container *) msg.content.ptr;
@@ -348,7 +343,6 @@ static void *_aodv_receiver_thread(void *arg)
 {
     (void) arg;
 
-    AODV_DEBUG("%s()\n", __func__);
     uint32_t fromlen;
     char buf_rcv[UDP_BUFFER_SIZE];
     msg_t msg_q[RCV_MSG_Q_SIZE];
@@ -362,12 +356,11 @@ static void *_aodv_receiver_thread(void *arg)
     int sock_rcv = socket_base_socket(PF_INET6, SOCK_DGRAM, IPPROTO_UDP);
 
     if (-1 == socket_base_bind(sock_rcv, &sa_rcv, sizeof(sa_rcv))) {
-        DEBUG("Error: bind to receive socket failed!\n");
+        AODV_DEBUG("Error: bind to receive socket failed!\n");
         socket_base_close(sock_rcv);
         return NULL;
     }
 
-    AODV_DEBUG("ready to receive data\n");
     while (true) {
         int32_t rcv_size = socket_base_recvfrom(sock_rcv, (void *)buf_rcv, UDP_BUFFER_SIZE, 0,
                                         &sa_rcv, &fromlen);
@@ -375,11 +368,6 @@ static void *_aodv_receiver_thread(void *arg)
         if (rcv_size < 0) {
             AODV_DEBUG("ERROR receiving data!\n");
         }
-
-        AODV_DEBUG("_aodv_receiver_thread() %s:",
-              ipv6_addr_to_str(addr_str, IPV6_MAX_ADDR_STR_LEN, &_v6_addr_local));
-        DEBUG(" UDP packet received from %s\n",
-              ipv6_addr_to_str(addr_str, IPV6_MAX_ADDR_STR_LEN, &sa_rcv.sin6_addr));
 
         struct netaddr _sender;
         ipv6_addr_t_to_netaddr(&sa_rcv.sin6_addr, &_sender);
@@ -435,6 +423,32 @@ static void _write_packet(struct rfc5444_writer *wr __attribute__ ((unused)),
 
     (void) bytes_sent;
     AODV_DEBUG("%d bytes sent.\n", bytes_sent);
+}
+
+/* Print the json representation of a sent packet to stdout for debugging */
+static void print_json_pkt_sent(struct writer_target *wt)
+{
+    // note: what if the content at wt has changed until this is printed? memcpy the entire thing?
+    int msg_type = wt->type;
+    if (msg_type == RFC5444_MSGTYPE_RREQ) {
+    LOG("{\"log_type\": \"sent_rreq\", \"log_data\": {"
+        "\"orig_addr\": \"%s\", \"targ_addr\": \"%s\", \"orig_seqnum\": %d, \"metric\": %d}}\n",
+        netaddr_to_string(&nbuf_oa, &wt->packet_data.origNode.addr),
+        netaddr_to_string(&nbuf_ta, &wt->packet_data.targNode.addr),
+        wt->packet_data.origNode.seqnum, wt->packet_data.origNode.metric);
+    }
+    if (msg_type == RFC5444_MSGTYPE_RREP) {
+    LOG("{\"log_type\": \"sent_rrep\", \"log_data\": {"
+        "\"next_hop\": \"%s\",\"orig_addr\": \"%s\", \"orig_seqnum\": %d,"
+        " \"targ_addr\": \"%s\"}}\n",
+                netaddr_to_string(&nbuf_nh, &wt->next_hop),
+                netaddr_to_string(&nbuf_oa, &wt->packet_data.origNode.addr),
+                wt->packet_data.origNode.seqnum,
+                netaddr_to_string(&nbuf_ta, &wt->packet_data.targNode.addr));
+    }
+    if (msg_type == RFC5444_MSGTYPE_RERR) {
+        /* TODO */
+    }
 }
 
 /* free the matryoshka doll of cobbled-together structs that the sender_thread receives */
