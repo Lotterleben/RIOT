@@ -49,5 +49,23 @@
 }
 #endif
 
+/**
+ * @brief Special printing function for logging/test output. Enable with -DTEST_SETUP
+ *
+ */
+#if TEST_SETUP
+#include "tcb.h"
+#define LOG(...) \
+ do { \
+        printf(__VA_ARGS__); \
+    } while (0)
+#else
+#define LOG(...)
+#endif
+
+#ifdef __cplusplus
+}
+#endif
+
 #endif /* AODVV2_DEBUG_H_*/
 /** @} */
