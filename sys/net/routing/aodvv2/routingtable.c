@@ -59,6 +59,12 @@ struct netaddr *routingtable_get_next_hop(struct netaddr *dest, aodvv2_metric_t 
 
 void routingtable_add_entry(struct aodvv2_routing_entry_t *entry)
 {
+#if TEST_SETUP
+    char rt_entry_json [500];
+    routingtable_entry_to_json(entry, rt_entry_json);
+    LOG("{\"log_type\": \"added_rt_entry\", \"log_data\": %s}\n", rt_entry_json);
+#endif
+
     /* only add if we don't already know the address */
     if (routingtable_get_entry(&(entry->addr), entry->metricType)) {
         return;
