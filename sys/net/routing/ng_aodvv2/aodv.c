@@ -103,13 +103,8 @@ void aodv_init(void)
     aodv_packet_writer_init(_write_packet);
 
     /* start listening & enable sending */
-    kernel_pid_t rcv = thread_create(aodv_rcv_stack_buf, sizeof(aodv_rcv_stack_buf), THREAD_PRIORITY_MAIN,
+    thread_create(aodv_rcv_stack_buf, sizeof(aodv_rcv_stack_buf), THREAD_PRIORITY_MAIN,
                   CREATE_STACKTEST, _aodv_receiver_thread, NULL, "_aodv_receiver_thread");
-
-    /* start server (which means registering AODVv2 receiver for the chosen port) */
-    server.pid = rcv;
-    server.demux_ctx = (uint32_t)HTONS(MANET_PORT);
-    ng_netreg_register(NG_NETTYPE_UDP, &server);
 
     AODV_DEBUG("listening on port %d\n", HTONS(MANET_PORT));
     sender_thread = thread_create(aodv_snd_stack_buf, sizeof(aodv_snd_stack_buf),
