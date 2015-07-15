@@ -22,7 +22,7 @@
 #include "aodv_debug.h"
 #include "ng_fib.h"
 
-#define ENABLE_DEBUG (0)
+#define ENABLE_DEBUG (1)
 #include "debug.h"
 
 #define UDP_BUFFER_SIZE     (128) /** with respect to IEEE 802.15.4's MTU */
@@ -80,9 +80,10 @@ void aodv_init(void)
     msg_init_queue(msgq, sizeof msgq);
 
     /* TODO: set & handle prefix and prefix_len properly (consider AODVV2_RIOT_PREFIXLEN!) */
-    aodvv2_prefix_len = 0;
+    aodvv2_prefix_len = sizeof(ng_ipv6_addr_t);
     /* TODO: set if_id properly (as param of aodv_init) */
     aodvv2_if_id = 0;
+    ng_ipv6_addr_from_str(&aodvv2_prefix, "fe80:0000:0000:0000:0000:0000:0000:0000");
     //net_if_set_src_address_mode(aodvv2_if_id, NET_IF_TRANS_ADDR_M_SHORT);
 
     mutex_init(&rreq_mutex);
@@ -135,7 +136,11 @@ void *fib_signal_handler_thread(void *arg)
     ng_ipv6_addr_t dest;
     struct netaddr na_dest;
 
-    fib_register_rp((uint8_t*) &aodvv2_prefix, aodvv2_prefix_len);
+    int err = fib_register_rp(&aodvv2_prefix.u8[0], aodvv2_prefix_len);
+    if ( err != 0) {
+        puts("ERROR: cannot register at fib, error code:\n");
+        exit(1);
+    }
 
     while (true) {
         AODV_DEBUG("%s()\n", __func__);
@@ -173,7 +178,7 @@ void *fib_signal_handler_thread(void *arg)
                 };
 
                 DEBUG("\tstarting route discovery towards %s... \n",
-                      ng_ipv6_addr_to_str(addr_str, IPV6_MAX_ADDR_STR_LEN, &dest));
+                      ng_ipv6_addr_to_str(addr_str, &dest, IPV6_MAX_ADDR_STR_LEN));
                 aodv_send_rreq(&rreq_data);
             }
             else {
@@ -543,10 +548,10 @@ static void _write_packet(struct rfc5444_writer *wr __attribute__ ((unused)),
     /* When originating a RREQ, add it to our RREQ table/update its predecessor */
     if (wt->type == RFC5444_MSGTYPE_RREQ
         && netaddr_cmp(&wt->packet_data.origNode.addr, &na_local) == 0) {
-        AODV_DEBUG("originating RREQ with SeqNum %d towards %s via %s; updating RREQ table...\n",
+        DEBUG("originating RREQ with SeqNum %d towards %s via %s; updating RREQ table...\n",
               wt->packet_data.origNode.seqnum,
               netaddr_to_string(&nbuf, &wt->packet_data.targNode.addr),
-              ipv6_addr_to_str(addr_str, IPV6_MAX_ADDR_STR_LEN, &addr_send));
+              ng_ipv6_addr_to_str(addr_str, &addr_send, IPV6_MAX_ADDR_STR_LEN));
         rreqtable_is_redundant(&wt->packet_data);
     }
 
