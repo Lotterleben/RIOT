@@ -38,13 +38,14 @@ static void _deep_free_msg_container(struct msg_container *msg_container);
 static void _write_packet(struct rfc5444_writer *wr __attribute__ ((unused)),
                           struct rfc5444_writer_target *iface __attribute__((unused)),
                           void *buffer, size_t length);
+static void print_json_pkt_sent(struct writer_target *wt);
 
 #if ENABLE_DEBUG
 char addr_str[IPV6_MAX_ADDR_STR_LEN];
 static struct netaddr_str nbuf;
 #endif
 #if TEST_SETUP
-static struct netaddr_str nbuf_oa, nbuf_ta, nbuf_nh;
+static struct netaddr_str nbuf_origaddr, nbuf_targaddr, nbuf_nexthop;
 #endif
 
 static char aodv_rcv_stack_buf[THREAD_STACKSIZE_MAIN];
@@ -406,6 +407,7 @@ static void _write_packet(struct rfc5444_writer *wr __attribute__ ((unused)),
      * specific node or the multicast address) from the writer_target struct
      * iface* is stored in. This is a bit hacky, but it does the trick. */
     wt = container_of(iface, struct writer_target, interface);
+    print_json_pkt_sent(wt);
     netaddr_to_ipv6_addr_t(&wt->target_addr, &sa_wp.sin6_addr);
 
     /* When originating a RREQ, add it to our RREQ table/update its predecessor */
@@ -433,18 +435,18 @@ static void print_json_pkt_sent(struct writer_target *wt)
     if (msg_type == RFC5444_MSGTYPE_RREQ) {
     LOG("{\"log_type\": \"sent_rreq\", \"log_data\": {"
         "\"orig_addr\": \"%s\", \"targ_addr\": \"%s\", \"orig_seqnum\": %d, \"metric\": %d}}\n",
-        netaddr_to_string(&nbuf_oa, &wt->packet_data.origNode.addr),
-        netaddr_to_string(&nbuf_ta, &wt->packet_data.targNode.addr),
+        netaddr_to_string(&nbuf_origaddr, &wt->packet_data.origNode.addr),
+        netaddr_to_string(&nbuf_targaddr, &wt->packet_data.targNode.addr),
         wt->packet_data.origNode.seqnum, wt->packet_data.origNode.metric);
     }
     if (msg_type == RFC5444_MSGTYPE_RREP) {
     LOG("{\"log_type\": \"sent_rrep\", \"log_data\": {"
         "\"next_hop\": \"%s\",\"orig_addr\": \"%s\", \"orig_seqnum\": %d,"
         " \"targ_addr\": \"%s\"}}\n",
-                netaddr_to_string(&nbuf_nh, &wt->next_hop),
-                netaddr_to_string(&nbuf_oa, &wt->packet_data.origNode.addr),
+                netaddr_to_string(&nbuf_nexthop, &wt->target_addr),
+                netaddr_to_string(&nbuf_origaddr, &wt->packet_data.origNode.addr),
                 wt->packet_data.origNode.seqnum,
-                netaddr_to_string(&nbuf_ta, &wt->packet_data.targNode.addr));
+                netaddr_to_string(&nbuf_targaddr, &wt->packet_data.targNode.addr));
     }
     if (msg_type == RFC5444_MSGTYPE_RERR) {
         /* TODO */
