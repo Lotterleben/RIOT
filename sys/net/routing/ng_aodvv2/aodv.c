@@ -67,9 +67,6 @@ kernel_pid_t aodvv2_if_id;
 ng_ipv6_addr_t aodvv2_prefix;
 int aodvv2_prefix_len;
 
-static ng_netreg_entry_t server = {NULL, NG_NETREG_DEMUX_CTX_ALL,
-                                   KERNEL_PID_UNDEF};
-
 void aodv_init(void)
 {
     AODV_DEBUG("%s()\n", __func__);
@@ -365,9 +362,13 @@ static void *_aodv_sender_thread(void *arg)
 static void *_aodv_receiver_thread(void *arg)
 {
     (void) arg;
+    ng_netreg_entry_t server = {
+        .next = NULL,
+        .demux_ctx = NG_NETREG_DEMUX_CTX_ALL,
+        .pid = KERNEL_PID_UNDEF };
 
-    AODV_DEBUG("%s()\n", __func__);
     char buf_rcv[UDP_BUFFER_SIZE];
+    struct netaddr _sender;
 
     msg_t msg, reply;
     msg_t msg_q[RCV_MSG_Q_SIZE];
@@ -377,17 +378,21 @@ static void *_aodv_receiver_thread(void *arg)
     reply.content.value = (uint32_t)(-ENOTSUP);
     reply.type = NG_NETAPI_MSG_TYPE_ACK;
 
+    /* start server (which means registering AODVv2 receiver for the chosen port) */
+    server.pid = sched_active_pid; /* sched_active_pid is our pid, since we are currently act */
+    server.demux_ctx = (uint32_t)HTONS(MANET_PORT);
+    ng_netreg_register(NG_NETTYPE_UDP, &server);
+
     while (1) {
         msg_receive(&msg);
 
         switch (msg.type) {
             case NG_NETAPI_MSG_TYPE_RCV:
-                puts("AODVv2: data received:");
+                AODV_DEBUG("received data:");
                 ng_pktsnip_t *pkt = ((ng_pktsnip_t *)msg.content.ptr);
                 if (pkt->size <= UDP_BUFFER_SIZE) {
                     memcpy(buf_rcv, pkt->data, pkt->size);
 
-                    struct netaddr _sender;
                     if(pkt->next->type == NG_NETTYPE_IPV6) {
                         ipv6_addr_t_to_netaddr(&(((ng_ipv6_hdr_t*)(pkt->next->data))->src), &_sender);
                     }
@@ -408,21 +413,10 @@ static void *_aodv_receiver_thread(void *arg)
                 msg_reply(&msg, &reply);
                 break;
             default:
-                puts("AODVv2: received something unexpected");
+                AODV_DEBUG("received something unexpected");
                 break;
         }
     }
-    /* never reached */
-    /* check if server is running at all */
-    if (server.pid == KERNEL_PID_UNDEF) {
-        printf("Error: server was not running\n");
-        return NULL;
-    }
-    /* stop server */
-    ng_netreg_unregister(NG_NETTYPE_UDP, &server);
-    server.pid = KERNEL_PID_UNDEF;
-    puts("Success: stopped UDP server");
-    return NULL;
 
 /*
     sockaddr6_t sa_rcv = { .sin6_family = AF_INET6,
@@ -479,13 +473,16 @@ static void send(ng_ipv6_addr_t addr, uint16_t port, void *data, size_t data_len
     ng_pktsnip_t *payload, *udp, *ip;
     ng_netreg_entry_t *sendto;
 
+    /* convert to correct byteorder */
+    port = HTONS(port);
+
     /* allocate payload */
     payload = ng_pktbuf_add(NULL, data, data_length, NG_NETTYPE_UNDEF);
     if (payload == NULL) {
         puts("Error: unable to copy data to packet buffer");
         return;
     }
-    /* allocate UDP header, set source port := destination port */
+    /* allocate UDP header, set source port := destination port TODO is this such a good idea?? */
     udp = ng_udp_hdr_build(payload, (uint8_t*)&port, 2, (uint8_t*)&port, 2);
     if (udp == NULL) {
         puts("Error: unable to allocate UDP header");
@@ -552,7 +549,7 @@ static void _write_packet(struct rfc5444_writer *wr __attribute__ ((unused)),
         rreqtable_is_redundant(&wt->packet_data);
     }
 
-    send(addr_send, (uint16_t)HTONS(MANET_PORT), buffer, length);
+    send(addr_send, (uint16_t) MANET_PORT, buffer, length);
 /*
     int bytes_sent = socket_base_sendto(_sock_snd, buffer, length,
                                         0, &sa_wp, sizeof sa_wp);
