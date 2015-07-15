@@ -68,7 +68,7 @@ static struct rfc5444_reader reader;
 static struct netaddr_str nbuf;
 #endif
 #if TEST_SETUP
-static struct netaddr_str nbuf_oa, nbuf_ta, nbuf_snd;
+static struct netaddr_str nbuf_origaddr, nbuf_targaddr, nbuf_send;
 #endif
 /*
  * Message consumer, will be called once for every message of
@@ -262,10 +262,10 @@ static enum rfc5444_result _cb_rreq_end_callback(
     LOG("{\"log_type\": \"received_rreq\", "
         "\"log_data\":{ \"last_hop\": \"%s\", \"orig_addr\": \"%s\", "
         "\"orig_seqnum\": %d, \"targ_addr\": \"%s\", \"metric\": %d}}\n",
-        netaddr_to_string(&nbuf_snd, &packet_data.sender),
-        netaddr_to_string(&nbuf_oa, &packet_data.origNode.addr),
+        netaddr_to_string(&nbuf_send, &packet_data.sender),
+        netaddr_to_string(&nbuf_origaddr, &packet_data.origNode.addr),
         packet_data.origNode.seqnum,
-        netaddr_to_string(&nbuf_ta, &packet_data.targNode.addr),
+        netaddr_to_string(&nbuf_targaddr, &packet_data.targNode.addr),
         packet_data.origNode.metric);
 
     /* Check if packet contains the required information */
@@ -481,10 +481,10 @@ static enum rfc5444_result _cb_rrep_end_callback(
     LOG("{\"log_type\": \"received_rrep\", "
         "\"log_data\":{ \"last_hop\": \"%s\", \"orig_addr\": \"%s\", "
         "\"orig_seqnum\": %d, \"targ_addr\": \"%s\", \"targ_seqnum\":%d}}\n",
-        netaddr_to_string(&nbuf_snd, &packet_data.sender),
-        netaddr_to_string(&nbuf_oa, &packet_data.origNode.addr),
+        netaddr_to_string(&nbuf_send, &packet_data.sender),
+        netaddr_to_string(&nbuf_origaddr, &packet_data.origNode.addr),
         packet_data.origNode.seqnum,
-        netaddr_to_string(&nbuf_ta, &packet_data.targNode.addr),
+        netaddr_to_string(&nbuf_targaddr, &packet_data.targNode.addr),
         packet_data.targNode.seqnum);
 
     /* Check if packet contains the required information */
