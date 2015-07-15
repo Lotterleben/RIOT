@@ -44,8 +44,8 @@ endif
 ifneq (,$(filter routing,$(USEMODULE)))
     DIRS += net/routing
 endif
-ifneq (,$(filter ng_aodvv2,$(USEMODULE)))
-    DIRS += net/routing/ng_aodvv2
+ifneq (,$(filter old_aodvv2,$(USEMODULE)))
+    DIRS += net/routing/old_aodvv2
 endif
 ifneq (,$(filter aodvv2,$(USEMODULE)))
     DIRS += net/routing/aodvv2

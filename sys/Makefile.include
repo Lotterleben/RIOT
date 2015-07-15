@@ -74,8 +74,8 @@ ifneq (,$(filter oneway_malloc,$(USEMODULE)))
     USEMODULE_INCLUDES += $(RIOTBASE)/sys/oneway-malloc/include
 endif
 
-ifneq (,$(filter ng_aodvv2,$(USEMODULE)))
-    USEMODULE_INCLUDES += $(RIOTBASE)/sys/net/routing/ng_aodvv2
+ifneq (,$(filter aodvv2,$(USEMODULE)))
+    USEMODULE_INCLUDES += $(RIOTBASE)/sys/net/routing/aodvv2
 endif
 
 ifneq (,$(filter fib,$(USEMODULE)))
