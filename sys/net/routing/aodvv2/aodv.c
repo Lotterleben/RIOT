@@ -528,7 +528,8 @@ static void _write_packet(struct rfc5444_writer *wr __attribute__ ((unused)),
                           struct rfc5444_writer_target *iface __attribute__((unused)),
                           void *buffer, size_t length)
 {
-    AODV_DEBUG("%s()\n", __func__);
+    ng_ipv6_addr_t addr_send;
+
     /* generate hexdump and human readable representation of packet
      * and print to console */
     abuf_hexdump(&_hexbuf, "\t", buffer, length);
@@ -542,8 +543,8 @@ static void _write_packet(struct rfc5444_writer *wr __attribute__ ((unused)),
     wt = container_of(iface, struct writer_target, interface);
     print_json_pkt_sent(wt);
 
-    ng_ipv6_addr_t addr_send;
     netaddr_to_ipv6_addr_t(&wt->target_addr, &addr_send);
+    print_json_pkt_sent(wt);
 
     /* When originating a RREQ, add it to our RREQ table/update its predecessor */
     if (wt->type == RFC5444_MSGTYPE_RREQ
