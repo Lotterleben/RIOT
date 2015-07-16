@@ -28,13 +28,10 @@
 
 /* helper functions */
 static void _reset_entry_if_stale(uint8_t i);
-<<<<<<< HEAD
 #if TEST_SETUP
-void routingtable_entry_to_json(struct aodvv2_routing_entry_t *rt_entry, char* json_str);
+static void routingtable_entry_to_json(struct aodvv2_routing_entry_t *rt_entry, char* json_str);
 #endif
-=======
 static void print_json_added_rt_entry(struct aodvv2_routing_entry_t *entry);
->>>>>>> aodvv2_debug_cleanup
 
 static struct aodvv2_routing_entry_t routing_table[AODVV2_MAX_ROUTING_ENTRIES];
 static timex_t null_time, max_seqnum_lifetime, active_interval, max_idletime, validity_t;

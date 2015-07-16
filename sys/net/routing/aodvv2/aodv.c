@@ -44,9 +44,6 @@ static void print_json_pkt_sent(struct writer_target *wt);
 char addr_str[IPV6_MAX_ADDR_STR_LEN];
 static struct netaddr_str nbuf;
 #endif
-#if TEST_SETUP
-static struct netaddr_str nbuf_origaddr, nbuf_targaddr, nbuf_nexthop;
-#endif
 
 static char aodv_rcv_stack_buf[THREAD_STACKSIZE_MAIN];
 static char aodv_snd_stack_buf[THREAD_STACKSIZE_MAIN];
@@ -177,7 +174,7 @@ void *fib_signal_handler_thread(void *arg)
                                                   * merely to make the compiler shut up */
                 };
 
-                DEBUG("\tstarting route discovery towards %s... \n",
+                AODV_DEBUG("\tstarting route discovery towards %s... \n",
                       ng_ipv6_addr_to_str(addr_str, &dest, IPV6_MAX_ADDR_STR_LEN));
                 aodv_send_rreq(&rreq_data);
             }
@@ -536,7 +533,7 @@ static void _write_packet(struct rfc5444_writer *wr __attribute__ ((unused)),
     /* When originating a RREQ, add it to our RREQ table/update its predecessor */
     if (wt->type == RFC5444_MSGTYPE_RREQ
         && netaddr_cmp(&wt->packet_data.origNode.addr, &na_local) == 0) {
-        DEBUG("originating RREQ with SeqNum %d towards %s via %s; updating RREQ table...\n",
+        AODV_DEBUG("originating RREQ with SeqNum %d towards %s via %s; updating RREQ table...\n",
               wt->packet_data.origNode.seqnum,
               netaddr_to_string(&nbuf, &wt->packet_data.targNode.addr),
               ng_ipv6_addr_to_str(addr_str, &addr_send, IPV6_MAX_ADDR_STR_LEN));
@@ -557,6 +554,8 @@ static void _write_packet(struct rfc5444_writer *wr __attribute__ ((unused)),
 static void print_json_pkt_sent(struct writer_target *wt)
 {
 #if TEST_SETUP
+    static struct netaddr_str nbuf_origaddr, nbuf_targaddr, nbuf_nexthop;
+
     // note: what if the content at wt has changed until this is printed? memcpy the entire thing?
     int msg_type = wt->type;
     if (msg_type == RFC5444_MSGTYPE_RREQ) {
