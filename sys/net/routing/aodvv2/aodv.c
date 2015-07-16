@@ -21,7 +21,7 @@
 #include "aodvv2/aodvv2.h"
 #include "aodv_debug.h"
 
-#define ENABLE_DEBUG (0)
+#define ENABLE_DEBUG (1)
 #include "debug.h"
 
 #define UDP_BUFFER_SIZE     (128) /** with respect to IEEE 802.15.4's MTU */
@@ -37,7 +37,7 @@ static void _write_packet(struct rfc5444_writer *wr __attribute__ ((unused)),
                           void *buffer, size_t length);
 static void print_json_pkt_sent(struct writer_target *wt);
 
-#if ENABLE_DEBUG
+#if AODV_DEBUG
 char addr_str[IPV6_MAX_ADDR_STR_LEN];
 static struct netaddr_str nbuf;
 #endif
