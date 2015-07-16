@@ -71,7 +71,7 @@ kernel_pid_t aodvv2_if_id;
 ng_ipv6_addr_t aodvv2_prefix;
 int aodvv2_prefix_len;
 
-void aodv_init(void)
+void aodv_init(kernel_pid_t interface)
 {
     AODV_DEBUG("%s()\n", __func__);
 
@@ -82,7 +82,7 @@ void aodv_init(void)
     /* TODO: set & handle prefix and prefix_len properly (consider AODVV2_RIOT_PREFIXLEN!) */
     aodvv2_prefix_len = sizeof(ng_ipv6_addr_t);
     /* TODO: set if_id properly (as param of aodv_init) */
-    aodvv2_if_id = 0;
+    aodvv2_if_id = interface;
     ng_ipv6_addr_from_str(&aodvv2_prefix, "fe80:0000:0000:0000:0000:0000:0000:0000");
     //net_if_set_src_address_mode(aodvv2_if_id, NET_IF_TRANS_ADDR_M_SHORT);
 
