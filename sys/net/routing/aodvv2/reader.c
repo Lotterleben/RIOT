@@ -73,7 +73,7 @@ static int num_unreachable_nodes;
 static int aodvv2_validity_t = (AODVV2_ACTIVE_INTERVAL + AODVV2_MAX_IDLETIME) * 1000; /* milliseconds */
 
 static struct rfc5444_reader reader;
-#if ENABLE_DEBUG
+#if AODV_DEBUG
 static struct netaddr_str nbuf;
 #endif
 #if TEST_SETUP
@@ -201,7 +201,7 @@ static enum rfc5444_result _cb_rreq_blocktlv_messagetlvs_okay(struct rfc5444_rea
  */
 static enum rfc5444_result _cb_rreq_blocktlv_addresstlvs_okay(struct rfc5444_reader_tlvblock_context *cont)
 {
-#if ENABLE_DEBUG
+#if AODV_DEBUG
     struct netaddr_str nbuf;
 #endif
     struct rfc5444_reader_tlvblock_entry *tlv;
@@ -350,10 +350,12 @@ static enum rfc5444_result _cb_rreq_end_callback(
         ng_ipv6_addr_t sender_tmp;
         netaddr_to_ipv6_addr_t(&packet_data.sender, &sender_tmp);
 
-        /** We take the first available IF */
+        /* TODO: adjust according to new draft
+        //We take the first available IF
         kernel_pid_t ifs[NG_NETIF_NUMOF];
         size_t numof = ng_netif_get(ifs);
         if(numof <= 0) {
+            AODV_DEBUG("no interface available: dropping packet.");
             return RFC5444_DROP_PACKET;
         }
 
@@ -366,6 +368,7 @@ static enum rfc5444_result _cb_rreq_end_callback(
                                  DEBUG("OH NOES! No bidirectional link to sender. Dropping packet.\n");
                                  return RFC5444_DROP_PACKET;
                              }
+        */
         /*
         ndp_neighbor_cache_t *ndp_nc_entry = ndp_neighbor_cache_search(&sender_tmp);
 
@@ -458,8 +461,9 @@ static enum rfc5444_result _cb_rrep_blocktlv_messagetlvs_okay(struct rfc5444_rea
  */
 static enum rfc5444_result _cb_rrep_blocktlv_addresstlvs_okay(struct rfc5444_reader_tlvblock_context *cont)
 {
-#if ENABLE_DEBUG
-    /* cppcheck-suppress unusedVariable as nbuf is needed by VDEBUG. */
+#if AODV_DEBUG
+    /* cppcheck-suppress unusedVariable as nbuf is needed by AODV_DEBUG. */
+
     struct netaddr_str nbuf;
 #endif
     struct rfc5444_reader_tlvblock_entry *tlv;
@@ -527,7 +531,7 @@ static enum rfc5444_result _cb_rrep_end_callback(
     VDEBUG("%s()\n", __func__);
 
     struct aodvv2_routing_entry_t *rt_entry;
-#if ENABLE_DEBUG
+#if AODV_DEBUG
     struct netaddr_str nbuf;
 #endif
     timex_t now;
@@ -652,7 +656,7 @@ static enum rfc5444_result _cb_rrep_end_callback(
     earlier RREQ, and RREP processing is completed.  Any packets
     buffered for OrigNode should be transmitted. */
     if (clienttable_is_client(&packet_data.origNode.addr)) {
-#if ENABLE_DEBUG
+#if AODV_DEBUG
         static struct netaddr_str nbuf2;
 #endif
 
@@ -698,8 +702,8 @@ static enum rfc5444_result _cb_rerr_blocktlv_messagetlvs_okay(struct rfc5444_rea
 
 static enum rfc5444_result _cb_rerr_blocktlv_addresstlvs_okay(struct rfc5444_reader_tlvblock_context *cont)
 {
-#if ENABLE_DEBUG
-    /* cppcheck-suppress unusedVariable as nbuf is needed by VDEBUG. */
+#if AODV_DEBUG
+    /* cppcheck-suppress unusedVariable as nbuf is needed by AODV_DEBUG. */
     struct netaddr_str nbuf;
 #endif
     struct aodvv2_routing_entry_t *unreachable_entry;
