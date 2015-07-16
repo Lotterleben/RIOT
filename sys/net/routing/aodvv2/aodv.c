@@ -468,17 +468,18 @@ static void _write_packet(struct rfc5444_writer *wr __attribute__ ((unused)),
 /* Print the json representation of a sent packet to stdout for debugging */
 static void print_json_pkt_sent(struct writer_target *wt)
 {
+#if TEST_SETUP
     // note: what if the content at wt has changed until this is printed? memcpy the entire thing?
     int msg_type = wt->type;
     if (msg_type == RFC5444_MSGTYPE_RREQ) {
-    LOG("{\"log_type\": \"sent_rreq\", \"log_data\": {"
+    printf("{\"log_type\": \"sent_rreq\", \"log_data\": {"
         "\"orig_addr\": \"%s\", \"targ_addr\": \"%s\", \"orig_seqnum\": %d, \"metric\": %d}}\n",
         netaddr_to_string(&nbuf_origaddr, &wt->packet_data.origNode.addr),
         netaddr_to_string(&nbuf_targaddr, &wt->packet_data.targNode.addr),
         wt->packet_data.origNode.seqnum, wt->packet_data.origNode.metric);
     }
     if (msg_type == RFC5444_MSGTYPE_RREP) {
-    LOG("{\"log_type\": \"sent_rrep\", \"log_data\": {"
+    printf("{\"log_type\": \"sent_rrep\", \"log_data\": {"
         "\"next_hop\": \"%s\",\"orig_addr\": \"%s\", \"orig_seqnum\": %d,"
         " \"targ_addr\": \"%s\"}}\n",
                 netaddr_to_string(&nbuf_nexthop, &wt->target_addr),
@@ -489,6 +490,7 @@ static void print_json_pkt_sent(struct writer_target *wt)
     if (msg_type == RFC5444_MSGTYPE_RERR) {
         /* TODO */
     }
+#endif
 }
 
 /* free the matryoshka doll of cobbled-together structs that the sender_thread receives */

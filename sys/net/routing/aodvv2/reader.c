@@ -54,6 +54,8 @@ static enum rfc5444_result _cb_rerr_end_callback(
     struct rfc5444_reader_tlvblock_context *cont, bool dropped);
 
 /* helper functions */
+static void print_json_received_rreq(void);
+static void print_json_received_rrep(void);
 static uint8_t _get_link_cost(aodvv2_metric_t metricType);
 static uint8_t _get_max_metric(aodvv2_metric_t metricType);
 static uint8_t _get_route_cost(aodvv2_metric_t metricType, uint8_t metric);
@@ -67,9 +69,7 @@ static struct rfc5444_reader reader;
 #if AODV_DEBUG
 static struct netaddr_str nbuf;
 #endif
-#if TEST_SETUP
-static struct netaddr_str nbuf_origaddr, nbuf_targaddr, nbuf_send;
-#endif
+
 /*
  * Message consumer, will be called once for every message of
  * type RFC5444_MSGTYPE_RREQ that contains all the mandatory message TLVs
@@ -259,14 +259,7 @@ static enum rfc5444_result _cb_rreq_end_callback(
     timex_t now;
 
     /* We've received a valid RREQ, log this. */
-    LOG("{\"log_type\": \"received_rreq\", "
-        "\"log_data\":{ \"last_hop\": \"%s\", \"orig_addr\": \"%s\", "
-        "\"orig_seqnum\": %d, \"targ_addr\": \"%s\", \"metric\": %d}}\n",
-        netaddr_to_string(&nbuf_send, &packet_data.sender),
-        netaddr_to_string(&nbuf_origaddr, &packet_data.origNode.addr),
-        packet_data.origNode.seqnum,
-        netaddr_to_string(&nbuf_targaddr, &packet_data.targNode.addr),
-        packet_data.origNode.metric);
+    print_json_received_rreq();
 
     /* Check if packet contains the required information */
     if (dropped) {
@@ -478,14 +471,7 @@ static enum rfc5444_result _cb_rrep_end_callback(
     timex_t now;
 
     /* We've received a valid RREP, log this. */
-    LOG("{\"log_type\": \"received_rrep\", "
-        "\"log_data\":{ \"last_hop\": \"%s\", \"orig_addr\": \"%s\", "
-        "\"orig_seqnum\": %d, \"targ_addr\": \"%s\", \"targ_seqnum\":%d}}\n",
-        netaddr_to_string(&nbuf_send, &packet_data.sender),
-        netaddr_to_string(&nbuf_origaddr, &packet_data.origNode.addr),
-        packet_data.origNode.seqnum,
-        netaddr_to_string(&nbuf_targaddr, &packet_data.targNode.addr),
-        packet_data.targNode.seqnum);
+    print_json_received_rrep();
 
     /* Check if packet contains the required information */
     if (dropped) {
@@ -715,6 +701,38 @@ int aodv_packet_reader_handle_packet(void *buffer, size_t length, struct netaddr
 }
 
 /*============= HELPER FUNCTIONS =============================================*/
+
+static void print_json_received_rreq(void)
+{
+#if TEST_SETUP
+    static struct netaddr_str nbuf_origaddr, nbuf_targaddr, nbuf_send;
+
+    printf("{\"log_type\": \"received_rreq\", "
+        "\"log_data\":{ \"last_hop\": \"%s\", \"orig_addr\": \"%s\", "
+        "\"orig_seqnum\": %d, \"targ_addr\": \"%s\", \"metric\": %d}}\n",
+        netaddr_to_string(&nbuf_send, &packet_data.sender),
+        netaddr_to_string(&nbuf_origaddr, &packet_data.origNode.addr),
+        packet_data.origNode.seqnum,
+        netaddr_to_string(&nbuf_targaddr, &packet_data.targNode.addr),
+        packet_data.origNode.metric);
+#endif
+}
+
+static void print_json_received_rrep(void)
+{
+#if TEST_SETUP
+    static struct netaddr_str nbuf_origaddr, nbuf_targaddr, nbuf_send;
+
+    printf("{\"log_type\": \"received_rrep\", "
+        "\"log_data\":{ \"last_hop\": \"%s\", \"orig_addr\": \"%s\", "
+        "\"orig_seqnum\": %d, \"targ_addr\": \"%s\", \"targ_seqnum\":%d}}\n",
+        netaddr_to_string(&nbuf_send, &packet_data.sender),
+        netaddr_to_string(&nbuf_origaddr, &packet_data.origNode.addr),
+        packet_data.origNode.seqnum,
+        netaddr_to_string(&nbuf_targaddr, &packet_data.targNode.addr),
+        packet_data.targNode.seqnum);
+#endif
+}
 
 /*
  * Cost(L): Get Cost of a Link regarding the specified metric.

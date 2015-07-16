@@ -28,10 +28,8 @@
 
 /* helper functions */
 static void _reset_entry_if_stale(uint8_t i);
-#if TEST_SETUP
-void routingtable_entry_to_json(struct aodvv2_routing_entry_t *rt_entry, char* json_str);
-struct netaddr_str nbuf_addr, nbuf_nexthop;
-#endif
+static void print_json_added_rt_entry(struct aodvv2_routing_entry_t *entry);
+static void routingtable_entry_to_json(struct aodvv2_routing_entry_t *rt_entry, char* json_str);
 
 static struct aodvv2_routing_entry_t routing_table[AODVV2_MAX_ROUTING_ENTRIES];
 static timex_t null_time, max_seqnum_lifetime, active_interval, max_idletime, validity_t;
@@ -63,11 +61,7 @@ struct netaddr *routingtable_get_next_hop(struct netaddr *dest, aodvv2_metric_t 
 
 void routingtable_add_entry(struct aodvv2_routing_entry_t *entry)
 {
-#if TEST_SETUP
-    char rt_entry_json [500];
-    routingtable_entry_to_json(entry, rt_entry_json);
-    LOG("{\"log_type\": \"added_rt_entry\", \"log_data\": %s}\n", rt_entry_json);
-#endif
+    print_json_added_rt_entry(entry);
 
     /* only add if we don't already know the address */
     if (routingtable_get_entry(&(entry->addr), entry->metricType)) {
@@ -248,16 +242,28 @@ void routingtable_fill_routing_entry_t_rrep(struct aodvv2_packet_data *packet_da
     rt_entry->state = ROUTE_STATE_ACTIVE;
 }
 
+static void print_json_added_rt_entry(struct aodvv2_routing_entry_t *entry)
+{
 #if TEST_SETUP
+    char rt_entry_json [500];
+    routingtable_entry_to_json(entry, rt_entry_json);
+    printf("{\"log_type\": \"added_rt_entry\", \"log_data\": %s}\n", rt_entry_json);
+#endif
+}
+
 /* Write JSON representation of rt_entry to json_str */
-void routingtable_entry_to_json(struct aodvv2_routing_entry_t *rt_entry, char* json_str) {
+static void routingtable_entry_to_json(struct aodvv2_routing_entry_t *rt_entry, char* json_str)
+{
+#if TEST_SETUP
+    struct netaddr_str nbuf_addr, nbuf_nexthop;
+
     sprintf(json_str,"{\"addr\": \"%s\", \"next_hop\": \"%s\", \"seqnum\": %d,"
                      "\"metric\": %d, \"state\": %d}",
                      netaddr_to_string(&nbuf_addr, &rt_entry->addr),
                      netaddr_to_string(&nbuf_nexthop, &rt_entry->nextHopAddr),
                      rt_entry->seqnum, rt_entry->metric, rt_entry->state);
-}
 #endif
+}
 
 void print_routingtable(void)
 {
