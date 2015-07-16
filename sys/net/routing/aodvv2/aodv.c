@@ -397,8 +397,8 @@ static void *_aodv_receiver_thread(void *arg)
                 if (pkt->size <= UDP_BUFFER_SIZE) {
                     memcpy(buf_rcv, pkt->data, pkt->size);
 
-                    if(pkt->next->type == NG_NETTYPE_IPV6) {
-                        ipv6_addr_t_to_netaddr(&(((ng_ipv6_hdr_t*)(pkt->next->data))->src), &_sender);
+                    if(pkt->next->next->type == NG_NETTYPE_IPV6) {
+                        ipv6_addr_t_to_netaddr(&(((ng_ipv6_hdr_t*)(pkt->next->next->data))->src), &_sender);
                     }
 
                     if (netaddr_cmp(&_sender, &na_local) == 0) {
@@ -534,7 +534,7 @@ static void _write_packet(struct rfc5444_writer *wr __attribute__ ((unused)),
      * and print to console */
     abuf_hexdump(&_hexbuf, "\t", buffer, length);
     rfc5444_print_direct(&_hexbuf, buffer, length);
-    DEBUG("%s", abuf_getptr(&_hexbuf));
+    //DEBUG("%s", abuf_getptr(&_hexbuf));
     abuf_clear(&_hexbuf);
 
     /* fetch the address the packet is supposed to be sent to (i.e. to a
