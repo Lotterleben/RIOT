@@ -490,6 +490,8 @@ static void print_json_pkt_sent(struct writer_target *wt)
     if (msg_type == RFC5444_MSGTYPE_RERR) {
         /* TODO */
     }
+#else
+    (void) wt; /* silence compiler */
 #endif
 }
 
