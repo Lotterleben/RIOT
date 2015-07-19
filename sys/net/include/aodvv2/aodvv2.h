@@ -24,6 +24,7 @@
 
 #include "common/netaddr.h"
 #include "rfc5444/rfc5444_print.h"
+#include "kernel_types.h"
 
 #include "aodvv2/types.h"
 
@@ -34,7 +35,7 @@ extern "C" {
 /**
  * @brief   Initialize the AODVv2 routing protocol.
  */
-void aodv_init(void);
+void aodv_init(kernel_pid_t interface);
 
 /**
  * @brief   Set the metric type. If metric_type does not match any known metric

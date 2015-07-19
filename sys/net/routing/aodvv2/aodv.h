@@ -20,13 +20,13 @@
 #ifndef AODV_H_
 #define AODV_H_
 
-#include <sixlowpan/ip.h>
-#include "sixlowpan.h"
 #include "kernel.h"
 #include "udp.h"
-#include "socket_base/socket.h"
-#include "net_help.h"
-#include "net_if.h"
+#include "net/ng_ipv6.h"
+#include "net/ng_netbase.h"
+#include "net/ng_netif.h"
+#include "net/ng_udp.h"
+#include "net/ng_pkt.h"
 
 #include "aodvv2/types.h"
 #include "constants.h"
@@ -86,17 +86,6 @@ struct msg_container
     void *data;                                 /**< Pointer to the message data
                                                  * (i.e. rreq_rrep_data or rerr_data) */
 };
-
-/**
- * @brief   When set as ipv6_iface_routing_provider, this function is called by
- *          ipv6_sendto() to determine the next hop towards dest. This function
- *          is non-blocking.
- *
- * @param[in] dest  destination of the packet
- * @return          Address of the next hop towards dest if there is any,
- *                  NULL if there is none (yet)
- */
-ipv6_addr_t *aodv_get_next_hop(ipv6_addr_t *dest);
 
 /**
  * @brief   Dispatch a RREQ
