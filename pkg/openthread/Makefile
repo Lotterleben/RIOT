@@ -1,6 +1,6 @@
 PKG_NAME=openthread
 PKG_URL=https://github.com/openthread/openthread.git
-PKG_VERSION=thread-reference-20170716
+PKG_VERSION=thread-reference-20180619
 PKG_BUILDDIR ?= $(PKGDIRBASE)/$(PKG_NAME)
 
 ifneq (,$(filter openthread-cli-ftd,$(USEMODULE)))
